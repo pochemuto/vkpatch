@@ -73,6 +73,7 @@ new function() {
          'netscape': function() { return Private.netscape;  },
             'opera': function() { return Private.opera;     },
            'safari': function() { return Private.safari;    },
+           'chrome': function() { return Private.chrome;     },
 
         // A boolean value indicating whether or not the given OS was
         // detected.
