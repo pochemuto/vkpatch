@@ -1,11 +1,10 @@
 // ==UserScript==
-// @name           vkPatch Store Test Chrome loader
+// @name           vkPatch loader
 // @namespace      http://klinifini.livejournal.com/
-// @description    Тест vkPatch
+// @description    Загрузчик vkPatch
 // @include        http://vkontakte.ru/*
 // ==/UserScript==
 
-console.log('store test script Chrome loader');
 
 // Загрузка скрипта
 var jQueryScript = document.createElement('script');
