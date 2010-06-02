@@ -93,7 +93,7 @@ function init()
 		}
 			
 	});
-	
+
 	vkPatch.init();
 };
 
@@ -311,14 +311,8 @@ var vkPatch =
 				 */
 				get: function()
 				{
-					return vkPatch.storage.get(node.name);
-				},
-				
-				/*
-				 * Созранине параметра в памяти
-				 */
-				set: function(value)
-				{
+					var value = vkPatch.storage.get(this.name);
+					
 					var result_value = this.def;
 					/*
 					 * Требуемый тип значения узнаём по типу значения по-умолчанию
@@ -360,13 +354,21 @@ var vkPatch =
 						
 						result_value = temp_value;
 					}
-					else
+					else		/* строка */
 					{
 						result_value = value;
 					};
 					
+					return result_value;
+				},
+				
+				/*
+				 * Созранине параметра в памяти
+				 */
+				set: function(value)
+				{
 					// сохраниние
-					vkPatch.storage.set(this.name, result_value);				
+					vkPatch.storage.set(this.name, value);				
 				}
 			};
 			
@@ -451,6 +453,11 @@ var vkPatch =
 		remove: function(name)
 		{
 			localStorage.removeItem(name);
+		},
+		
+		clear: function()
+		{
+			localStorage.clear();
 		}
 	},
 	
