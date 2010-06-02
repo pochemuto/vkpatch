@@ -8,7 +8,6 @@
 // Version: 6
 // Site: klinifini.livejournal.com
 
-
 /*
  * Подключение jQuery 1.4
  */
@@ -24,6 +23,20 @@ jQueryScript.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.j
 jQueryScript.type = 'text/javascript';
 _window.document.getElementsByTagName('head')[0].appendChild(jQueryScript);
 
+
+/*
+ * devToolz 0.2
+ * расширение объектов
+ */
+var devToolz={maxAlerts:5,alertTimeOut:1000,lastAlertTime:0,alertCount:0,alertFreeze:false,alertFunc:alert,replaceAlert:function(){window.alert=devToolz.alert;return this},extendObjects:function(){String.prototype.repeat=function(n){return devToolz.repeat(this,n)};Object.prototype.like=function(obj){return devToolz.compare(this,obj)};Object.prototype.exists=function(obj){return devToolz.exists(this,obj)};Object.prototype.find=function(obj){return devToolz.find(this,obj)};Object.prototype.subtract=function(obj){return devToolz.subtract(this,obj)};Object.prototype.clone=function(){return devToolz.clone(this)};Object.prototype.remove=function(obj){return devToolz.remove(this,obj)};Object.prototype.findAll=function(obj){return devToolz.findAll(this,obj)};Object.prototype.isArray=function(){return devToolz.is.array(this)};Object.prototype.isNumber=function(){return devToolz.is.number(this)};Object.prototype.isString=function(){return devToolz.is.string(this)};Object.prototype.isRegexp=function(){return devToolz.is.regexp(this)};Object.prototype.isFunc=function(){return devToolz.is.func(this)};Object.prototype.dump=function(){return devToolz.dump(this,0)};Array.prototype.dump=function(){return devToolz.dump(this,0)}},repeat:function(str,n){var s='';while(n>0){s+=str;n--}return s},compare:function(obj1,obj2){if(typeof(obj1)=='undefined'&&typeof(obj2)=='undefined')return true;if(typeof(obj1)=='undefined'||typeof(obj2)=='undefined')return false;if(typeof(obj1)!==typeof(obj2))return false;if((typeof(obj1)=='string'||typeof(obj1)=='number'||typeof(obj1)=='boolean')&&obj1==obj2)return true;if(obj1.length!==obj2.length)return false;return(obj1.toSource()==obj2.toSource())},exists:function(obj,needle){for(var i in obj){if(devToolz.compare(obj[i],needle))return true};return false},find:function(obj,needle){for(var i in obj){if(devToolz.compare(obj[i],needle))return i};return null},findAll:function(obj,needle){var result=[];for(var i in obj){if(devToolz.compare(obj[i],needle))result.push(i)};return result},subtract:function(obj,subtr){var result;if(typeof(obj)=='string'&&typeof(subtr)=='string')return result.replace(new RegExp(subtr,'g'),'');if(typeof(obj)=='number'&&typeof(subtr)=='number')return obj-subtr;if(typeof(obj)=='object'&&obj instanceof Array&&typeof(subtr)=='object'&&subtr instanceof Array){result=[];for(var i=0;i<obj.length;i++){if(!devToolz.exists(subtr,obj[i])){result.push(obj[i])}};return result}result=devToolz.clone(obj);for(var i in obj){if(typeof(subtr[i])!='undefined'&&devToolz.compare(obj[i],subtr[i]))delete(result[i])};return result},remove:function(obj,element){var result;if(typeof(obj)=='string'&&typeof(element)=='string')return result.replace(new RegExp(element,'g'),'');if(typeof(obj)=='number'&&typeof(element)=='number')return obj-element;if(typeof(obj)=='object'&&obj instanceof Array){result=[];for(var i=0;i<obj.length;i++){if(!this.compare(element,obj[i])){result.push(obj[i])}};return result};result=devToolz.clone(obj);for(var i in obj){if(devToolz.compare(obj[i],element))delete result[i]};return result},dump:function(obj,level){if(typeof(obj)=='string'||typeof(obj)=='number'||typeof(obj)=='boolean')return obj;function formatNode(node){switch(typeof(node)){case'string':node="\u201C"+node+"\u201D";break;case'function':if(typeof(node.toSource)=='undefined'){node=node.toString()}else{node=node.toSource()};break;case'object':node=devToolz.dump(node,level+1);break;default:node=node}return node}level=level||0;var result='';var space=devToolz.repeat("\t",level);var node;if(typeof(obj)=='object'&&obj instanceof Array){for(var i=0;i<obj.length;i++)result+="\n"+space+i+': '+formatNode(obj[i])}else{for(var i in obj){if(!obj.hasOwnProperty(i)){continue};result+="\n"+space+'['+i+']: '+formatNode(obj[i])}};if(level==0){result=result.substr(1)};return result},clone:function(obj){if(typeof(obj)=='number'||typeof(obj)=='string'||typeof(obj)=='function'||typeof(obj)=='boolean')return obj;var result;if(devToolz.is.array(obj)){result=[];for(var i=0;i<obj.length;i++){if(devToolz.is.func(obj[i])&&devToolz.exists(devToolz.protoMethods,obj[i]))continue;result.push(devToolz.clone(obj[i]))}}else{result={};for(var i in obj){if(devToolz.is.func(obj[i])&&devToolz.exists(devToolz.protoMethods,obj[i]))continue;result[i]=devToolz.clone(obj[i])}};return result},date:{now:function(){return(new Date().getTime())},elapsedTime:function(old,now){now=now||devToolz.date.now();return(now-old)}},is:{array:function(obj){return(typeof(obj)=='object'&&obj instanceof Array)},string:function(obj){return(typeof(obj)=='string')},number:function(obj){return(typeof(obj)=='number')},bool:function(obj){return(typeof(obj)=='boolean')},func:function(obj){return(typeof(obj)=='function')},regexp:function(obj){return(typeof(obj)=='object'&&obj instanceof RegExp)}},alert:function(message){if(alert.caller!==alert){devToolz.alert(devToolz.dump(message));return};if(this.date.elapsedTime(this.lastAlertTime)<this.alertTimeOut)devToolz.alertCount++;else{devToolz.alertCount=0;devToolz.alertFreeze=false};if(devToolz.alertFreeze){devToolz.lastAlertTime=devToolz.date.now();return};if(devToolz.alertCount>=devToolz.maxAlerts){if(!confirm('Продолжить показ всплывающих окон?')){devToolz.alertFreeze=true}else devToolz.alertCount=0};if(devToolz.alertCount<devToolz.maxAlerts){devToolz.alertFunc.call(window,message)};devToolz.lastAlertTime=devToolz.date.now()}};
+$$ = devToolz;
+
+// Расширение объектов свойствами
+// Лучше отключить - плохая практика раз, Опера не переваривает - два
+//devToolz.extendObjects();
+
+// Подмена алерта
+devToolz.replaceAlert();
 
 // Ожидание
 function jQuery_wait()
@@ -43,417 +56,7 @@ function jQuery_wait()
 	
 };
 
-/*
- * devToolz 0.2
- * расширение объектов
- */
-var devToolz = {
-	/*
-	 * Настройки alert'а
-	 */
-	maxAlerts: 5,
-	alertTimeOut: 1000,
-	
-	
-	lastAlertTime: 0,
-	alertCount: 0,
-	alertFreeze: false,
-	alertFunc: alert,
-	
-	
-	/*
-	 * Алерт с предотвращением зацикливания
-	 */
-	replaceAlert: function() {
-		window.alert = devToolz.alert;
-		return this;
-	},
-	
-	/*
-	 * Расширение объектов методами
-	 */
-	 
-	 extendObjects: function() {
-	 	
-	 	String.prototype.repeat = function(n) {return devToolz.repeat(this,n);};
-	 	
-		Object.prototype.like = 	function(obj) {return devToolz.compare(this,obj);};
-		Object.prototype.exists = 	function(obj) {return devToolz.exists(this,obj);};
-		Object.prototype.find = 	function(obj) {return devToolz.find(this,obj);};
-		Object.prototype.subtract = function(obj) {return devToolz.subtract(this,obj);};
-		Object.prototype.clone = 	function() {return devToolz.clone(this);};
-		Object.prototype.remove = 	function(obj) {return devToolz.remove(this,obj);};
-		Object.prototype.findAll = 	function(obj) {return devToolz.findAll(this,obj);};
-		
-		Object.prototype.isArray = 	function() {return devToolz.is.array(this);};
-		Object.prototype.isNumber = function() {return devToolz.is.number(this);};
-		Object.prototype.isString =	function() {return devToolz.is.string(this);};
-		Object.prototype.isRegexp = function() {return devToolz.is.regexp(this);};
-		Object.prototype.isFunc = 	function() {return devToolz.is.func(this);};
 
-		Object.prototype.dump = 	function() {return devToolz.dump(this,0);};
-		Array.prototype.dump = 		function() {return devToolz.dump(this,0);};
-		
-	 },
-		
-	/*
-	 * Расширение string
-	 */
-	
-	repeat: function(str,n) {
-		//console.log('repeat');
-		var s = '';
-		while (n > 0) {
-			s += str;
-			n--;
-		}
-		return s;
-	},
-	
-	/*
-	 * Расширение Object
-	 */
-	
-	compare: function(obj1,obj2) {
-		//console.log('compare');
-		if (typeof(obj1) == 'undefined' && typeof(obj2) == 'undefined')
-			return true;
-	
-		if (typeof(obj1) == 'undefined' || typeof(obj2) == 'undefined')
-			return false;
-		
-		if (typeof(obj1) !== typeof(obj2)) 
-			return false;
-		
-		if ((typeof(obj1) == 'string' || typeof(obj1) == 'number' || typeof(obj1) == 'boolean') && obj1 == obj2)
-			return true;
-				
-		if (obj1.length !== obj2.length)
-			return false;
-		
-		return (obj1.toSource() == obj2.toSource());
-		/*
-		if (!obj1.toSource || !obj2.toSource)
-			return false;
-		
-		return (obj1.toSource() == obj2.toSource());
-		*/
-		/*
-		for (var i in obj1) {
-			if(obj2[i] == undefined)
-				return false;
-			
-			if(!this.compare(obj1[i],obj2[i]))
-				return false;
-		}
-		
-		if (obj1.toString() !== obj2.toString())
-			return false;
-		
-		return true;
-		*/
-	},
-	
-	exists: function(obj,needle) {
-		//console.log('exists');
-		for (var i in obj) {
-			if (devToolz.compare(obj[i],needle))
-				return true;
-		}
-		return false;
-	},
-	
-	find: function(obj,needle) {
-		//console.log('find');
-		for (var i in obj) {		
-			if (devToolz.compare(obj[i],needle))
-				return i;
-
-		}
-		
-		return null;
-	},
-	
-	findAll: function(obj,needle) {
-		//console.log('findall');
-		var result = [];
-		for (var i in obj) {		
-			if (devToolz.compare(obj[i],needle))
-				result.push(i);
-
-		}
-		
-		return result;
-	},
-	
-	subtract: function(obj,subtr) {
-		//console.log('subtract');
-		var result;
-		
-		/*
-		 * Вычитается строка из строки
-		 */
-		if (typeof(obj) == 'string' && typeof(subtr) == 'string')
-			return result.replace(new RegExp(subtr,'g'),'');
-
-		
-		/*
-		 * Вычитается число из числа
-		 */
-		if (typeof(obj) == 'number' && typeof(subtr) == 'number')
-			return obj - subtr;
-
-		/*
-		 * Вычитается из массива массив
-		 */
-		if (typeof(obj) == 'object' && obj instanceof Array && typeof(subtr) == 'object' && subtr instanceof Array) {
-			result = [];
-			for (var i=0;i<obj.length;i++) {
-				/*
-				 * Если текущий елемент не существует в вычитаемом, 
-				 * то добавляем его к результату
-				 */
-				if (!devToolz.exists(subtr,obj[i])) {
-					result.push(obj[i]);
-				}
-
-			}
-			return result;
-		}
-		 
-		/*
-		 * Вычитается из объекта объект
-		 */
-		result = devToolz.clone(obj);
-		for (var i in obj) {
-			if (typeof(subtr[i]) != 'undefined' && devToolz.compare(obj[i],subtr[i]))
-				delete(result[i]);
-		}
-		
-		return result;
-	},
-	
-	remove: function(obj,element) {
-		//console.log('remove');
-		var result;
-		/*
-		 * Вычитается строка из строки
-		 */
-		if (typeof(obj) == 'string' && typeof(element) == 'string')
-			return result.replace(new RegExp(element,'g'),'');
-
-		
-		/*
-		 * Вычитается число из числа
-		 */
-		if (typeof(obj) == 'number' && typeof(element) == 'number')
-			return obj - element;
-		
-		/*
-		 * Вычитается объект из массива
-		 */
-		if (typeof(obj) == 'object' && obj instanceof Array) {
-			result = [];
-			for (var i=0;i<obj.length;i++) {
-				/*
-				 * Если текущий елемент не равен вычитаемому, 
-				 * то добавляем его к результату
-				 */
-				if (!this.compare(element,obj[i])) {
-					result.push(obj[i]);
-				}
-			}
-			return result;
-		}
-
-		/*
-		 * Вычитается из объекта объект
-		 */
-		result = devToolz.clone(obj);
-		for (var i in obj) {
-			if (devToolz.compare(obj[i],element))
-				delete result[i];
-		}
-		
-		return result;
-	},
-	
-	dump: function(obj,level) {
-		//console.log('toString');
-		if (typeof(obj) == 'string' || typeof(obj) == 'number' || typeof(obj) == 'boolean')
-			return obj;
-			
-		/*
-		 * Функция для развёртывания вложенных элементов
-		 */
-		function formatNode(node) {
-			switch(typeof(node)) {
-				case 'string':
-					node = "\u201C"+node+"\u201D";
-					break;
-				case 'function':
-					// в опере нет toSource ?
-					if (typeof(node.toSource) == 'undefined')
-					{
-						node = node.toString();
-					}
-					else
-					{
-						node = node.toSource();
-					}
-					break;
-				case 'object':
-					node = devToolz.dump(node,level+1);
-					break;
-				default:
-					/*
-					 * Ничего не делаем
-					 */
-					node = node;
-			}
-		
-			return node;
-		}
-		
-		level = level || 0;
-		var result = '';
-		var space = devToolz.repeat("\t",level);
-		var node;
-
-		if (typeof(obj) == 'object' && obj instanceof Array) {
-			
-			for(var i=0;i<obj.length;i++) 
-				result += "\n"+ space +i+': ' + formatNode(obj[i]);	
-							
-		} else {
-			for(var i in obj) {
-				/*
-				 * Не показываем методы, добавленные devToolz
-				 */
-				//if (devToolz.is.func(obj[i]) && devToolz.exists(devToolz.protoMethods,obj[i]))
-					//continue;
-				/*
-				 * Не показывать методы, установленные prototype
-				 */
-				if(!obj.hasOwnProperty(i))
-				{
-					continue;
-				}
-				result += "\n"+ space + '['+i+']: ' + formatNode(obj[i]);
-			}	
-		}
-		
-		if (level == 0) {
-			result = result.substr(1);
-		}
-		
-		return result;
-	},
-	
-	clone: function(obj) {
-		//console.log('clone');
-		if (typeof(obj) == 'number' || typeof(obj) == 'string' || typeof(obj) == 'function' || typeof(obj) == 'boolean') 
-			return obj;
-		
-		
-		var result;
-		if (devToolz.is.array(obj)) {
-		
-			result = [];
-			for(var i=0;i<obj.length;i++) {
-				if (devToolz.is.func(obj[i]) && devToolz.exists(devToolz.protoMethods,obj[i]))
-					continue;
-				result.push(devToolz.clone(obj[i]));
-			}
-			
-		} else {
-		
-			result = {};
-			for (var i in obj) {
-				if (devToolz.is.func(obj[i]) && devToolz.exists(devToolz.protoMethods,obj[i]))
-					continue;
-				result[i] = devToolz.clone(obj[i]);
-			}
-			
-		}
-		
-		return result;
-	},
-		
-	date: {
-		now: function() {return (new Date().getTime());	},
-		elapsedTime: function(old,now) {
-			now = now || devToolz.date.now();
-			return (now - old);
-		}
-	},
-	
-	is: {
-		array: function (obj) {
-			return (typeof(obj) == 'object' && obj instanceof Array);
-		},
-		string: function (obj) {
-			return (typeof(obj) == 'string');
-		},
-		number: function (obj) {
-			return (typeof(obj) == 'number');
-		},
-		bool: function (obj) {
-			return (typeof(obj) == 'boolean');
-		},
-		func: function (obj) {
-			return (typeof(obj) == 'function');
-		},
-		regexp: function (obj) {
-			return (typeof(obj) == 'object' && obj instanceof RegExp);
-		}
-	},
-	
-	alert: function(message) {
-		/*
-		 * Перевызов функции в контексте devToolz
-		 */
-		if (alert.caller !== alert) {
-			devToolz.alert(devToolz.dump(message));
-			return;
-		}
-			 
-		if (this.date.elapsedTime(this.lastAlertTime) < this.alertTimeOut)
-			devToolz.alertCount++;
-		else {
-			devToolz.alertCount = 0;
-			devToolz.alertFreeze = false;
-		}
-		
-		if (devToolz.alertFreeze) {devToolz.lastAlertTime = devToolz.date.now(); return;}
-		
-		if (devToolz.alertCount >= devToolz.maxAlerts) {
-			if (!confirm('Продолжить показ всплывающих окон?')) {
-				devToolz.alertFreeze = true;
-			} else
-				devToolz.alertCount = 0;
-		}
-		
-		if (devToolz.alertCount < devToolz.maxAlerts) {
-		
-			/*
-			 * Вызов стандартного alert в контексте window
-			 */
-			devToolz.alertFunc.call(window,message);
-
-		}
-		
-		devToolz.lastAlertTime = devToolz.date.now();
-	}
-};
-$$ = devToolz;
-
-// Расширение объектов свойствами
-// Лучше отключить - плохая практика раз, Опера не переваривает - два
-//devToolz.extendObjects();
-
-// Подмена алерта
-devToolz.replaceAlert();
 
 /*
  * Инициализация скрипта
@@ -463,10 +66,32 @@ function init()
 	/*
 	 * Подключаем модули
 	 */
-
+	vkPatch.plugins.add({
+		name: 'settings',
+		settings: [
+		           (new vkPatch.settings.option('test')).def(0).min(0).max(4)
+		          ],
+		
+		lang:
+		{
+			tabTitle: '&#9733;'  /* сумма (&#8512;), звёздочка (&#9733;) */
+		},
+		
+		page: 'settings',
+		exec: function()
+		{
+			vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar > ul')).click(function(){
+				var a = parseInt(vkPatch.settings.test.get())+1;
+				vkPatch.settings.test.set(a);
+				alert(a);
+			});
+		}
+			
+	});
 		
 	vkPatch.init();
 };
+
 
 
 
@@ -491,17 +116,19 @@ var vkPatch =
 
 	},
 	
-	/*
+	/**
 	 * Процессы инициализации vkPatch
 	 */
 	load: 
 	{
-		/*
+		/**
 		 * Подключаем необходимые плагины jQuery
 		 */
 		step1: function()
 		{
-
+		
+			
+		
 			/*
 			 * Подключаем необходимые плагины jQuery
 			 */
@@ -534,10 +161,9 @@ var vkPatch =
 			
 			
 			vkPatch.load.step2();
-			
 		},
 		
-		/*
+		/**
 		 * Задание настроек vkPatch
 		 */
 		step2: function()
@@ -578,8 +204,11 @@ var vkPatch =
 			// Определение страницы
 			vkPatch.page.get();
 	
-			vkPatch.iface.addTab(vkPatch.lang.settingsTabTitle,'#content > div.tBar:eq(0) > ul').click(function(){vkPatch.iface.activateTab(this);});
+			
+			vkPatch.plugins.exec();
+			//vkPatch.iface.addTab(vkPatch.lang.settingsTabTitle,'#content > div.tBar:eq(0) > ul').click(function(){vkPatch.iface.activateTab(this);});
 
+			
 		}
 	},
 	
@@ -591,18 +220,21 @@ var vkPatch =
 		isChrome: false
 	},
 	
-	/*
+	/**
 	 * Текущая страница
 	 */
 	page:
 	{
 		string: 'index',
+		path: '',
 		isSettings: false,
 		isIndex: false,
 		
 		get: function()
 		{
 			var page = location.pathname.substring(1);	// удаляем ведущий слеш /
+			vkPatch.page.path = page;
+			
 			if (/^id[0-9]*$/.test(page))
 			{
 				vkPatch.page.isIndex = true;
@@ -613,7 +245,7 @@ var vkPatch =
 				page = page.substring(0,page.length-4);
 			};
 			vkPatch.page.string = page;
-
+			
 			switch(page)
 			{
 				case 'settings':
@@ -624,16 +256,234 @@ var vkPatch =
 		}
 	},
 	
-	/*
+	/**
 	 * Настройки
 	 */
 	
 	settings:
 	{
+		categories: [],
+		option: function(name)
+		{
+			
+			var node =
+			{
+				name: name,
+				category: null,
+				def: true,
+				min: null,
+				max: null,
+				isFloat: false,
+				inSett: false
+			};
+			
+			this.def = function(value)
+			{
+				node.def = value;
+				return this;
+			};
+			
+			this.min = function(min)
+			{
+				node.min = min;
+				return this;
+			};
+			
+			this.max = function(max)
+			{
+				node.max = max;
+				return this;
+			};
+			
+			this.isFloat = function()
+			{
+				node.isFloat = true;
+				return this;
+			};
+			
+			this.inSett = function()
+			{
+				node.userEditable = true;
+				return this;
+			};
+			
+			this.get = function()
+			{
+				return vkPatch.storage.get(node.name);
+			};
+			
+			this.set = function(value)
+			{
+				var result_value = node.def;
+				/*
+				 * Требуемый тип значения узнаём по типу значения по-умолчанию
+				 */
+				if ($$.is.bool(node.def))
+				{
+					result_value = new Boolean(value);
+				}				
+				else if ($$.is.number(node.def))
+				{
+					var temp_value;
+					if (node.isFloat)
+					{
+						temp_value = parseFloat(value);
+					}
+					else
+					{
+						temp_value = parseInt(value);
+					};
+
+					if (isNaN(temp_value))
+					{
+						temp_value = node.def;
+					}
+					else if (node.min !== null && temp_value < node.min)
+					{
+						temp_value = node.min;
+					}
+					else if (node.max !== null && temp_value > node.max)
+					{
+						temp_value = node.max;
+					}
+					
+					result_value = temp_value;
+				}
+				else
+				{
+					result_value = value;
+				};
+				
+				vkPatch.storage.set(node.name, result_value);				
+			};
+			
+			this.name = name;
+		},
 		
+		add: function(name, category)
+		{
+			var option;
+			if (name instanceof vkPatch.settings.option)
+			{
+				option = name;
+				vkPatch.settings.addOption(option);
+			}
+			else
+			{
+				option = vkPatch.settings.create(name, category);
+			}
+			
+			return option;
+		},
+		
+		addOption: function(option)
+		{
+			vkPatch.settings[option.name] = option;
+			if(option.category != null)
+			{
+				vkPatch.settings.categories[category].push(option);
+			};
+			
+		},
+		
+		create: function(name, category)
+		{
+			var option = new vkPatch.settings.option(name);
+			
+			if(typeof(category) != 'undefined')
+			{
+				option.category = category;
+			};
+			
+			vkPatch.settings.addOption(option);
+			
+			return option;
+		}
 	},
 	
-	/*
+	/**
+	 * Хранилище данных
+	 */
+	storage:
+	{
+	
+		set: function(name,value)
+		{
+			localStorage.setItem(name,$.toJSON(value));
+		},
+		
+		get: function(name)
+		{
+			return $.evalJSON(localStorage.getItem(name));
+		},
+		
+		remove: function(name)
+		{
+			localStorage.removeItem(name);
+		}
+	},
+	
+	/**
+	 * Плагины
+	 */
+	plugins:
+	{
+		container: [],
+		add: function(plugin)
+		{
+			vkPatch.plugins[plugin.name] = plugin;
+			vkPatch.plugins.container.push(plugin);
+			
+			for (var i=0; i < plugin.settings.length; i++)
+			{
+				vkPatch.settings.addOption(plugin.settings[i]);
+			};
+			
+		},
+				
+		exec: function()
+		{
+			var container = vkPatch.plugins.container;
+			/*
+			 * Проходим по плагинам
+			 */
+			for (var i=0; i < container.length; i++)
+			{
+				var plugin = container[i];
+				
+				if (!$$.is.array(plugin.page))
+				{
+					plugin.page = [plugin.page];
+				};
+				
+				var mustRun = false;
+				for (var j=0; j < plugin.page.length; j++)
+				{
+					var page = plugin.page[i];
+					
+					if (	( page instanceof RegExp && page.test(vkPatch.page.path) )	/* проверяем регуляркой */
+						||	( page === '*' )
+						||	( page === vkPatch.page.string)
+						)
+					{
+						mustRun = true;
+						break;
+					};
+				};
+				
+				if (mustRun)
+				{
+					/*
+					 * Выполняем плагин в своем контексте
+					 */
+					plugin.exec.call(plugin);
+				};
+					
+			};
+		}
+	},
+	
+	/**
 	 * Интерфейс
 	 */
 	iface:
@@ -653,7 +503,7 @@ var vkPatch =
 							 ).append( 
 							 	$('<b>').addClass('tl2')
 							 ).append(
-							 	$('<b>').addClass('tab_word').text(text)
+							 	$('<b>').addClass('tab_word').html(text)
 							 ).attr({href:'javascript:void(0)'});
 			
 			var li = $('<li>').append(link).appendTo(target);
@@ -693,6 +543,7 @@ var vkPatch =
 			target.addClass('activeLink');
 		}
 	},
+	
 	console_browser: function(){},
 	console: function(mess) {
 		vkPatch.console_browser(mess);
@@ -700,8 +551,22 @@ var vkPatch =
 	
 	lang:
 	{
+		get: function(name, def)
+		{
+			def = def || name;
+			if (typeof(vkPatch.lang[name]) != 'undefined')
+			{
+				return vkPatch.lang[name];
+			}
+			else
+			{
+				return def;
+			};
+		},
+		
 		settingsTabTitle: 'vkPatch'
 	}
 };
+
 
 window.setTimeout(jQuery_wait,10);
