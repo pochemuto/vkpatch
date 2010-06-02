@@ -66,10 +66,15 @@ function init()
 	/*
 	 * Подключаем модули
 	 */
+	
+	/**
+	 * Модуль редактирования настроек
+	 */
+
 	vkPatch.plugins.add({
 		name: 'settings',
 		settings: [
-		           (new vkPatch.settings.option('test')).def(0).min(0).max(4)
+		           vkPatch.settings.create('test').def(0).min(0).max(150).done()
 		          ],
 		
 		lang:
@@ -80,7 +85,7 @@ function init()
 		page: 'settings',
 		exec: function()
 		{
-			vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar > ul')).click(function(){
+			vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar:eq(0) > ul')).click(function(){
 				var a = parseInt(vkPatch.settings.test.get())+1;
 				vkPatch.settings.test.set(a);
 				alert(a);
@@ -88,7 +93,7 @@ function init()
 		}
 			
 	});
-		
+	
 	vkPatch.init();
 };
 
@@ -164,14 +169,38 @@ var vkPatch =
 		},
 		
 		/**
-		 * Задание настроек vkPatch
+		 * Инициализация модулей vkPatch и выполнение
 		 */
 		step2: function()
 		{
 
-			/*
-			 * Задание специфичных для браузера установок
-			 */
+			// Определение страницы
+			vkPatch.page.get();
+	
+			// Определение браузера и задание специфичный параметров
+			vkPatch.browser.determine();
+			
+			vkPatch.plugins.exec();
+
+			
+		}
+	},
+	
+	/**
+	 * Текущий браузер
+	 */
+	browser:
+	{
+		isFirefox: false,
+		isOpera: false,
+		isIE: false,
+		isChrome: false,
+		
+		/*
+		 * Задание специфичных для браузера установок
+		 */
+		determine: function()
+		{
 			if ($.browser.opera())
 			{
 				vkPatch.browser.isOpera = true;
@@ -191,33 +220,7 @@ var vkPatch =
 				vkPatch.console_browser = console.log;
 				vkPatch.browser.isChrome = true;
 			};
-			
-			vkPatch.load.step3();
-		},
-		
-		/*
-		 * Инициализация модулей vkPatch и выполнение
-		 */
-		step3: function()
-		{
-
-			// Определение страницы
-			vkPatch.page.get();
-	
-			
-			vkPatch.plugins.exec();
-			//vkPatch.iface.addTab(vkPatch.lang.settingsTabTitle,'#content > div.tBar:eq(0) > ul').click(function(){vkPatch.iface.activateTab(this);});
-
-			
 		}
-	},
-	
-	browser:
-	{
-		isFirefox: false,
-		isOpera: false,
-		isIE: false,
-		isChrome: false
 	},
 	
 	/**
@@ -230,6 +233,9 @@ var vkPatch =
 		isSettings: false,
 		isIndex: false,
 		
+		/*
+		 * Получение информации о текущей странице
+		 */
 		get: function()
 		{
 			var page = location.pathname.substring(1);	// удаляем ведущий слеш /
@@ -258,23 +264,110 @@ var vkPatch =
 	
 	/**
 	 * Настройки
+	 * 
+	 * Содержатся описания настроек, такие как минимум, максимум, начальное значение, тип и другие
+	 * Доступ к параметру осуществляется геттерами и сеттерами:
+	 * 		vkPatch.settings./имя параметра/.get();
+	 * 										.set(value);
+	 * 
+	 * 	С помощью конструктора описаний можно задавать параметры цепочками вызовов. В конце объект описания получают функцией done():
+	 * 		vkPatch.settings.create('floatVal').def(4.75).min(0).max(10).isFloat().done();
 	 */
-	
 	settings:
 	{
-		categories: [],
+		/*
+		 * Категории.
+		 * Контейнер, содержащий все параметры, разбитые на категории, для удобного представления
+		 * hidden - категория по-умолчанию
+		 */
+		categories: {},
+		
+		/*
+		 * Конструктор описания параметра
+		 * Пример создания: vkPatch.settings.create('some').def(4).min(1).max(10).isFloat().inSett().done();
+		 */
 		option: function(name)
 		{
 			
+			/*
+			 * Описание параметра
+			 */
 			var node =
 			{
+				// имя, без пробелов. Можно обращаться как vkPatch.settings.name
 				name: name,
-				category: null,
+				// категория. По-умолчанию hidden - скрытые.
+				category: 'hidden',
+				// значение по-умолчанию. тип параметра определяется по типа этого значения. 
 				def: true,
+				
 				min: null,
 				max: null,
+				// число с плавающей точкой. в противном случае округляется до целого 
 				isFloat: false,
-				inSett: false
+
+				/*
+				 * Чтение параметра из памяти
+				 */
+				get: function()
+				{
+					return vkPatch.storage.get(node.name);
+				},
+				
+				/*
+				 * Созранине параметра в памяти
+				 */
+				set: function(value)
+				{
+					var result_value = this.def;
+					/*
+					 * Требуемый тип значения узнаём по типу значения по-умолчанию
+					 */
+					if ($$.is.bool(this.def))
+					{
+						result_value = new Boolean(value);
+					}				
+					else if ($$.is.number(this.def))
+					{
+						var temp_value;
+						/*
+						 * Пытаемся получить число, в зависимости от типа
+						 */
+						if (this.isFloat)
+						{
+							temp_value = parseFloat(value);
+						}
+						else
+						{
+							temp_value = parseInt(value);
+						};
+
+						/*
+						 * Обработка крайних случаев
+						 */
+						if (isNaN(temp_value) || temp_value == Infinity)
+						{
+							temp_value = this.def;
+						}
+						else if (this.min !== null && temp_value < this.min)
+						{
+							temp_value = this.min;
+						}
+						else if (this.max !== null && temp_value > this.max)
+						{
+							temp_value = this.max;
+						}
+						
+						result_value = temp_value;
+					}
+					else
+					{
+						result_value = value;
+					};
+					
+					// сохраниние
+					vkPatch.storage.set(this.name, result_value);				
+				}
 			};
 			
 			this.def = function(value)
@@ -301,82 +394,26 @@ var vkPatch =
 				return this;
 			};
 			
-			this.inSett = function()
+			this.inSett = function(category)
 			{
-				node.userEditable = true;
+				node.category = category;
 				return this;
 			};
 			
-			this.get = function()
+			/*
+			 * Завершаем описание параметра и получаем объект описания
+			 */
+			this.done = function()
 			{
-				return vkPatch.storage.get(node.name);
+				return node;
 			};
-			
-			this.set = function(value)
-			{
-				var result_value = node.def;
-				/*
-				 * Требуемый тип значения узнаём по типу значения по-умолчанию
-				 */
-				if ($$.is.bool(node.def))
-				{
-					result_value = new Boolean(value);
-				}				
-				else if ($$.is.number(node.def))
-				{
-					var temp_value;
-					if (node.isFloat)
-					{
-						temp_value = parseFloat(value);
-					}
-					else
-					{
-						temp_value = parseInt(value);
-					};
+		},
+		
+		/*
+		 * Добавление настройки к списку
+		 */
 
-					if (isNaN(temp_value))
-					{
-						temp_value = node.def;
-					}
-					else if (node.min !== null && temp_value < node.min)
-					{
-						temp_value = node.min;
-					}
-					else if (node.max !== null && temp_value > node.max)
-					{
-						temp_value = node.max;
-					}
-					
-					result_value = temp_value;
-				}
-				else
-				{
-					result_value = value;
-				};
-				
-				vkPatch.storage.set(node.name, result_value);				
-			};
-			
-			this.name = name;
-		},
-		
-		add: function(name, category)
-		{
-			var option;
-			if (name instanceof vkPatch.settings.option)
-			{
-				option = name;
-				vkPatch.settings.addOption(option);
-			}
-			else
-			{
-				option = vkPatch.settings.create(name, category);
-			}
-			
-			return option;
-		},
-		
-		addOption: function(option)
+		add: function(option)
 		{
 			vkPatch.settings[option.name] = option;
 			if(option.category != null)
@@ -386,17 +423,13 @@ var vkPatch =
 			
 		},
 		
-		create: function(name, category)
+		/*
+		 * Создание описания настройки
+		 */
+		create: function(name)
 		{
 			var option = new vkPatch.settings.option(name);
-			
-			if(typeof(category) != 'undefined')
-			{
-				option.category = category;
-			};
-			
-			vkPatch.settings.addOption(option);
-			
+	
 			return option;
 		}
 	},
@@ -428,12 +461,25 @@ var vkPatch =
 	 */
 	plugins:
 	{
+		/*
+		 * Контейнер всех плагинов, чтобы можно было их обходить перебором
+		 */
 		container: [],
+		
+		/*
+		 * Добавление плагина к vkPatch
+		 */
 		add: function(plugin)
 		{
+			// добавляем в объект vkPatch.plugins
 			vkPatch.plugins[plugin.name] = plugin;
+			// и в контейнер
 			vkPatch.plugins.container.push(plugin);
 			
+			
+			/*
+			 * Получение описания настроек из плагинов
+			 */
 			for (var i=0; i < plugin.settings.length; i++)
 			{
 				vkPatch.settings.addOption(plugin.settings[i]);
@@ -441,11 +487,15 @@ var vkPatch =
 			
 		},
 				
+		/*
+		 * Выполнение
+		 * Производится только на заданой странице, которая указывается параметром page в плагине
+		 */
 		exec: function()
 		{
 			var container = vkPatch.plugins.container;
 			/*
-			 * Проходим по плагинам
+			 * Проходим по всем
 			 */
 			for (var i=0; i < container.length; i++)
 			{
@@ -456,13 +506,16 @@ var vkPatch =
 					plugin.page = [plugin.page];
 				};
 				
+				/*
+				 * Определяем необходимость выполнения
+				 */
 				var mustRun = false;
 				for (var j=0; j < plugin.page.length; j++)
 				{
 					var page = plugin.page[i];
 					
-					if (	( page instanceof RegExp && page.test(vkPatch.page.path) )	/* проверяем регуляркой */
-						||	( page === '*' )
+					if (	( page instanceof RegExp && page.test(vkPatch.page.path) )	/* задано регулярное выражение */
+						||	( page === '*' )					/* все страницы */
 						||	( page === vkPatch.page.string)
 						)
 					{
@@ -548,24 +601,7 @@ var vkPatch =
 	console: function(mess) {
 		vkPatch.console_browser(mess);
 	},
-	
-	lang:
-	{
-		get: function(name, def)
-		{
-			def = def || name;
-			if (typeof(vkPatch.lang[name]) != 'undefined')
-			{
-				return vkPatch.lang[name];
-			}
-			else
-			{
-				return def;
-			};
-		},
-		
-		settingsTabTitle: 'vkPatch'
-	}
+
 };
 
 
