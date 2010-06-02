@@ -415,7 +415,6 @@ var vkPatch =
 
 		add: function(option)
 		{
-			alert(option.category);
 			vkPatch.settings[option.name] = option;
 
 			vkPatch.settings.categories[option.category] = option;
