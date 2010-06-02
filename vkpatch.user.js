@@ -415,11 +415,10 @@ var vkPatch =
 
 		add: function(option)
 		{
+			alert(option.category);
 			vkPatch.settings[option.name] = option;
-			if(option.category != null)
-			{
-				vkPatch.settings.categories[category].push(option);
-			};
+
+			vkPatch.settings.categories[option.category] = option;
 			
 		},
 		
@@ -482,7 +481,7 @@ var vkPatch =
 			 */
 			for (var i=0; i < plugin.settings.length; i++)
 			{
-				vkPatch.settings.addOption(plugin.settings[i]);
+				vkPatch.settings.add(plugin.settings[i]);
 			};
 			
 		},
