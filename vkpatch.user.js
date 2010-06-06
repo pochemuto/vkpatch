@@ -72,24 +72,67 @@ function init()
 	 */
 
 	vkPatch.plugins.add({
+		
+		/**
+		 * Описания
+		 */
 		name: 'settings',
-		settings: [
-		           vkPatch.settings.create('test').def(0).min(0).max(150).done()
-		          ],
+		settings: {
+		           test: vkPatch.settings.create().def(0).min(0).max(150).done()
+		},
 		
 		lang:
 		{
-			tabTitle: '&#9733;'  /* сумма (&#8512;), звёздочка (&#9733;) */
+			settings: {
+				test: ['название параметра','Описание']
+			},
+			
+			tabTitle: '&#9874;'  /* сумма (&#8512;), звёздочка (&#9733;), молоточки (&#9874;) */
 		},
 		
 		page: 'settings',
 		exec: function()
 		{
-			vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar:eq(0) > ul')).click(function(){
-				var a = parseInt(vkPatch.settings.test.get())+1;
-				vkPatch.settings.test.set(a);
-				alert(a);
-			});
+			this.tab = vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar:eq(0) > ul')).click(jQuery.proxy(this.activateTab,this));
+		},
+		
+		
+		/**
+		 * Содержание
+		 */
+		
+		// ссылка на вкладку
+		tab: null,
+		
+		// содержание вкладки
+		tabContent: null,
+		
+		/*
+		 * Подготавливаем содержимое вкладки
+		 */
+		prepareTabContent: function()
+		{
+			//this.tabContent = $('<form ')
+		},
+		
+		/*
+		 * Активируем вкладку
+		 */
+		activateTab: function()
+		{
+
+			// активируем вкладку
+			vkPatch.iface.activateTab(this.tab);
+			
+			// содержимое вкладки
+			if (this.tabContent === null)
+			{
+				this.prepareTabContent();
+			};
+
+			// заменяем содержимое
+			$('#content > div.editorPanel').empty().append(this.tabContent);
+			
 		}
 			
 	});
@@ -269,6 +312,7 @@ var vkPatch =
 	 * Доступ к параметру осуществляется геттерами и сеттерами:
 	 * 		vkPatch.settings./имя параметра/.get();
 	 * 										.set(value);
+	 * или для параметров плагина: vkPatch./имя плагина/.settings./имя параметра/.get()  | set()
 	 * 
 	 * 	С помощью конструктора описаний можно задавать параметры цепочками вызовов. В конце объект описания получают функцией done():
 	 * 		vkPatch.settings.create('floatVal').def(4.75).min(0).max(10).isFloat().done();
@@ -281,12 +325,12 @@ var vkPatch =
 		 * hidden - категория по-умолчанию
 		 */
 		categories: {},
-		
+				
 		/*
 		 * Конструктор описания параметра
-		 * Пример создания: vkPatch.settings.create('some').def(4).min(1).max(10).isFloat().inSett().done();
+		 * Пример создания: vkPatch.settings.create().def(4).min(1).max(10).isFloat().inSett().done();
 		 */
-		option: function(name)
+		option: function()
 		{
 			
 			/*
@@ -294,8 +338,9 @@ var vkPatch =
 			 */
 			var node =
 			{
-				// имя, без пробелов. Можно обращаться как vkPatch.settings.name
-				name: name,
+				// имя, без пробелов. По этому адресу хранится в памяти само значение
+				// имя содержит имя плагина, пример updater.timeout
+				name: null,
 				// категория. По-умолчанию hidden - скрытые.
 				category: 'hidden',
 				// значение по-умолчанию. тип параметра определяется по типа этого значения. 
@@ -377,7 +422,7 @@ var vkPatch =
 				},
 				
 				/*
-				 * Созранине параметра в памяти
+				 * Сохранине параметра в памяти
 				 */
 				set: function(value)
 				{
@@ -425,24 +470,13 @@ var vkPatch =
 			};
 		},
 		
-		/*
-		 * Добавление настройки к списку
-		 */
-
-		add: function(option)
-		{
-			vkPatch.settings[option.name] = option;
-
-			vkPatch.settings.categories[option.category] = option;
-			
-		},
 		
 		/*
 		 * Создание описания настройки
 		 */
-		create: function(name)
+		create: function()
 		{
-			var option = new vkPatch.settings.option(name);
+			var option = new vkPatch.settings.option();
 	
 			return option;
 		}
@@ -490,18 +524,20 @@ var vkPatch =
 		 */
 		add: function(plugin)
 		{
-			// добавляем в объект vkPatch.plugins
-			vkPatch.plugins[plugin.name] = plugin;
-			// и в контейнер
+			// в контейнер
 			vkPatch.plugins.container.push(plugin);
 			
 			
 			/*
-			 * Получение описания настроек из плагинов
+			 * Устанавливаем имя в описания парамтров плагинов
+			 * Оно состоит из имени_плагина.имя_параметра
 			 */
-			for (var i=0; i < plugin.settings.length; i++)
+			for (var optionName in plugin.settings)
 			{
-				vkPatch.settings.add(plugin.settings[i]);
+				if (plugin.settings.hasOwnProperty(optionName))
+				{
+					plugin.settings[optionName].name = plugin.name + '.' + optionName;
+				};
 			};
 			
 		},
@@ -565,6 +601,7 @@ var vkPatch =
 		 * Создание таба
 		 * 
 		 * @return объект A созданного таба
+		 * target - объект списка ul
 		 */
 		addTab:	function(text,target,active)
 		{
