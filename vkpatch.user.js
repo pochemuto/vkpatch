@@ -1,4 +1,4 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name           vkPatch
 // @namespace      http://klinifini.livejournal.com/
 // @description    Расширение функционала ВКонтакте.ру
@@ -112,7 +112,9 @@ function init()
 		 */
 		prepareTabContent: function()
 		{
-			//this.tabContent = $('<form ')
+			this.tabContent = $('<form mathod="get" action="#" name="vkPatch">').submit(function(){alert('submit');});
+			
+			this.tabContent.append('<div class="settingsPanel"><h4>Категория</h4></div>');
 		},
 		
 		/*
