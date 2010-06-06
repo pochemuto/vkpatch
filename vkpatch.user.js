@@ -455,7 +455,7 @@ var vkPatch =
 				return this;
 			};
 			
-			this.inSett = function(category)
+			this.category = function(category)
 			{
 				node.category = category;
 				return this;
