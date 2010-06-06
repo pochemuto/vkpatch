@@ -305,6 +305,9 @@ var vkPatch =
 				max: null,
 				// число с плавающей точкой. в противном случае округляется до целого 
 				isFloat: false,
+				
+				// набор: массив возможных значений
+				set: null,
 
 				/*
 				 * Чтение параметра из памяти
@@ -354,7 +357,18 @@ var vkPatch =
 						
 						result_value = temp_value;
 					}
-					else		/* строка */
+					else if(this.set !== null) /* набор */
+					{
+						if ($$.exists(this.set,value))
+						{
+							result_value = value;
+						}
+						else
+						{
+							result_value = this.def;
+						}
+					}
+					else	/*	строка	*/
 					{
 						result_value = value;
 					};
