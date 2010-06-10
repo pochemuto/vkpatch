@@ -78,7 +78,8 @@ function init()
 		 */
 		name: 'settings',
 		settings: {
-		           test: vkPatch.settings.create().def(0).min(0).max(150).done()
+		           test: vkPatch.settings.create().def(0).min(0).max(150).category('interface').done(),
+		           stringParam: vkPatch.settings.create().def('test string').category('interface').done()
 		},
 		
 		lang:
@@ -121,20 +122,30 @@ function init()
 				// пропускаем скрытые настройки
 				if (categoryName == 'hidden') continue;
 				
-				var category = vkPatch.settings.categories[i];
+				var category = vkPatch.settings.categories[categoryName];
 				var categoryContent = '';
 				
-				for (var optionName in category)
+				for (var i=0; i < category.length; i++)
 				{
-					if (!category.hasOwnProperty(optionName)) continue;
-					
-					var option = category[optionName];
-					
+					var option = category[i];
+					var type = option.getType();
+					alert(type);
+					switch (type)
+					{
+						case vkPatch.settings.TYPE_STRING:
+							
+							categoryContent += this.stringParam(option);
+							
+							break;
+					};
 					
 				}
 				
-				
-				this.tabContent.append('<div class="settingsPanel"><h4>Категория</h4></div>');
+				if (categoryContent !== '')
+				{
+					
+					this.tabContent.append('<div class="settingsPanel"><h4>Категория</h4>'+categoryContent+'</div>');
+				}
 			}	
 			
 			
@@ -365,7 +376,7 @@ var vkPatch =
 		TYPE_STRING: 'string',
 		TYPE_INT: 'int',
 		TYPE_FLOAT: 'float',
-		TYPE_SET: 'set',			// набор
+		TYPE_LIST: 'list',			// набор
 		
 		
 		/*
@@ -401,7 +412,7 @@ var vkPatch =
 				isFloat: false,
 				
 				// набор: массив возможных значений
-				set: null,
+				list: null,
 
 				
 				// название и описание
@@ -467,7 +478,7 @@ var vkPatch =
 							
 						case vkPatch.settings.TYPE_SET:
 							
-							if ($$.exists(this.set,value))
+							if ($$.exists(this.list,value))
 							{
 								result_value = value;
 							}
@@ -523,9 +534,9 @@ var vkPatch =
 						};
 
 					}
-					else if(this.set !== null) /* набор */
+					else if(this.list !== null) /* набор */
 					{
-						return vkPatch.settings.TYPE_SET;	/* набор */
+						return vkPatch.settings.TYPE_LIST;	/* набор */
 					}
 					else	/*	строка	*/
 					{
@@ -563,6 +574,12 @@ var vkPatch =
 				node.category = category;
 				return this;
 			};
+			
+			this.list = function(list)
+			{
+				node.list = list;
+				return this;
+			}
 			
 			/*
 			 * Завершаем описание параметра и получаем объект описания
@@ -659,9 +676,14 @@ var vkPatch =
 				if (plugin.settings.hasOwnProperty(optionName))
 				{
 					var option = plugin.settings[optionName];
-					var desc = plugin.lang.settings[optionName];
+					
 					
 					option.name = plugin.name + '.' + optionName;
+					
+					// Описание параметра
+					// Может быть строкой (название) или массивом (название, описание)
+					// Если в lang плагина не найдено, то принимаем просто имя
+					var desc = plugin.lang.settings[optionName] || option.name;
 					
 					option.title = typeof(desc) == 'string' ? desc : desc[0];
 					option.desc = typeof(desc) == 'string' ? null : desc[1];
