@@ -87,7 +87,7 @@ function init()
 				test: ['название параметра','Описание']
 			},
 			
-			tabTitle: '&#9874;'  /* сумма (&#8512;), звёздочка (&#9733;), молоточки (&#9874;) */
+			tabTitle: 'В +'  /* сумма (&#8512;), звёздочка (&#9733;), молоточки (&#9874;) */
 		},
 		
 		page: 'settings',
@@ -112,11 +112,45 @@ function init()
 		 */
 		prepareTabContent: function()
 		{
-			this.tabContent = $('<form mathod="get" action="#" name="vkPatch">').submit(function(){alert('submit');});
+			this.tabContent = $('<form mathod="get" action="#" name="vkPatch"></form>').submit(function(){alert('submit');});
 			
-			this.tabContent.append('<div class="settingsPanel"><h4>Категория</h4></div>');
+			for (var categoryName in vkPatch.settings.categories)
+			{
+				if (!vkPatch.settings.categories.hasOwnProperty(categoryName)) continue;
+				
+				// пропускаем скрытые настройки
+				if (categoryName == 'hidden') continue;
+				
+				var category = vkPatch.settings.categories[i];
+				var categoryContent = '';
+				
+				for (var optionName in category)
+				{
+					if (!category.hasOwnProperty(optionName)) continue;
+					
+					var option = category[optionName];
+					
+					
+				}
+				
+				
+				this.tabContent.append('<div class="settingsPanel"><h4>Категория</h4></div>');
+			}	
+			
+			
 		},
 		
+		/*
+		 * Строковой параметр
+		 */
+		stringParam: function(option)
+		{
+			var title = option.title;
+			var desc = option.desc ? '<small style="color:#777">'+option.desc+'</small>' : '';
+			
+			return '<div class="label">'+title+':</div><div class="labeled_small"><input type="text" class="inputPassword" id="nickname" name="nickname" value="" />'+desc+'</div>';
+		},
+
 		/*
 		 * Активируем вкладку
 		 */
@@ -131,6 +165,7 @@ function init()
 			{
 				this.prepareTabContent();
 			};
+			
 
 			// заменяем содержимое
 			$('#content > div.editorPanel').empty().append(this.tabContent);
@@ -321,6 +356,18 @@ var vkPatch =
 	 */
 	settings:
 	{
+		
+		/*
+		 * Типы параметров
+		 */
+		
+		TYPE_BOOL: 'bool',			// булево
+		TYPE_STRING: 'string',
+		TYPE_INT: 'int',
+		TYPE_FLOAT: 'float',
+		TYPE_SET: 'set',			// набор
+		
+		
 		/*
 		 * Категории.
 		 * Контейнер, содержащий все параметры, разбитые на категории, для удобного представления
@@ -356,6 +403,11 @@ var vkPatch =
 				// набор: массив возможных значений
 				set: null,
 
+				
+				// название и описание
+				title: null,
+				desc: null,
+				
 				/*
 				 * Чтение параметра из памяти
 				 */
@@ -367,58 +419,75 @@ var vkPatch =
 					/*
 					 * Требуемый тип значения узнаём по типу значения по-умолчанию
 					 */
-					if ($$.is.bool(this.def))
+					var type = this.getType();
+					
+					switch(type)
 					{
-						result_value = new Boolean(value);
-					}				
-					else if ($$.is.number(this.def))
-					{
-						var temp_value;
-						/*
-						 * Пытаемся получить число, в зависимости от типа
-						 */
-						if (this.isFloat)
-						{
-							temp_value = parseFloat(value);
-						}
-						else
-						{
-							temp_value = parseInt(value);
-						};
-
-						/*
-						 * Обработка крайних случаев
-						 */
-						if (isNaN(temp_value) || temp_value == Infinity)
-						{
-							temp_value = this.def;
-						}
-						else if (this.min !== null && temp_value < this.min)
-						{
-							temp_value = this.min;
-						}
-						else if (this.max !== null && temp_value > this.max)
-						{
-							temp_value = this.max;
-						}
+						case vkPatch.settings.TYPE_BOOL:
+							
+							result_value = new Boolean(value);
+							
+							break;
 						
-						result_value = temp_value;
-					}
-					else if(this.set !== null) /* набор */
-					{
-						if ($$.exists(this.set,value))
-						{
+						case vkPatch.settings.TYPE_INT:
+						case vkPatch.settings.TYPE_FLOAT:
+							
+							var temp_value;
+							/*
+							 * Пытаемся получить число, в зависимости от типа
+							 */
+							if (type == vkPatch.settings.TYPE_FLOAT)
+							{
+								temp_value = parseFloat(value);
+							}
+							else
+							{
+								temp_value = parseInt(value);
+							};
+
+							/*
+							 * Обработка крайних случаев
+							 */
+							if (isNaN(temp_value) || temp_value == Infinity)
+							{
+								temp_value = this.def;
+							}
+							else if (this.min !== null && temp_value < this.min)
+							{
+								temp_value = this.min;
+							}
+							else if (this.max !== null && temp_value > this.max)
+							{
+								temp_value = this.max;
+							}
+							
+							result_value = temp_value;
+							
+							break;
+							
+						case vkPatch.settings.TYPE_SET:
+							
+							if ($$.exists(this.set,value))
+							{
+								result_value = value;
+							}
+							else
+							{
+								result_value = this.def;
+							};
+							
+							break;
+							
+						case vkPatch.settings.TYPE_STRING:
+							
 							result_value = value;
-						}
-						else
-						{
-							result_value = this.def;
-						}
+							
+							break;
+							
+						default:
+							
+							result_value = value;
 					}
-					else	/*	строка	*/
-					{
-						result_value = value;
-					};
 					
 					return result_value;
 				},
@@ -430,6 +499,38 @@ var vkPatch =
 				{
 					// сохраниние
 					vkPatch.storage.set(this.name, value);				
+				},
+				
+				/*
+				 * Определение типа
+				 */
+				getType: function()
+				{
+					if ($$.is.bool(this.def))				 /* булево */
+					{
+						return vkPatch.settings.TYPE_BOOL;
+					}				
+					else if ($$.is.number(this.def))		/* число */
+					{
+						
+						if (this.isFloat)
+						{
+							return vkPatch.settings.TYPE_FLOAT;			/* с плавающей точкой */
+						}
+						else
+						{
+							return vkPatch.settings.TYPE_INT;			/* целое */
+						};
+
+					}
+					else if(this.set !== null) /* набор */
+					{
+						return vkPatch.settings.TYPE_SET;	/* набор */
+					}
+					else	/*	строка	*/
+					{
+						return vkPatch.settings.TYPE_STRING;	/* строка */
+					};
 				}
 			};
 			
@@ -470,6 +571,7 @@ var vkPatch =
 			{
 				return node;
 			};
+			
 		},
 		
 		
@@ -481,6 +583,23 @@ var vkPatch =
 			var option = new vkPatch.settings.option();
 	
 			return option;
+		},
+		
+		/*
+		 * Добавляем параметры к спискам
+		 */
+		add: function(option)
+		{
+			/*
+			 * Добавляем в соответствующую категорию
+			 */
+			// создаём, если не существует
+			if (!vkPatch.settings.categories.hasOwnProperty(option.category))
+			{
+				vkPatch.settings.categories[option.category] = [];
+			}
+			// добавляем
+			vkPatch.settings.categories[option.category].push(option);
 		}
 	},
 	
@@ -521,6 +640,7 @@ var vkPatch =
 		 */
 		container: [],
 		
+		
 		/*
 		 * Добавление плагина к vkPatch
 		 */
@@ -531,17 +651,41 @@ var vkPatch =
 			
 			
 			/*
-			 * Устанавливаем имя в описания парамтров плагинов
+			 * Устанавливаем имя в описания параметров плагинов
 			 * Оно состоит из имени_плагина.имя_параметра
 			 */
 			for (var optionName in plugin.settings)
 			{
 				if (plugin.settings.hasOwnProperty(optionName))
 				{
-					plugin.settings[optionName].name = plugin.name + '.' + optionName;
+					var option = plugin.settings[optionName];
+					var desc = plugin.lang.settings[optionName];
+					
+					option.name = plugin.name + '.' + optionName;
+					
+					option.title = typeof(desc) == 'string' ? desc : desc[0];
+					option.desc = typeof(desc) == 'string' ? null : desc[1];
+					
 				};
 			};
 			
+			// добавляем к списку в vkPatch
+			vkPatch.settings.add(option);
+			
+			/*
+			 * Получаем локализации
+			 */
+			
+			if (plugin.lang.hasOwnProperty('categories'))
+			{
+				for (var i in plugin.lang.categories)
+				{
+					if (plugins.lang.categories.hasOwnProperty(i))
+					{
+						vkPatch.lang.categories[i] = plugins.lang.categories[i];
+					}
+				}
+			}
 		},
 				
 		/*
@@ -659,6 +803,15 @@ var vkPatch =
 	console: function(mess) {
 		vkPatch.console_browser(mess);
 	},
+	
+	lang:
+	{
+		categories:
+		{
+			main: 'Основные',
+			interface: 'Интерфейс'
+		}
+	}
 
 };
 
