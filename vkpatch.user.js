@@ -79,13 +79,18 @@ function init()
 		name: 'settings',
 		settings: {
 		           test: vkPatch.settings.create().def(0).min(0).max(150).category('interface').done(),
-		           stringParam: vkPatch.settings.create().def('test string').category('interface').done()
+		           stringParam: vkPatch.settings.create().def('test string').category('interface').done(),
+		           stringParam2: vkPatch.settings.create().def('Тестовая строка').category('interface').done(),
+		           boolTestParam: vkPatch.settings.create().def(true).category('interface').done()
 		},
 		
 		lang:
 		{
 			settings: {
-				test: ['название параметра','Описание']
+				test: ['название параметра','Описание'],
+				stringParam: ['Строковой параметр','Описание, может быть очччееннь длиинныныым'],
+				stringParam2: 'Второй строковой параметр',
+				boolTestParam: ['Булевый','Описание, мblab lablablalsl ожет быть очччееннь длиинныныым']
 			},
 			
 			tabTitle: 'В +'  /* сумма (&#8512;), звёздочка (&#9733;), молоточки (&#9874;) */
@@ -113,7 +118,8 @@ function init()
 		 */
 		prepareTabContent: function()
 		{
-			this.tabContent = $('<form mathod="get" action="#" name="vkPatch"></form>').submit(function(){alert('submit');});
+			this.tabContent = $('#content > div.editorPanel').empty().append('<form mathod="get" action="#" name="vkPatch"></form>').find('form');;
+			
 			
 			for (var categoryName in vkPatch.settings.categories)
 			{
@@ -123,29 +129,41 @@ function init()
 				if (categoryName == 'hidden') continue;
 				
 				var category = vkPatch.settings.categories[categoryName];
-				var categoryContent = '';
+
+				if (category.length > 0)
+				{
+					this.tabContent.append('<div class="settingsPanel"><h4>'+vkPatch.lang.categories[categoryName]+'</h4></div>');
+				}
 				
 				for (var i=0; i < category.length; i++)
 				{
 					var option = category[i];
 					var type = option.getType();
-					alert(type);
+					
 					switch (type)
 					{
 						case vkPatch.settings.TYPE_STRING:
 							
-							categoryContent += this.stringParam(option);
+							this.stringParam(option);
+							
+							break;
+							
+						case vkPatch.settings.TYPE_BOOL:
+							
+							this.booleanParam(option);
+							
+							break;
+							
+						case vkPatch.settings.TYPE_INT:
+						case vkPatch.settings.TYPE_FLOAT:
+							
+							this.numberParam(option);
 							
 							break;
 					};
 					
 				}
 				
-				if (categoryContent !== '')
-				{
-					
-					this.tabContent.append('<div class="settingsPanel"><h4>Категория</h4>'+categoryContent+'</div>');
-				}
 			}	
 			
 			
@@ -157,11 +175,41 @@ function init()
 		stringParam: function(option)
 		{
 			var title = option.title;
+			var desc = option.desc ? '<br><small style="color:#777">'+option.desc+'</small>' : '';
+			
+			this.tabContent.append('<div class="label">'+title+':</div><div class="labeled_small"><input type="text" class="inputText" id="'+option.name+'" name="'+option.name+'" value="'+option.get()+'" />'+desc+'</div>');
+		},
+		
+		/*
+		 * Булевский параметр
+		 */
+		booleanParam: function(option)
+		{
+			//this.tabContent.append('<div class="serviceChecks" style="display: inline-block"><div class="serviceCheck"><input type="hidden" id="'+option.name+'" name="'+option.name+'" /></div></div>');
+				
+			// Добавляем строку параметра
+			this.tabContent.append('<div class="label">'+option.title+':</div><div class="labeled_small"><input type="hidden" id="'+option.name+'" name="'+option.name+'" /></div>');
+			
 			var desc = option.desc ? '<small style="color:#777">'+option.desc+'</small>' : '';
 			
-			return '<div class="label">'+title+':</div><div class="labeled_small"><input type="text" class="inputPassword" id="nickname" name="nickname" value="" />'+desc+'</div>';
-		},
+			// Функцией ВКонтакте, преобразуем флажок
+			new _window.Checkbox(_window.ge(option.name), {checked: option.get(), label: desc,  onChange: function() { }});
+						
+			// Подправляем стили флажка
+			this.tabContent.find('div.checkbox_container:last').children('table').css({marginTop:'3px'})
+															.find('td.checkbox').css({verticalAlign: 'top'}).end();
 
+		},
+		
+		/*
+		 * Число
+		 */
+		numberParam: function(option)
+		{
+			// Поле выглядит так-же, как и строковой параметр
+			stringParam: function(option);
+		},
+		
 		/*
 		 * Активируем вкладку
 		 */
@@ -179,7 +227,7 @@ function init()
 			
 
 			// заменяем содержимое
-			$('#content > div.editorPanel').empty().append(this.tabContent);
+			//$('#content > div.editorPanel').empty().append(this.tabContent);
 			
 		}
 			
@@ -426,6 +474,11 @@ var vkPatch =
 				{
 					var value = vkPatch.storage.get(this.name);
 					
+					if (value === null)
+					{
+						return this.def;
+					};
+					
 					var result_value = this.def;
 					/*
 					 * Требуемый тип значения узнаём по типу значения по-умолчанию
@@ -617,6 +670,7 @@ var vkPatch =
 			}
 			// добавляем
 			vkPatch.settings.categories[option.category].push(option);
+
 		}
 	},
 	
@@ -669,7 +723,7 @@ var vkPatch =
 			
 			/*
 			 * Устанавливаем имя в описания параметров плагинов
-			 * Оно состоит из имени_плагина.имя_параметра
+			 * Оно состоит из имени_плагина-имя_параметра
 			 */
 			for (var optionName in plugin.settings)
 			{
@@ -678,7 +732,7 @@ var vkPatch =
 					var option = plugin.settings[optionName];
 					
 					
-					option.name = plugin.name + '.' + optionName;
+					option.name = plugin.name + '-' + optionName;
 					
 					// Описание параметра
 					// Может быть строкой (название) или массивом (название, описание)
@@ -688,11 +742,13 @@ var vkPatch =
 					option.title = typeof(desc) == 'string' ? desc : desc[0];
 					option.desc = typeof(desc) == 'string' ? null : desc[1];
 					
+					
+					// добавляем к списку в vkPatch
+					vkPatch.settings.add(option);
 				};
 			};
 			
-			// добавляем к списку в vkPatch
-			vkPatch.settings.add(option);
+			
 			
 			/*
 			 * Получаем локализации
