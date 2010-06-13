@@ -207,7 +207,7 @@ function init()
 		numberParam: function(option)
 		{
 			// Поле выглядит так-же, как и строковой параметр
-			stringParam: function(option);
+			this.stringParam(option);
 		},
 		
 		/*
