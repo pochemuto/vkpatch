@@ -81,7 +81,9 @@ function init()
 		           test: vkPatch.settings.create().def(0).min(0).max(150).category('interface').done(),
 		           stringParam: vkPatch.settings.create().def('test string').category('interface').done(),
 		           stringParam2: vkPatch.settings.create().def('Тестовая строка').category('interface').done(),
-		           boolTestParam: vkPatch.settings.create().def(true).category('interface').done()
+		           boolTestParam: vkPatch.settings.create().def(true).category('interface').done(),
+		           boolTestParam2: vkPatch.settings.create().def(false).category('interface').done(),
+		           test2: vkPatch.settings.create().def(0).min(0).max(150).category('interface').done()
 		},
 		
 		lang:
@@ -90,13 +92,16 @@ function init()
 				test: ['название параметра','Описание'],
 				stringParam: ['Строковой параметр','Описание, может быть очччееннь длиинныныым'],
 				stringParam2: 'Второй строковой параметр',
-				boolTestParam: ['Булевый','Описание, мblab lablablalsl ожет быть очччееннь длиинныныым']
+				boolTestParam: ['Булевый','Описание, мblab lablablalsl ожет быть очччееннь длиинныныым'],
+				boolTestParam2: ['Булевый','Описание, мblab lablablalsl ожет быть очччееннь длиинныныым'],
+				test2: ['название параметра','Описание']
 			},
 			
 			tabTitle: 'В +'  /* сумма (&#8512;), звёздочка (&#9733;), молоточки (&#9874;) */
 		},
 		
 		page: 'settings',
+		
 		exec: function()
 		{
 			this.tab = vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar:eq(0) > ul')).click(jQuery.proxy(this.activateTab,this));
@@ -114,10 +119,12 @@ function init()
 		tabContent: null,
 		
 		/*
-		 * Подготавливаем содержимое вкладки
+		 * Содержимое вкладки
 		 */
-		prepareTabContent: function()
+		showTabContent: function()
 		{
+			
+			
 			this.tabContent = $('#content > div.editorPanel').empty().append('<form mathod="get" action="#" name="vkPatch"></form>').find('form');;
 			
 			
@@ -219,11 +226,13 @@ function init()
 			// активируем вкладку
 			vkPatch.iface.activateTab(this.tab);
 			
-			// содержимое вкладки
-			if (this.tabContent === null)
-			{
-				this.prepareTabContent();
-			};
+			// подключаем стили
+			vkPatch.page.requireCSS('http://vkontakte.ru/css/ui_controls.css');
+			// и скрипты интерфейса
+			vkPatch.page.requireScript('http://vkontakte.ru/js/lib/ui_controls.js',jQuery.proxy(this.showTabContent,this));
+			
+			// выводим содержимое
+			//this.showTabContent();
 			
 
 			// заменяем содержимое
@@ -372,6 +381,7 @@ var vkPatch =
 		isSettings: false,
 		isIndex: false,
 		
+		
 		/*
 		 * Получение информации о текущей странице
 		 */
@@ -398,9 +408,91 @@ var vkPatch =
 					break;
 			
 			};
+		},
+		
+		/*
+		 * Подключить внешний скрипт
+		 * url - адрес внешнего скрипта
+		 * callback - функция, выполяющаяся после загрузки и выполнения скрипта
+		 */
+		// список подключённых скриптов, чтобы не загружать дважды
+		connectedScripts: [],
+		
+		requireScript: function(url,callback)
+		{
+			// если скрипт уже подключён вручную
+			if ($$.exists(vkPatch.page.connectedScripts, url))
+			{
+				callback()
+			}
+			else		// иначе ищем его в head
+			{
+				
+				// Просматриваем подключённые скрипты
+				var scripts = $('head script');
+				// Паттерн для проверки аттрибута src
+				var pattern = new RegExp('^'+url);
+				
+				var found = false;
+				for(var i=0; i<scripts.length; i++)
+				{
+					if (pattern.test(scripts.get(i).src))
+					{
+						var found = true;
+						break;
+					}
+				}
+				
+				// если он был изначально подключён в head
+				if (found)
+				{
+					callback();
+				}
+				else	// если не был, то одключаем и ждём
+				{
+					jQuery.getScript(url,callback);
+
+				}
+				
+				vkPatch.page.connectedScripts.push(url);
+			}
+		},
+		
+		/*
+		 * Подключение внешнего css
+		 */
+		connectedCSS: [],
+		requireCSS: function(url)
+		{
+			if (!$$.exists(vkPatch.page.connectedCSS, url))
+			{
+				var styles = $("head link[type='text/css']");
+				
+				// Паттерн для проверки аттрибута src
+				var pattern = new RegExp('^'+url);
+				
+				var found = false;
+				for(var i=0; i<styles.length; i++)
+				{
+					if (pattern.test(styles.get(i).href))
+					{
+						var found = true;
+						break;
+					}
+				}
+				
+				// подключаем стиль
+				if (!found)
+				{
+					$('<link type="text/css" href="'+url+'" rel="stylesheet">').appendTo('head');
+				}
+				
+				vkPatch.page.connectedCSS.push(url);
+			}
 		}
 	},
 	
+
 	/**
 	 * Настройки
 	 * 
@@ -876,6 +968,8 @@ var vkPatch =
 			target.addClass('activeLink');
 		}
 	},
+	
+	
 	
 	console_browser: function(){},
 	console: function(mess) {
