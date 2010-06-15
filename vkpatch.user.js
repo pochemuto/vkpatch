@@ -1,6 +1,6 @@
 ﻿// ==UserScript==
 // @name           vkPatch
-// @namespace      http://klinifini.livejournal.com/
+// @namespace      
 // @description    Расширение функционала ВКонтакте.ру
 // @include        http://vkontakte.ru/*
 // ==/UserScript==
@@ -83,7 +83,9 @@ function init()
 		           stringParam2: vkPatch.settings.create().def('Тестовая строка').category('interface').done(),
 		           boolTestParam: vkPatch.settings.create().def(true).category('interface').done(),
 		           boolTestParam2: vkPatch.settings.create().def(false).category('interface').done(),
-		           test2: vkPatch.settings.create().def(0).min(0).max(150).category('interface').done()
+		           test2: vkPatch.settings.create().def(0).min(0).max(150).category('interface').done(),
+		           list: vkPatch.settings.create().def('two').list(['one','two','tree','more']).category('interface').done(),
+		           list2: vkPatch.settings.create().def('more5').list(['one1','two3','tree4','more5','exists','mgahah','test','ops','again']).category('myCat').done()
 		},
 		
 		lang:
@@ -94,7 +96,11 @@ function init()
 				stringParam2: 'Второй строковой параметр',
 				boolTestParam: ['Булевый','Описание, мblab lablablalsl ожет быть очччееннь длиинныныым'],
 				boolTestParam2: ['Булевый','Описание, мblab lablablalsl ожет быть очччееннь длиинныныым'],
-				test2: ['название параметра','Описание']
+				test2: ['название параметра','Описание'],
+				list: ['Список всяких-там',{one:'Первый',two:'Второй',more:'Ещё...'}]
+			},
+			categories: {
+				myCat: 'Категориияя'
 			},
 			
 			tabTitle: 'В +'  /* сумма (&#8512;), звёздочка (&#9733;), молоточки (&#9874;) */
@@ -139,7 +145,7 @@ function init()
 
 				if (category.length > 0)
 				{
-					this.tabContent.append('<div class="settingsPanel"><h4>'+vkPatch.lang.categories[categoryName]+'</h4></div>');
+					this.tabContent.append('<div class="settingsPanel"><h4 style="padding-top: 20px;">'+vkPatch.lang.categories[categoryName]+'</h4></div>');
 				}
 				
 				for (var i=0; i < category.length; i++)
@@ -165,6 +171,12 @@ function init()
 						case vkPatch.settings.TYPE_FLOAT:
 							
 							this.numberParam(option);
+							
+							break;
+							
+						case vkPatch.settings.TYPE_LIST:
+								
+							this.listParam(option);
 							
 							break;
 					};
@@ -217,6 +229,56 @@ function init()
 			this.stringParam(option);
 		},
 		
+		
+		/*
+		 * Список
+		 */
+		listParam: function(option)
+		{
+			// Выбранный вариант
+			var selected = option.get();
+			// Название выбранного варианта
+			var selected_title = selected;
+			var selected_index = 0;
+			
+			
+			
+			var desc = [];
+			
+			// Если не определены описания
+			if (option.desc === null)
+			{
+				option.desc = {};
+			}
+
+			// получаем названия вариантов
+			for (var i=0; i<option.list.length; i++)
+			{
+				// Из описания или если нет, то берём просто имя
+				var title = option.desc[option.list[i]] || option.list[i];
+				
+				
+				desc.push(title);
+				
+				// Нашли выбранный
+				if (option.list[i] == selected)
+				{
+					selected_index = i;
+					selected_title = title;
+				}
+			}
+		
+		
+			this.tabContent.append('<div class="label">'+option.title+':</div><div class="labeled_small" style="padding-top: 9px;"><a id="pp_'+option.name+'" style="cursor: pointer;" onclick="ppShow(\''+option.name+'\');">'+selected_title+'</a><span id="pp_custom_'+option.name+'"></span></div><input type="hidden" id="'+option.name+'" name="'+option.name+'" />');
+			
+			
+			_window.pp_options[option.name] = desc;
+			_window.pp_selected[option.name] = selected_index;
+	
+			
+			
+		},
+		
 		/*
 		 * Активируем вкладку
 		 */
@@ -226,18 +288,34 @@ function init()
 			// активируем вкладку
 			vkPatch.iface.activateTab(this.tab);
 			
+			/*
+			 *	Устанавливаем переменные, необходимые для отображения
+			 *	выпадающего меню 
+			 */
+			
+			_window['pp_options'] = {};
+			_window['pp_selected'] = {};
+			_window['friends_lists'] = {};
+			_window['js_fr_cnt'] = 0;
+			
+			/*
+			 *  Колбек, который вызывается при выборе элемента списка
+			 *  Получаем индекс варианта и устанавливаем по нему значение
+			 */
+			_window.ppCallback = function(pp_tag, index)
+			{
+				// получаем значение по индексу
+				var value = vkPatch.settings.container[pp_tag].list[index];
+				// устанавливаем в скрытое поле
+				$('#'+pp_tag).val(value);
+			};
+			
 			// подключаем стили
-			vkPatch.page.requireCSS('http://vkontakte.ru/css/ui_controls.css');
+			vkPatch.page.requireCSS(['http://vkontakte.ru/css/ui_controls.css','http://vkontakte.ru/css/privacy.css']);
 			// и скрипты интерфейса
-			vkPatch.page.requireScript('http://vkontakte.ru/js/lib/ui_controls.js',jQuery.proxy(this.showTabContent,this));
-			
-			// выводим содержимое
-			//this.showTabContent();
-			
-
-			// заменяем содержимое
-			//$('#content > div.editorPanel').empty().append(this.tabContent);
-			
+			// после подключения всех скриптов выполнится колбек - this.showTabContent
+			vkPatch.page.requireScript(['http://vkontakte.ru/js/lib/ui_controls.js','http://vkontakte.ru/js/friends.js','http://vkontakte.ru/js/privacy.js'],jQuery.proxy(this.showTabContent,this));
+					
 		}
 			
 	});
@@ -412,14 +490,33 @@ var vkPatch =
 		
 		/*
 		 * Подключить внешний скрипт
-		 * url - адрес внешнего скрипта
-		 * callback - функция, выполяющаяся после загрузки и выполнения скрипта
+		 * url - адрес внешнего скрипта, или массив адресов
+		 * callback - функция, выполяющаяся после загрузки и выполнения скриптов
 		 */
 		// список подключённых скриптов, чтобы не загружать дважды
 		connectedScripts: [],
 		
 		requireScript: function(url,callback)
 		{
+
+			// если первым параметром передан массив, то последовательно подключаем все скрипты
+			if ($$.is.array(url))
+			{
+				// запоминаем колбек
+				var _callback = callback;
+				
+				var _urls = url;
+				// подключаем первый из списка
+				url = _urls.shift();
+				// Если ещё остался неподключённый, то меняем колбек для продолжения цепочки
+				if (_urls.length > 0)
+				{
+					callback = function() {vkPatch.page.requireScript(_urls,_callback)};
+				};
+				
+			};
+
+			
 			// если скрипт уже подключён вручную
 			if ($$.exists(vkPatch.page.connectedScripts, url))
 			{
@@ -450,8 +547,8 @@ var vkPatch =
 				}
 				else	// если не был, то одключаем и ждём
 				{
+					vkPatch.console('load script: '+url);
 					jQuery.getScript(url,callback);
-
 				}
 				
 				vkPatch.page.connectedScripts.push(url);
@@ -459,11 +556,22 @@ var vkPatch =
 		},
 		
 		/*
-		 * Подключение внешнего css
+		 * Подключение внешних css
+		 * url - адрес стилевого файла или массив адресов
 		 */
 		connectedCSS: [],
 		requireCSS: function(url)
 		{
+			// Если массив, то перебираем его
+			if ($$.is.array(url))
+			{
+				for(var i=0; i<url.length; i++)
+				{
+					vkPatch.page.requireCSS(url[i]);
+				};
+				return;	// и выходим
+			};
+			
 			if (!$$.exists(vkPatch.page.connectedCSS, url))
 			{
 				var styles = $("head link[type='text/css']");
@@ -488,7 +596,8 @@ var vkPatch =
 				}
 				
 				vkPatch.page.connectedCSS.push(url);
-			}
+			};
+			
 		}
 	},
 	
@@ -526,6 +635,12 @@ var vkPatch =
 		 */
 		categories: {},
 				
+		
+		/*
+		 * Контейнер всех параметров 
+		 */
+		container: {},
+		
 		/*
 		 * Конструктор описания параметра
 		 * Пример создания: vkPatch.settings.create().def(4).min(1).max(10).isFloat().inSett().done();
@@ -763,6 +878,8 @@ var vkPatch =
 			// добавляем
 			vkPatch.settings.categories[option.category].push(option);
 
+			// и в контейнер
+			vkPatch.settings.container[option.name] = option;
 		}
 	},
 	
@@ -850,9 +967,9 @@ var vkPatch =
 			{
 				for (var i in plugin.lang.categories)
 				{
-					if (plugins.lang.categories.hasOwnProperty(i))
+					if (plugin.lang.categories.hasOwnProperty(i))
 					{
-						vkPatch.lang.categories[i] = plugins.lang.categories[i];
+						vkPatch.lang.categories[i] = plugin.lang.categories[i];
 					}
 				}
 			}
