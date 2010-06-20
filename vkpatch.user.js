@@ -15,11 +15,14 @@ _window = window;
 if (typeof(unsafeWindow) != 'undefined')
 {
 	_window = unsafeWindow;
+	document = _window.document;
 };
 
 // Загрузка скрипта
 var jQueryScript = document.createElement('script');
-jQueryScript.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js';
+//jQueryScript.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js';
+//jQueryScript.src = 'http://code.jquery.com/jquery-1.4.2.min.js';
+jQueryScript.src = 'http://localhost/jquery-1.4.2.js';
 jQueryScript.type = 'text/javascript';
 _window.document.getElementsByTagName('head')[0].appendChild(jQueryScript);
 
@@ -125,10 +128,62 @@ function init()
 		tabContent: null,
 		
 		/*
+		 * Активируем вкладку
+		 */
+		activateTab: function()
+		{
+
+			// активируем вкладку
+			vkPatch.iface.activateTab(this.tab);
+			
+			/*
+			 *	Устанавливаем переменные, необходимые для отображения
+			 *	выпадающего меню 
+			 */
+			
+			_window['pp_options'] = {};
+			_window['pp_selected'] = {};
+			//_window['pp_advanced_friends'] = {};
+			//_window['dp_checked'] = {};
+			_window['friends_lists'] = {};
+			//_window['savePrivacy'] = function(){};
+			
+			_window['js_fr_cnt'] = 0;
+			
+			/*
+			 *  Колбек, который вызывается при выборе элемента списка
+			 *  Получаем индекс варианта и устанавливаем по нему значение
+			 */
+			_window.ppCallback = function(pp_tag, index)
+			{
+				// получаем значение по индексу
+				var value = vkPatch.settings.container[pp_tag].list[index];
+				// устанавливаем в скрытое поле
+				$('#'+pp_tag).val(value);
+			};
+			
+			function error(desc, page, line) {
+				   alert('Error description:\t' + desc + '\nPage address:\t' + page + '\nLine number:\t' + line)
+				   return true
+				}
+			//_window.onerror=error;
+				
+			// подключаем стили
+			vkPatch.page.requireCSS(['http://vkontakte.ru/css/ui_controls.css','http://vkontakte.ru/css/privacy.css']);
+			// и скрипты интерфейса
+			// после подключения всех скриптов выполнится колбек - this.showTabContent
+			vkPatch.page.requireScript(['http://vkontakte.ru/js/lib/ui_controls.js','http://vkontakte.ru/js/friends.js','http://vkontakte.ru/js/privacy.js'],jQuery.proxy(this.showTabContent,this));
+					
+		},
+		/*
 		 * Содержимое вкладки
 		 */
 		showTabContent: function()
 		{
+			
+
+			//vkPatch.page.requireScript('http://vkontakte.ru/js/privacy.js', null , true);
+
 			
 			
 			this.tabContent = $('#content > div.editorPanel').empty().append('<form mathod="get" action="#" name="vkPatch"></form>').find('form');;
@@ -268,55 +323,16 @@ function init()
 				}
 			}
 		
-		
+			
 			this.tabContent.append('<div class="label">'+option.title+':</div><div class="labeled_small" style="padding-top: 9px;"><a id="pp_'+option.name+'" style="cursor: pointer;" onclick="ppShow(\''+option.name+'\');">'+selected_title+'</a><span id="pp_custom_'+option.name+'"></span></div><input type="hidden" id="'+option.name+'" name="'+option.name+'" />');
-			
-			
 			_window.pp_options[option.name] = desc;
 			_window.pp_selected[option.name] = selected_index;
 	
 			
 			
-		},
-		
-		/*
-		 * Активируем вкладку
-		 */
-		activateTab: function()
-		{
-
-			// активируем вкладку
-			vkPatch.iface.activateTab(this.tab);
-			
-			/*
-			 *	Устанавливаем переменные, необходимые для отображения
-			 *	выпадающего меню 
-			 */
-			
-			_window['pp_options'] = {};
-			_window['pp_selected'] = {};
-			_window['friends_lists'] = {};
-			_window['js_fr_cnt'] = 0;
-			
-			/*
-			 *  Колбек, который вызывается при выборе элемента списка
-			 *  Получаем индекс варианта и устанавливаем по нему значение
-			 */
-			_window.ppCallback = function(pp_tag, index)
-			{
-				// получаем значение по индексу
-				var value = vkPatch.settings.container[pp_tag].list[index];
-				// устанавливаем в скрытое поле
-				$('#'+pp_tag).val(value);
-			};
-			
-			// подключаем стили
-			vkPatch.page.requireCSS(['http://vkontakte.ru/css/ui_controls.css','http://vkontakte.ru/css/privacy.css']);
-			// и скрипты интерфейса
-			// после подключения всех скриптов выполнится колбек - this.showTabContent
-			vkPatch.page.requireScript(['http://vkontakte.ru/js/lib/ui_controls.js','http://vkontakte.ru/js/friends.js','http://vkontakte.ru/js/privacy.js'],jQuery.proxy(this.showTabContent,this));
-					
 		}
+		
+		
 			
 	});
 
@@ -498,7 +514,8 @@ var vkPatch =
 		
 		requireScript: function(url,callback)
 		{
-
+			callback = callback || function(){};
+			
 			// если первым параметром передан массив, то последовательно подключаем все скрипты
 			if ($$.is.array(url))
 			{
@@ -508,6 +525,7 @@ var vkPatch =
 				var _urls = url;
 				// подключаем первый из списка
 				url = _urls.shift();
+
 				// Если ещё остался неподключённый, то меняем колбек для продолжения цепочки
 				if (_urls.length > 0)
 				{
@@ -516,7 +534,6 @@ var vkPatch =
 				
 			};
 
-			
 			// если скрипт уже подключён вручную
 			if ($$.exists(vkPatch.page.connectedScripts, url))
 			{
@@ -545,15 +562,59 @@ var vkPatch =
 				{
 					callback();
 				}
-				else	// если не был, то одключаем и ждём
+				else	// если не был, то подключаем и ждём
 				{
-					vkPatch.console('load script: '+url);
-					jQuery.getScript(url,callback);
+					vkPatch.console('load script: ');
+
+					//jQuery.getScript(url,callback);
+					
+//					jQuery.ajax({
+//						url: url,
+//						dataType: 'script',
+//						scriptCharset: 'windows-1251',
+//						complete: callback
+//					});
+					
+					
+					/*
+					 * Копипаст с jQuery
+					 * Если использовать jQuery.getScript или jQuery.ajax, то возникает проблема:
+					 * если скрипт находится на vkontakte.ru, то он считается не удалённым (remote = false) и его подключение
+					 * jQuery делает по схеме: скачать, создать тег <script>, записать в тело script содержимое скрипта
+					 * но скрипт получен в битой кодировке, и поэтому может выполняться с ошибками
+					 * Это копипаст метода подключения удалённых скриптов, в этои случае браузеры корректно понимают кодировку
+					 */
+					var head = document.getElementsByTagName("head")[0] || document.documentElement;
+					var script = document.createElement("script");
+					
+					script.src = url;
+					
+					var done = false;
+
+					// Attach handlers for all browsers
+					script.onload = script.onreadystatechange = function() {
+						if ( !done && (!this.readyState ||
+								this.readyState === "loaded" || this.readyState === "complete") ) {
+							done = true;
+							
+							callback();
+							
+							// Handle memory leak in IE
+							script.onload = script.onreadystatechange = null;
+							if ( head && script.parentNode ) {
+								head.removeChild( script );
+							}
+						}
+					}
+					
+					head.insertBefore( script, head.firstChild );
+
 				}
 				
 				vkPatch.page.connectedScripts.push(url);
 			}
 		},
+
 		
 		/*
 		 * Подключение внешних css
