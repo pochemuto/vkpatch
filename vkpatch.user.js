@@ -21,8 +21,7 @@ if (typeof(unsafeWindow) != 'undefined')
 // Загрузка скрипта
 var jQueryScript = document.createElement('script');
 //jQueryScript.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js';
-//jQueryScript.src = 'http://code.jquery.com/jquery-1.4.2.min.js';
-jQueryScript.src = 'http://localhost/jquery-1.4.2.js';
+jQueryScript.src = 'http://code.jquery.com/jquery-1.4.2.min.js';
 jQueryScript.type = 'text/javascript';
 _window.document.getElementsByTagName('head')[0].appendChild(jQueryScript);
 
@@ -162,11 +161,6 @@ function init()
 				$('#'+pp_tag).val(value);
 			};
 			
-			function error(desc, page, line) {
-				   alert('Error description:\t' + desc + '\nPage address:\t' + page + '\nLine number:\t' + line)
-				   return true
-				}
-			//_window.onerror=error;
 				
 			// подключаем стили
 			vkPatch.page.requireCSS(['http://vkontakte.ru/css/ui_controls.css','http://vkontakte.ru/css/privacy.css']);
@@ -186,7 +180,7 @@ function init()
 
 			
 			
-			this.tabContent = $('#content > div.editorPanel').empty().append('<form mathod="get" action="#" name="vkPatch"></form>').find('form');;
+			this.tabContent = $('#content > div.editorPanel').empty().append('<form mathod="get" action="#" name="vkPatchSettings" id="vkPatchSettings"></form>').find('form');;
 			
 			
 			for (var categoryName in vkPatch.settings.categories)
@@ -238,9 +232,30 @@ function init()
 					
 				}
 				
-			}	
+			};
 			
 			
+			this.tabContent.append(
+					$('<div class="buttons"></div>').append(
+								vkPatch.iface.newButton('Сохранить', this.save)
+					)
+				);
+			
+		},
+		
+		/*
+		 * Сохранение параметров
+		 */
+		
+		save: function()
+		{
+			var serializedForm = $('#vkPatchSettings').serializeArray();
+
+			for (var i=0; i<serializedForm.length; i++)
+			{
+				vkPatch.settings.container[serializedForm[i].name].set(serializedForm[i].value);
+			}
+			alert('saved');
 		},
 		
 		/*
@@ -568,14 +583,6 @@ var vkPatch =
 
 					//jQuery.getScript(url,callback);
 					
-//					jQuery.ajax({
-//						url: url,
-//						dataType: 'script',
-//						scriptCharset: 'windows-1251',
-//						complete: callback
-//					});
-					
-					
 					/*
 					 * Копипаст с jQuery
 					 * Если использовать jQuery.getScript или jQuery.ajax, то возникает проблема:
@@ -757,7 +764,7 @@ var vkPatch =
 					{
 						case vkPatch.settings.TYPE_BOOL:
 							
-							result_value = new Boolean(value);
+							result_value = (value == true);
 							
 							break;
 						
@@ -797,8 +804,8 @@ var vkPatch =
 							
 							break;
 							
-						case vkPatch.settings.TYPE_SET:
-							
+						case vkPatch.settings.TYPE_LIST:
+
 							if ($$.exists(this.list,value))
 							{
 								result_value = value;
@@ -1144,6 +1151,21 @@ var vkPatch =
 			
 			// Добавляем нашему
 			target.addClass('activeLink');
+		},
+		
+		/*
+		 * Создание кнопка (jQuery-объект)
+		 * label - Надпись
+		 * [action] - onclick действие
+		 */
+		newButton: function(label, action)
+		{
+			var button = $('<ul class="nNav"><li><b class="nc"><b class="nc1"><b></b></b><b class="nc2"><b></b></b></b><span class="ncc"><a href="javascript:void(0)">'+label+'</a></span><b class="nc"><b class="nc2"><b></b></b><b class="nc1"><b></b></b></b></li></ul>');
+			if (action)
+			{
+				button.find('a').click(action);
+			}
+			return button;
 		}
 	},
 	
