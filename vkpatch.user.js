@@ -105,7 +105,8 @@ function init()
 				myCat: 'Категориияя'
 			},
 			
-			tabTitle: 'В +'  /* сумма (&#8512;), звёздочка (&#9733;), молоточки (&#9874;) */
+			tabTitle: 'В +'  /* сумма (&#8512;), звёздочка (&#9733;), молоточки (&#9874;) */,
+			saved: 'Настройки сохранены'
 		},
 		
 		page: 'settings',
@@ -135,6 +136,7 @@ function init()
 			// активируем вкладку
 			vkPatch.iface.activateTab(this.tab);
 			
+			
 			/*
 			 *	Устанавливаем переменные, необходимые для отображения
 			 *	выпадающего меню 
@@ -149,19 +151,8 @@ function init()
 			
 			_window['js_fr_cnt'] = 0;
 			
-			/*
-			 *  Колбек, который вызывается при выборе элемента списка
-			 *  Получаем индекс варианта и устанавливаем по нему значение
-			 */
-			_window.ppCallback = function(pp_tag, index)
-			{
-				// получаем значение по индексу
-				var value = vkPatch.settings.container[pp_tag].list[index];
-				// устанавливаем в скрытое поле
-				$('#'+pp_tag).val(value);
-			};
 			
-				
+			
 			// подключаем стили
 			vkPatch.page.requireCSS(['http://vkontakte.ru/css/ui_controls.css','http://vkontakte.ru/css/privacy.css']);
 			// и скрипты интерфейса
@@ -176,11 +167,22 @@ function init()
 		{
 			
 
-			//vkPatch.page.requireScript('http://vkontakte.ru/js/privacy.js', null , true);
+			/*
+			 *  Колбек, который вызывается при выборе элемента списка
+			 *  Получаем индекс варианта и устанавливаем по нему значение
+			 */
+			_window.ppCallback = function(pp_tag, index)
+			{
+				// получаем значение по индексу
+				var value = vkPatch.settings.container[pp_tag].list[index];
+				// устанавливаем в скрытое поле
+				$('#'+pp_tag).val(value);
+			};
+			
 
 			
 			
-			this.tabContent = $('#content > div.editorPanel').empty().append('<form mathod="get" action="#" name="vkPatchSettings" id="vkPatchSettings"></form>').find('form');;
+			this.tabContent = $('#content > div.editorPanel').empty().append('<form mathod="get" action="#" name="vkPatchSettings" id="vkPatchSettings"></form>').find('form');
 			
 			
 			for (var categoryName in vkPatch.settings.categories)
@@ -235,9 +237,10 @@ function init()
 			};
 			
 			
+			// Кнопка "сохранить"
 			this.tabContent.append(
 					$('<div class="buttons"></div>').append(
-								vkPatch.iface.newButton('Сохранить', this.save)
+								vkPatch.iface.newButton('Сохранить', jQuery.proxy(this.save,this))
 					)
 				);
 			
@@ -254,8 +257,14 @@ function init()
 			for (var i=0; i<serializedForm.length; i++)
 			{
 				vkPatch.settings.container[serializedForm[i].name].set(serializedForm[i].value);
+				$('#'+serializedForm[i].name).val(vkPatch.settings.container[serializedForm[i].name].get());
 			}
-			alert('saved');
+
+			
+			// Выводим сообщение
+			$('#messageWrap').remove();	// удаляем старое
+			vkPatch.iface.newInlineMessage(this.lang.saved).insertBefore('#content > div.editorPanel');
+			$(_window).scrollTop(0);
 		},
 		
 		/*
@@ -342,9 +351,7 @@ function init()
 			this.tabContent.append('<div class="label">'+option.title+':</div><div class="labeled_small" style="padding-top: 9px;"><a id="pp_'+option.name+'" style="cursor: pointer;" onclick="ppShow(\''+option.name+'\');">'+selected_title+'</a><span id="pp_custom_'+option.name+'"></span></div><input type="hidden" id="'+option.name+'" name="'+option.name+'" />');
 			_window.pp_options[option.name] = desc;
 			_window.pp_selected[option.name] = selected_index;
-	
-			
-			
+				
 		}
 		
 		
@@ -420,7 +427,6 @@ var vkPatch =
 			 * copywrited 2005 by Bob Ippolito.
 			 */
 			(function($){function toIntegersAtLease(n){return n<10?"0"+n:n}Date.prototype.toJSON=function(date){return this.getUTCFullYear()+"-"+toIntegersAtLease(this.getUTCMonth())+"-"+toIntegersAtLease(this.getUTCDate())};var escapeable=/["\\\x00-\x1f\x7f-\x9f]/g;var meta={"\b":"\\b","\t":"\\t","\n":"\\n","\f":"\\f","\r":"\\r",'"':'\\"',"\\":"\\\\"};$.quoteString=function(string){if(escapeable.test(string)){return'"'+string.replace(escapeable,function(a){var c=meta[a];if(typeof c==="string"){return c}c=a.charCodeAt();return"\\u00"+Math.floor(c/16).toString(16)+(c%16).toString(16)})+'"'}return'"'+string+'"'};$.toJSON=function(o,compact){var type=typeof(o);if(type=="undefined"){return"undefined"}else{if(type=="number"||type=="boolean"){return o+""}else{if(o===null){return"null"}}}if(type=="string"){return $.quoteString(o)}if(type=="object"&&typeof o.toJSON=="function"){return o.toJSON(compact)}if(type!="function"&&typeof(o.length)=="number"){var ret=[];for(var i=0;i<o.length;i++){ret.push($.toJSON(o[i],compact))}if(compact){return"["+ret.join(",")+"]"}else{return"["+ret.join(", ")+"]"}}if(type=="function"){throw new TypeError("Unable to convert object of type 'function' to json.")}var ret=[];for(var k in o){var name;type=typeof(k);if(type=="number"){name='"'+k+'"'}else{if(type=="string"){name=$.quoteString(k)}else{continue}}var val=$.toJSON(o[k],compact);if(typeof(val)!="string"){continue}if(compact){ret.push(name+":"+val)}else{ret.push(name+": "+val)}}return"{"+ret.join(", ")+"}"};$.compactJSON=function(o){return $.toJSON(o,true)};$.evalJSON=function(src){return eval("("+src+")")};$.secureEvalJSON=function(src){var filtered=src;filtered=filtered.replace(/\\["\\\/bfnrtu]/g,"@");filtered=filtered.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,"]");filtered=filtered.replace(/(?:^|:|,)(?:\s*\[)+/g,"");if(/^[\],:{}\s]*$/.test(filtered)){return eval("("+src+")")}else{throw new SyntaxError("Error parsing JSON, source is not valid.")}}})(jQuery);(function(){var a=false,b=/xyz/.test(function(){xyz})?/\b_super\b/:/.*/;this.Class=function(){};Class.extend=function(g){var f=this.prototype;a=true;var e=new this();a=false;for(var d in g){e[d]=typeof g[d]=="function"&&typeof f[d]=="function"&&b.test(g[d])?(function(h,i){return function(){var k=this._super;this._super=f[h];var j=i.apply(this,arguments);this._super=k;return j}})(d,g[d]):g[d]}function c(){if(!a&&this.init){this.init.apply(this,arguments)}}c.prototype=e;c.constructor=c;c.extend=arguments.callee;return c}})();
-			
 			
 			vkPatch.load.step2();
 		},
@@ -1154,9 +1160,10 @@ var vkPatch =
 		},
 		
 		/*
-		 * Создание кнопка (jQuery-объект)
+		 * Создание кнопка
 		 * label - Надпись
 		 * [action] - onclick действие
+		 * @return jQuery-объект
 		 */
 		newButton: function(label, action)
 		{
@@ -1166,6 +1173,24 @@ var vkPatch =
 				button.find('a').click(action);
 			}
 			return button;
+		},
+		
+		/*
+		 * Рамка с сообщением
+		 * @return jQuery-объект
+		 */
+		newInlineMessage: function(message)
+		{
+			return $('<div id="messageWrap"><div style="margin: 0px;" class="msg">'+message+'</div></div>');
+		},
+		
+		/*
+		 * Рамка с сообщением об ошибке
+		 * @return jQuery-объект
+		 */
+		newInlineError: function(message)
+		{
+			return $('<div id="messageWrap"><div style="margin: 0px;" id="error">'+message+'</div></div>');
 		}
 	},
 	
