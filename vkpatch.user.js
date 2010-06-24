@@ -12,7 +12,7 @@
 /*
  * vkPatch
  */
-var vkPatch =
+var vkPatch = 
 {
 	init: function()
 	{
@@ -134,6 +134,7 @@ var vkPatch =
 			// Определение браузера и задание специфичный параметров
 			vkPatch.browser.determine();
 			
+			vkPatch.plugins.init();
 			vkPatch.plugins.exec();
 
 			
@@ -447,6 +448,7 @@ var vkPatch =
 				 */
 				get: function()
 				{
+				alert(this.name);
 					var value = vkPatch.storage.get(this.name);
 					
 					if (value === null)
@@ -668,7 +670,13 @@ var vkPatch =
 		
 		get: function(name)
 		{
-			return $.evalJSON(localStorage.getItem(name));
+			var value = localStorage.getItem(name);
+
+			if (value !== null)
+			{
+				value = $.evalJSON(value);
+			}
+			return value;
 		},
 		
 		remove: function(name)
@@ -916,6 +924,34 @@ var vkPatch =
 };
 
 /**
+ * Болванка модуля
+ */
+var module = {
+		/**
+		 * Описания
+		 */
+		name: 'settings',
+		settings: {
+	
+		},
+		
+		lang:
+		{
+			settings: {},
+			categories: {}
+			
+		},
+		
+		page: '',
+		
+
+		exec: function()
+		{
+			
+		}
+};
+
+/**
  * Модуль редактирования настроек
  */
 
@@ -925,11 +961,19 @@ vkPatch.plugins.add({
 	 * Описания
 	 */
 	name: 'settings',
-	settings: {},
+	title: 'Настройки',
+	desc: 'Конфигуратор vkPatch',
+	
+	settings: {
+		groupBy: vkPatch.settings.create().def('category').list(['category','module']).category('main').done()
+	},
 	
 	lang:
 	{
-		settings: {},
+		settings: {
+			groupBy: ['Сортировать настройки',{category:'по категориям',module: 'по модулям'}]
+		},
+		
 		categories: {},
 		
 		tabTitle: 			'В +'  /* сумма (&#8512;), звёздочка (&#9733;), молоточки (&#9874;) */,
@@ -939,10 +983,7 @@ vkPatch.plugins.add({
 	
 	page: 'settings',
 	
-	
-	// тег страницы настроек
-	settingsHash: '#vkpatch',
-	
+
 	exec: function()
 	{
 		this.tab = vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar:eq(0) > ul'),this.settingsHash).click(jQuery.proxy(this.activateTab,this));
@@ -951,6 +992,8 @@ vkPatch.plugins.add({
 		this.checkHash();
 	},
 	
+	// тег страницы настроек
+	settingsHash: '#vkpatch',
 	
 	/**
 	 * Содержание
@@ -1046,14 +1089,14 @@ vkPatch.plugins.add({
 
 			if (category.length > 0)
 			{
-				this.tabContent.append('<div class="settingsPanel"><h4 style="padding-top: 20px;">'+vkPatch.lang.categories[categoryName]+'</h4></div>');
+				this.tabContent.append('<div class="settingsPanel"><h4 style="margin-top: 10px;">'+vkPatch.lang.categories[categoryName]+'</h4></div>');
 			}
 			
 			for (var i=0; i < category.length; i++)
 			{
 				var option = category[i];
 				var type = option.getType();
-				
+
 				switch (type)
 				{
 					case vkPatch.settings.TYPE_STRING:
@@ -1174,12 +1217,13 @@ vkPatch.plugins.add({
 	 */
 	listParam: function(option)
 	{
+
 		// Выбранный вариант
 		var selected = option.get();
+
 		// Название выбранного варианта
 		var selected_title = selected;
 		var selected_index = 0;
-		
 		
 		
 		var desc = [];
@@ -1188,7 +1232,7 @@ vkPatch.plugins.add({
 		if (option.desc === null)
 		{
 			option.desc = {};
-		}
+		};
 
 		// получаем названия вариантов
 		for (var i=0; i<option.list.length; i++)
@@ -1207,7 +1251,7 @@ vkPatch.plugins.add({
 			}
 		}
 	
-		
+
 		this.tabContent.append('<div class="label">'+option.title+':</div><div class="labeled_small" style="padding-top: 9px;"><a id="pp_'+option.name+'" style="cursor: pointer;" onclick="ppShow(\''+option.name+'\');">'+selected_title+'</a><span id="pp_custom_'+option.name+'"></span></div><input type="hidden" id="'+option.name+'" name="'+option.name+'" />');
 		_window.pp_options[option.name] = desc;
 		_window.pp_selected[option.name] = selected_index;
