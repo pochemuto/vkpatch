@@ -119,6 +119,18 @@ var vkPatch =
 			 */
 			(function($){$.toJSON=function(o){if(typeof(JSON)=='object'&&JSON.stringify)return JSON.stringify(o);var type=typeof(o);if(o===null)return"null";if(type=="undefined")return undefined;if(type=="number"||type=="boolean")return o+"";if(type=="string")return $.quoteString(o);if(type=='object'){if(typeof o.toJSON=="function")return $.toJSON(o.toJSON());if(o.constructor===Date){var month=o.getUTCMonth()+1;if(month<10)month='0'+month;var day=o.getUTCDate();if(day<10)day='0'+day;var year=o.getUTCFullYear();var hours=o.getUTCHours();if(hours<10)hours='0'+hours;var minutes=o.getUTCMinutes();if(minutes<10)minutes='0'+minutes;var seconds=o.getUTCSeconds();if(seconds<10)seconds='0'+seconds;var milli=o.getUTCMilliseconds();if(milli<100)milli='0'+milli;if(milli<10)milli='0'+milli;return'"'+year+'-'+month+'-'+day+'T'+hours+':'+minutes+':'+seconds+'.'+milli+'Z"'}if(o.constructor===Array){var ret=[];for(var i=0;i<o.length;i++)ret.push($.toJSON(o[i])||"null");return"["+ret.join(",")+"]"}var pairs=[];for(var k in o){var name;var type=typeof k;if(type=="number")name='"'+k+'"';else if(type=="string")name=$.quoteString(k);else continue;if(typeof o[k]=="function")continue;var val=$.toJSON(o[k]);pairs.push(name+":"+val)}return"{"+pairs.join(", ")+"}"}};$.evalJSON=function(src){if(typeof(JSON)=='object'&&JSON.parse)return JSON.parse(src);return eval("("+src+")")};$.secureEvalJSON=function(src){if(typeof(JSON)=='object'&&JSON.parse)return JSON.parse(src);var filtered=src;filtered=filtered.replace(/\\["\\\/bfnrtu]/g,'@');filtered=filtered.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']');filtered=filtered.replace(/(?:^|:|,)(?:\s*\[)+/g,'');if(/^[\],:{}\s]*$/.test(filtered))return eval("("+src+")");else throw new SyntaxError("Error parsing JSON, source is not valid.");};$.quoteString=function(string){if(string.match(_escapeable)){return'"'+string.replace(_escapeable,function(a){var c=_meta[a];if(typeof c==='string')return c;c=a.charCodeAt();return'\\u00'+Math.floor(c/16).toString(16)+(c%16).toString(16)})+'"'}return'"'+string+'"'};var _escapeable=/["\\\x00-\x1f\x7f-\x9f]/g;var _meta={'\b':'\\b','\t':'\\t','\n':'\\n','\f':'\\f','\r':'\\r','"':'\\"','\\':'\\\\'}})(jQuery);
 						
+			
+			/**
+			 * jQuery.Rule - Css Rules manipulation, the jQuery way.
+			 * Copyright (c) 2007-2008 Ariel Flesler - aflesler(at)gmail(dot)com | http://flesler.blogspot.com
+			 * Dual licensed under MIT and GPL.
+			 * Date: 02/27/2008
+			 * @author Ariel Flesler
+			 * @version 1.0.1
+			 */
+			(function($){var storageNode=$('<style rel="alternate stylesheet" type="text/css" />').appendTo('head')[0],sheet=storageNode.sheet?'sheet':'styleSheet',storage=storageNode[sheet],rules=storage.rules?'rules':'cssRules',remove=storage.deleteRule?'deleteRule':'removeRule',owner=storage.ownerNode?'ownerNode':'owningElement',reRule=/^([^{]+)\{([^}]*)\}/m,reStyle=/([^:]+):([^;}]+)/;storage.disabled=true;var $rule=$.rule=function(r,c){if(!(this instanceof $rule))return new $rule(r,c);this.sheets=$rule.sheets(c);if(r&&reRule.test(r))r=$rule.clean(r);if(typeof r=='object'&&!r.exec)return this.setArray(r.get?r.get():r.splice?r:[r]);this.setArray(this.sheets.cssRules().get());return r?this.filter(r):this};$.extend($rule,{sheets:function(c){var o=c;if(typeof o!='object')o=$.makeArray(document.styleSheets);o=$(o).not(storage);if(typeof c=='string')o=o.ownerNode().filter(c).sheet();return o},rule:function(str){if(str.selectorText)return['',str.selectorText,str.style.cssText];return reRule.exec(str)},appendTo:function(r,ss,skip){switch(typeof ss){case'string':ss=this.sheets(ss);case'object':if(ss[0])ss=ss[0];if(ss[sheet])ss=ss[sheet];if(ss[rules])break;default:if(typeof r=='object')return r;ss=storage}var p;if(!skip&&(p=this.parent(r)))r=this.remove(r,p);var rule=this.rule(r);if(ss.addRule)ss.addRule(rule[1],rule[2]||';');else if(ss.insertRule)ss.insertRule(rule[1]+'{'+rule[2]+'}',ss[rules].length);return ss[rules][ss[rules].length-1]},remove:function(r,p){p=p||this.parent(r);if(p!=storage){var i=p?$.inArray(r,p[rules]):-1;if(i!=-1){r=this.appendTo(r,0,true);p[remove](i)}}return r},clean:function(r){return $.map(r.split('}'),function(txt){if(txt)return $rule.appendTo(txt+'}')})},parent:function(r){if(typeof r=='string'||!$.browser.msie)return r.parentStyleSheet;var par;this.sheets().each(function(){if($.inArray(r,this[rules])!=-1){par=this;return false}});return par},outerText:function(rule){return!rule?'':[rule.selectorText+'{','\t'+rule.style.cssText,'}'].join('\n').toLowerCase()},text:function(rule,txt){if(txt!==undefined)rule.style.cssText=txt;return!rule?'':rule.style.cssText.toLowerCase()}});$rule.fn=$rule.prototype={pushStack:function(rs,sh){var ret=$rule(rs,sh||this.sheets);ret.prevObject=this;return ret},end:function(){return this.prevObject||$rule(0,[])},filter:function(s){var o;if(!s)s=/./;if(s.split){o=$.trim(s).toLowerCase().split(/\s*,\s*/);s=function(){return!!$.grep(this.selectorText.toLowerCase().split(/\s*,\s*/),function(sel){return $.inArray(sel,o)!=-1}).length}}else if(s.exec){o=s;s=function(){return o.test(this.selectorText)}}return this.pushStack($.grep(this,function(e,i){return s.call(e,i)}))},add:function(rs,c){return this.pushStack($.merge(this.get(),$rule(rs,c)))},is:function(s){return!!(s&&this.filter(s).length)},not:function(n,c){n=$rule(n,c);return this.filter(function(){return $.inArray(this,n)==-1})},append:function(s){var rules=this,rule;$.each(s.split(/\s*;\s*/),function(i,v){if((rule=reStyle.exec(v)))rules.css(rule[1],rule[2])});return this},text:function(txt){return!arguments.length?$rule.text(this[0]):this.each(function(){$rule.text(this,txt)})},outerText:function(){return $rule.outerText(this[0])}};$.each({ownerNode:owner,sheet:sheet,cssRules:rules},function(m,a){var many=a==rules;$.fn[m]=function(){return this.map(function(){return many?$.makeArray(this[a]):this[a]})}});$.fn.cssText=function(){return this.filter('link,style').eq(0).sheet().cssRules().map(function(){return $rule.outerText(this)}).get().join('\n')};$.each('remove,appendTo,parent'.split(','),function(k,f){$rule.fn[f]=function(){var args=$.makeArray(arguments),that=this;args.unshift(0);return this.each(function(i){args[0]=this;that[i]=$rule[f].apply($rule,args)||that[i]})}});$.each(('each,index,get,size,eq,slice,map,attr,andSelf,css,show,hide,toggle,'+'queue,dequeue,stop,animate,fadeIn,fadeOut,fadeTo').split(','),function(k,f){$rule.fn[f]=$.fn[f]});$rule.fn.setArray=function(elems){this.length=0;Array.prototype.push.apply(this,elems);return this};var curCSS=$.curCSS;$.curCSS=function(e,a){return('selectorText'in e)?e.style[a]||$.prop(e,a=='opacity'?1:0,'curCSS',0,a):curCSS.apply(this,arguments)};$rule.cache={};var mediator=function(original){return function(elm){var id=elm.selectorText;if(id)arguments[0]=$rule.cache[id]=$rule.cache[id]||{};return original.apply($,arguments)}};$.data=mediator($.data);$.removeData=mediator($.removeData);$(window).unload(function(){$(storage).cssRules().remove()})})(jQuery);
+			
+			
 			vkPatch.load.step2();
 		},
 		
@@ -448,7 +460,6 @@ var vkPatch =
 				 */
 				get: function()
 				{
-				alert(this.name);
 					var value = vkPatch.storage.get(this.name);
 					
 					if (value === null)
@@ -785,14 +796,14 @@ var vkPatch =
 				{
 					plugin.page = [plugin.page];
 				};
-				
+
 				/*
 				 * Определяем необходимость выполнения
 				 */
 				var mustRun = false;
 				for (var j=0; j < plugin.page.length; j++)
 				{
-					var page = plugin.page[i];
+					var page = plugin.page[j];
 					
 					if (	( page instanceof RegExp && page.test(vkPatch.page.path) )	/* задано регулярное выражение */
 						||	( page === '*' )					/* все страницы */
@@ -930,7 +941,9 @@ var module = {
 		/**
 		 * Описания
 		 */
-		name: 'settings',
+		name: 'name',
+		title: 'Название',
+		desc: 'Описание',
 		settings: {
 	
 		},
@@ -965,13 +978,13 @@ vkPatch.plugins.add({
 	desc: 'Конфигуратор vkPatch',
 	
 	settings: {
-		groupBy: vkPatch.settings.create().def('category').list(['category','module']).category('main').done()
+
 	},
 	
 	lang:
 	{
 		settings: {
-			groupBy: ['Сортировать настройки',{category:'по категориям',module: 'по модулям'}]
+
 		},
 		
 		categories: {},
@@ -986,7 +999,7 @@ vkPatch.plugins.add({
 
 	exec: function()
 	{
-		this.tab = vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar:eq(0) > ul'),this.settingsHash).click(jQuery.proxy(this.activateTab,this));
+		this.tab = vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar:eq(0) > ul'),this.settingsHash).click(jQuery.proxy(this.tabClickHandler,this));
 		
 		// Если в адресе есть #vkpath, то активируем вкладку
 		this.checkHash();
@@ -1014,6 +1027,14 @@ vkPatch.plugins.add({
 		{
 			this.activateTab();
 		};
+	},
+	
+	tabClickHandler: function(e,data)
+	{
+		// отменяем обработчик события поумолчанию
+		// чтобы IE не брал страницу из кеша
+		e.preventDefault();
+		this.activateTab();
 	},
 	
 	/*
@@ -1258,6 +1279,41 @@ vkPatch.plugins.add({
 			
 	}
 		
+});
+
+vkPatch.plugins.add({
+		/**
+		 * Описания
+		 */
+		name: 'audioSave',
+		title: 'Скачивание музыки',
+		desc: 'Добавляет кнопку для скачивания музыки',
+		
+		settings: {
+	
+		},
+		
+		lang:
+		{
+			settings: {},
+			categories: {}
+		},
+		
+		page: 'audio',
+		
+
+		exec: function()
+		{
+			this.updatePage();
+		},
+		
+		updatePage: function()
+		{
+			var elements = $('#audios > div');
+			$.rule('.audioTitle').css('width','305px');
+			
+			elements.find('div.duration').before('<div style="margin-left: 7px; padding-top: 0px;" class="duration"><img class="playimg" src="images/play.gif"></div>');
+		}
 });
 
 vkPatch.init();
