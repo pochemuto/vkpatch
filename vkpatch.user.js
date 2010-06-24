@@ -8,362 +8,6 @@
 // Version: 6
 // Site: klinifini.livejournal.com
 
-/*
- * Подключение jQuery 1.4
- */
-_window = window;
-if (typeof(unsafeWindow) != 'undefined')
-{
-	_window = unsafeWindow;
-	document = _window.document;
-};
-
-// Загрузка скрипта
-var jQueryScript = document.createElement('script');
-//jQueryScript.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js';
-jQueryScript.src = 'http://code.jquery.com/jquery-1.4.2.min.js';
-jQueryScript.type = 'text/javascript';
-_window.document.getElementsByTagName('head')[0].appendChild(jQueryScript);
-
-
-/*
- * devToolz 0.2.1
- * расширение объектов
- */
-var devToolz={maxAlerts:5,alertTimeOut:1000,lastAlertTime:0,alertCount:0,alertFreeze:false,alertFunc:alert,replaceAlert:function(){window.alert=devToolz.alert;return this},extendObjects:function(){String.prototype.repeat=function(n){return devToolz.repeat(this,n)};Object.prototype.like=function(obj){return devToolz.compare(this,obj)};Object.prototype.exists=function(obj){return devToolz.exists(this,obj)};Object.prototype.find=function(obj){return devToolz.find(this,obj)};Object.prototype.subtract=function(obj){return devToolz.subtract(this,obj)};Object.prototype.clone=function(){return devToolz.clone(this)};Object.prototype.remove=function(obj){return devToolz.remove(this,obj)};Object.prototype.findAll=function(obj){return devToolz.findAll(this,obj)};Object.prototype.isArray=function(){return devToolz.is.array(this)};Object.prototype.isNumber=function(){return devToolz.is.number(this)};Object.prototype.isString=function(){return devToolz.is.string(this)};Object.prototype.isRegexp=function(){return devToolz.is.regexp(this)};Object.prototype.isFunc=function(){return devToolz.is.func(this)};Object.prototype.dump=function(){return devToolz.dump(this,0)};Array.prototype.dump=function(){return devToolz.dump(this,0)}},repeat:function(str,n){var s='';while(n>0){s+=str;n--}return s},compare:function(obj1,obj2){if(typeof(obj1)=='undefined'&&typeof(obj2)=='undefined')return true;if(typeof(obj1)=='undefined'||typeof(obj2)=='undefined')return false;if(typeof(obj1)!==typeof(obj2))return false;if((typeof(obj1)=='string'||typeof(obj1)=='number'||typeof(obj1)=='boolean')&&obj1==obj2)return true;if(obj1.length!==obj2.length)return false;return(obj1.toString()==obj2.toString())},exists:function(obj,needle){for(var i in obj){if(devToolz.compare(obj[i],needle))return true};return false},find:function(obj,needle){for(var i in obj){if(devToolz.compare(obj[i],needle))return i};return null},findAll:function(obj,needle){var result=[];for(var i in obj){if(devToolz.compare(obj[i],needle))result.push(i)};return result},subtract:function(obj,subtr){var result;if(typeof(obj)=='string'&&typeof(subtr)=='string')return result.replace(new RegExp(subtr,'g'),'');if(typeof(obj)=='number'&&typeof(subtr)=='number')return obj-subtr;if(typeof(obj)=='object'&&obj instanceof Array&&typeof(subtr)=='object'&&subtr instanceof Array){result=[];for(var i=0;i<obj.length;i++){if(!devToolz.exists(subtr,obj[i])){result.push(obj[i])}};return result}result=devToolz.clone(obj);for(var i in obj){if(typeof(subtr[i])!='undefined'&&devToolz.compare(obj[i],subtr[i]))delete(result[i])};return result},remove:function(obj,element){var result;if(typeof(obj)=='string'&&typeof(element)=='string')return result.replace(new RegExp(element,'g'),'');if(typeof(obj)=='number'&&typeof(element)=='number')return obj-element;if(typeof(obj)=='object'&&obj instanceof Array){result=[];for(var i=0;i<obj.length;i++){if(!this.compare(element,obj[i])){result.push(obj[i])}};return result};result=devToolz.clone(obj);for(var i in obj){if(devToolz.compare(obj[i],element))delete result[i]};return result},dump:function(obj,level){if(typeof(obj)=='string'||typeof(obj)=='number'||typeof(obj)=='boolean')return obj;function formatNode(node){switch(typeof(node)){case'string':node="\u201C"+node+"\u201D";break;case'function':if(typeof(node.toSource)=='undefined'){node=node.toString()}else{node=node.toSource()};break;case'object':node=devToolz.dump(node,level+1);break;default:node=node}return node}level=level||0;var result='';var space=devToolz.repeat("\t",level);var node;if(typeof(obj)=='object'&&obj instanceof Array){for(var i=0;i<obj.length;i++)result+="\n"+space+i+': '+formatNode(obj[i])}else{for(var i in obj){if(!obj.hasOwnProperty(i)){continue};result+="\n"+space+'['+i+']: '+formatNode(obj[i])}};if(level==0){result=result.substr(1)};return result},clone:function(obj){if(typeof(obj)=='number'||typeof(obj)=='string'||typeof(obj)=='function'||typeof(obj)=='boolean')return obj;var result;if(devToolz.is.array(obj)){result=[];for(var i=0;i<obj.length;i++){if(devToolz.is.func(obj[i])&&devToolz.exists(devToolz.protoMethods,obj[i]))continue;result.push(devToolz.clone(obj[i]))}}else{result={};for(var i in obj){if(devToolz.is.func(obj[i])&&devToolz.exists(devToolz.protoMethods,obj[i]))continue;result[i]=devToolz.clone(obj[i])}};return result},date:{now:function(){return(new Date().getTime())},elapsedTime:function(old,now){now=now||devToolz.date.now();return(now-old)}},is:{array:function(obj){return(typeof(obj)=='object'&&obj instanceof Array)},string:function(obj){return(typeof(obj)=='string')},number:function(obj){return(typeof(obj)=='number')},bool:function(obj){return(typeof(obj)=='boolean')},func:function(obj){return(typeof(obj)=='function')},regexp:function(obj){return(typeof(obj)=='object'&&obj instanceof RegExp)}},alert:function(message){if(alert.caller!==alert){devToolz.alert(devToolz.dump(message));return};if(this.date.elapsedTime(this.lastAlertTime)<this.alertTimeOut)devToolz.alertCount++;else{devToolz.alertCount=0;devToolz.alertFreeze=false};if(devToolz.alertFreeze){devToolz.lastAlertTime=devToolz.date.now();return};if(devToolz.alertCount>=devToolz.maxAlerts){if(!confirm('Продолжить показ всплывающих окон?')){devToolz.alertFreeze=true}else devToolz.alertCount=0};if(devToolz.alertCount<devToolz.maxAlerts){devToolz.alertFunc.call(window,message)};devToolz.lastAlertTime=devToolz.date.now()}};
-$$ = devToolz;
-
-// Расширение объектов свойствами
-// Лучше отключить - плохая практика раз, Опера не переваривает - два
-//devToolz.extendObjects();
-
-// Подмена алерта
-devToolz.replaceAlert();
-
-// Ожидание
-function jQuery_wait()
-{
-
-    if(typeof(_window.jQuery) == 'undefined')
-	{
-		_window.setTimeout(jQuery_wait,100);
-	}
-	else
-	{
-		$ = _window.jQuery;
-		jQuery = _window.jQuery;
-		
-		init();
-	};
-	
-};
-
-
-
-/*
- * Инициализация скрипта
- */
-function init()
-{
-	/*
-	 * Подключаем модули
-	 */
-	
-	/**
-	 * Модуль редактирования настроек
-	 */
-
-	vkPatch.plugins.add({
-		
-		/**
-		 * Описания
-		 */
-		name: 'settings',
-		settings: {
-		           test: vkPatch.settings.create().def(0).min(0).max(150).category('interface').done(),
-		           stringParam: vkPatch.settings.create().def('test string').category('interface').done(),
-		           stringParam2: vkPatch.settings.create().def('Тестовая строка').category('interface').done(),
-		           boolTestParam: vkPatch.settings.create().def(true).category('interface').done(),
-		           boolTestParam2: vkPatch.settings.create().def(false).category('interface').done(),
-		           test2: vkPatch.settings.create().def(0).min(0).max(150).category('interface').done(),
-		           list: vkPatch.settings.create().def('two').list(['one','two','tree','more']).category('interface').done(),
-		           list2: vkPatch.settings.create().def('more5').list(['one1','two3','tree4','more5','exists','mgahah','test','ops','again']).category('myCat').done(),
-		           obj: vkPatch.settings.create().def({}).done()
-		},
-		
-		lang:
-		{
-			settings: {
-				test: ['название параметра','Описание'],
-				stringParam: ['Строковой параметр','Описание, может быть очччееннь длиинныныым'],
-				stringParam2: 'Второй строковой параметр',
-				boolTestParam: ['Булевый','Описание, мblab lablablalsl ожет быть очччееннь длиинныныым'],
-				boolTestParam2: ['Булевый','Описание, мblab lablablalsl ожет быть очччееннь длиинныныым'],
-				test2: ['название параметра','Описание'],
-				list: ['Список всяких-там',{one:'Первый',two:'Второй',more:'Ещё...'}]
-			},
-			categories: {
-				myCat: 'Категориияя'
-			},
-			
-			tabTitle: 'В +'  /* сумма (&#8512;), звёздочка (&#9733;), молоточки (&#9874;) */,
-			saved: 'Настройки сохранены'
-		},
-		
-		page: 'settings',
-		
-		exec: function()
-		{
-			this.tab = vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar:eq(0) > ul')).click(jQuery.proxy(this.activateTab,this));
-		},
-		
-		
-		/**
-		 * Содержание
-		 */
-		
-		// ссылка на вкладку
-		tab: null,
-		
-		// содержание вкладки
-		tabContent: null,
-		
-		/*
-		 * Активируем вкладку
-		 */
-		activateTab: function()
-		{
-
-			// активируем вкладку
-			vkPatch.iface.activateTab(this.tab);
-			
-			
-			/*
-			 *	Устанавливаем переменные, необходимые для отображения
-			 *	выпадающего меню 
-			 */
-			
-			_window['pp_options'] = {};
-			_window['pp_selected'] = {};
-			//_window['pp_advanced_friends'] = {};
-			//_window['dp_checked'] = {};
-			_window['friends_lists'] = {};
-			//_window['savePrivacy'] = function(){};
-			
-			_window['js_fr_cnt'] = 0;
-			
-			
-			
-			// подключаем стили
-			vkPatch.page.requireCSS(['http://vkontakte.ru/css/ui_controls.css','http://vkontakte.ru/css/privacy.css']);
-			// и скрипты интерфейса
-			// после подключения всех скриптов выполнится колбек - this.showTabContent
-			vkPatch.page.requireScript(['http://vkontakte.ru/js/lib/ui_controls.js','http://vkontakte.ru/js/friends.js','http://vkontakte.ru/js/privacy.js'],jQuery.proxy(this.showTabContent,this));
-					
-		},
-		/*
-		 * Содержимое вкладки
-		 */
-		showTabContent: function()
-		{
-			
-
-			/*
-			 *  Колбек, который вызывается при выборе элемента списка
-			 *  Получаем индекс варианта и устанавливаем по нему значение
-			 */
-			_window.ppCallback = function(pp_tag, index)
-			{
-				// получаем значение по индексу
-				var value = vkPatch.settings.container[pp_tag].list[index];
-				// устанавливаем в скрытое поле
-				$('#'+pp_tag).val(value);
-			};
-			
-
-			
-			
-			this.tabContent = $('#content > div.editorPanel').empty().append('<form mathod="get" action="#" name="vkPatchSettings" id="vkPatchSettings"></form>').find('form');
-			
-			
-			for (var categoryName in vkPatch.settings.categories)
-			{
-				if (!vkPatch.settings.categories.hasOwnProperty(categoryName)) continue;
-				
-				// пропускаем скрытые настройки
-				if (categoryName == 'hidden') continue;
-				
-				var category = vkPatch.settings.categories[categoryName];
-
-				if (category.length > 0)
-				{
-					this.tabContent.append('<div class="settingsPanel"><h4 style="padding-top: 20px;">'+vkPatch.lang.categories[categoryName]+'</h4></div>');
-				}
-				
-				for (var i=0; i < category.length; i++)
-				{
-					var option = category[i];
-					var type = option.getType();
-					
-					switch (type)
-					{
-						case vkPatch.settings.TYPE_STRING:
-							
-							this.stringParam(option);
-							
-							break;
-							
-						case vkPatch.settings.TYPE_BOOL:
-							
-							this.booleanParam(option);
-							
-							break;
-							
-						case vkPatch.settings.TYPE_INT:
-						case vkPatch.settings.TYPE_FLOAT:
-							
-							this.numberParam(option);
-							
-							break;
-							
-						case vkPatch.settings.TYPE_LIST:
-								
-							this.listParam(option);
-							
-							break;
-					};
-					
-				}
-				
-			};
-			
-			
-			// Кнопка "сохранить"
-			this.tabContent.append(
-					$('<div class="buttons"></div>').append(
-								vkPatch.iface.newButton('Сохранить', jQuery.proxy(this.save,this))
-					)
-				);
-			
-		},
-		
-		/*
-		 * Сохранение параметров
-		 */
-		
-		save: function()
-		{
-			var serializedForm = $('#vkPatchSettings').serializeArray();
-
-			for (var i=0; i<serializedForm.length; i++)
-			{
-				vkPatch.settings.container[serializedForm[i].name].set(serializedForm[i].value);
-				$('#'+serializedForm[i].name).val(vkPatch.settings.container[serializedForm[i].name].get());
-			}
-
-			
-			// Выводим сообщение
-			$('#messageWrap').remove();	// удаляем старое
-			vkPatch.iface.newInlineMessage(this.lang.saved).insertBefore('#content > div.editorPanel');
-			$(_window).scrollTop(0);
-		},
-		
-		/*
-		 * Строковой параметр
-		 */
-		stringParam: function(option)
-		{
-			var title = option.title;
-			var desc = option.desc ? '<br><small style="color:#777">'+option.desc+'</small>' : '';
-			
-			this.tabContent.append('<div class="label">'+title+':</div><div class="labeled_small"><input type="text" class="inputText" id="'+option.name+'" name="'+option.name+'" value="'+option.get()+'" />'+desc+'</div>');
-		},
-		
-		/*
-		 * Булевский параметр
-		 */
-		booleanParam: function(option)
-		{
-			//this.tabContent.append('<div class="serviceChecks" style="display: inline-block"><div class="serviceCheck"><input type="hidden" id="'+option.name+'" name="'+option.name+'" /></div></div>');
-				
-			// Добавляем строку параметра
-			this.tabContent.append('<div class="label">'+option.title+':</div><div class="labeled_small"><input type="hidden" id="'+option.name+'" name="'+option.name+'" /></div>');
-			
-			var desc = option.desc ? '<small style="color:#777">'+option.desc+'</small>' : '';
-			
-			// Функцией ВКонтакте, преобразуем флажок
-			new _window.Checkbox(_window.ge(option.name), {checked: option.get(), label: desc,  onChange: function() { }});
-						
-			// Подправляем стили флажка
-			this.tabContent.find('div.checkbox_container:last').children('table').css({marginTop:'3px'})
-															.find('td.checkbox').css({verticalAlign: 'top'}).end();
-
-		},
-		
-		/*
-		 * Число
-		 */
-		numberParam: function(option)
-		{
-			// Поле выглядит так-же, как и строковой параметр
-			this.stringParam(option);
-		},
-		
-		
-		/*
-		 * Список
-		 */
-		listParam: function(option)
-		{
-			// Выбранный вариант
-			var selected = option.get();
-			// Название выбранного варианта
-			var selected_title = selected;
-			var selected_index = 0;
-			
-			
-			
-			var desc = [];
-			
-			// Если не определены описания
-			if (option.desc === null)
-			{
-				option.desc = {};
-			}
-
-			// получаем названия вариантов
-			for (var i=0; i<option.list.length; i++)
-			{
-				// Из описания или если нет, то берём просто имя
-				var title = option.desc[option.list[i]] || option.list[i];
-				
-				
-				desc.push(title);
-				
-				// Нашли выбранный
-				if (option.list[i] == selected)
-				{
-					selected_index = i;
-					selected_title = title;
-				}
-			}
-		
-			
-			this.tabContent.append('<div class="label">'+option.title+':</div><div class="labeled_small" style="padding-top: 9px;"><a id="pp_'+option.name+'" style="cursor: pointer;" onclick="ppShow(\''+option.name+'\');">'+selected_title+'</a><span id="pp_custom_'+option.name+'"></span></div><input type="hidden" id="'+option.name+'" name="'+option.name+'" />');
-			_window.pp_options[option.name] = desc;
-			_window.pp_selected[option.name] = selected_index;
-				
-		}
-		
-		
-			
-	});
-
-	vkPatch.init();
-};
-
-
-
 
 /*
  * vkPatch
@@ -372,18 +16,7 @@ var vkPatch =
 {
 	init: function()
 	{
-		
-		/*
-		 * Определяем, является ли текущая страница, страницей контакта. Это может быть полем редактирования заметки, например.
-		 * Если нет, то прекращаем выполнение vkPatch
-		 */
-		if ($('#vkontakte').length == 0 || $('#vkontakte').get(0).tagName.toUpperCase() != 'HTML')
-		{
-			return;
-		};
-		
-		vkPatch.load.step1();
-
+		vkPatch.load.step0();
 	},
 	
 	/**
@@ -391,14 +24,71 @@ var vkPatch =
 	 */
 	load: 
 	{
+		step0: function()
+		{
+			_window = window;
+			if (typeof(unsafeWindow) != 'undefined')
+			{
+				_window = unsafeWindow;
+				window = _window;
+				document = _window.document;
+			};	
+		
+		
+			/*
+			 * В IE7Pro скрипт выполняется заново, при смене hash (#list).
+			 * Чтобы это предотвратить, при первом выполнении устанавливаем переменную в window
+			 * а если она уже была, что значит что скрипт выполняется повторно для текущего окна, то завершаем выполнение
+			 */
+			if(_window.vkPatchExecuted)
+			{
+				return;
+			};
+			_window.vkPatchExecuted = true;
+		
+			/*
+			 * Определяем, является ли текущая страница, страницей контакта. Это может быть полем редактирования заметки, например.
+			 * Если нет, то прекращаем выполнение vkPatch
+			 */
+			if (! (document.getElementById('vkontakte') && document.getElementById('vkontakte').tagName.toUpperCase() == 'HTML'))
+			{
+				return;
+			};
+			
+			
+			/*
+			 * devToolz 0.2.1
+			 * расширение объектов
+			 */
+			devToolz={maxAlerts:5,alertTimeOut:1000,lastAlertTime:0,alertCount:0,alertFreeze:false,alertFunc:alert,replaceAlert:function(){window.alert=devToolz.alert;return this;},extendObjects:function(){String.prototype.repeat=function(n){return devToolz.repeat(this,n);};Object.prototype.like=function(obj){return devToolz.compare(this,obj);};Object.prototype.exists=function(obj){return devToolz.exists(this,obj);};Object.prototype.find=function(obj){return devToolz.find(this,obj);};Object.prototype.subtract=function(obj){return devToolz.subtract(this,obj);};Object.prototype.clone=function(){return devToolz.clone(this);};Object.prototype.remove=function(obj){return devToolz.remove(this,obj);};Object.prototype.findAll=function(obj){return devToolz.findAll(this,obj);};Object.prototype.isArray=function(){return devToolz.is.array(this);};Object.prototype.isNumber=function(){return devToolz.is.number(this);};Object.prototype.isString=function(){return devToolz.is.string(this);};Object.prototype.isRegexp=function(){return devToolz.is.regexp(this);};Object.prototype.isFunc=function(){return devToolz.is.func(this)};Object.prototype.dump=function(){return devToolz.dump(this,0)};Array.prototype.dump=function(){return devToolz.dump(this,0)}},repeat:function(str,n){var s='';while(n>0){s+=str;n--}return s},compare:function(obj1,obj2){if(typeof(obj1)=='undefined'&&typeof(obj2)=='undefined')return true;if(typeof(obj1)=='undefined'||typeof(obj2)=='undefined')return false;if(typeof(obj1)!==typeof(obj2))return false;if((typeof(obj1)=='string'||typeof(obj1)=='number'||typeof(obj1)=='boolean')&&obj1==obj2)return true;if(obj1.length!==obj2.length)return false;return(obj1.toString()==obj2.toString())},exists:function(obj,needle){for(var i in obj){if(devToolz.compare(obj[i],needle))return true};return false},find:function(obj,needle){for(var i in obj){if(devToolz.compare(obj[i],needle))return i};return null},findAll:function(obj,needle){var result=[];for(var i in obj){if(devToolz.compare(obj[i],needle))result.push(i)};return result},subtract:function(obj,subtr){var result;if(typeof(obj)=='string'&&typeof(subtr)=='string')return result.replace(new RegExp(subtr,'g'),'');if(typeof(obj)=='number'&&typeof(subtr)=='number')return obj-subtr;if(typeof(obj)=='object'&&obj instanceof Array&&typeof(subtr)=='object'&&subtr instanceof Array){result=[];for(var i=0;i<obj.length;i++){if(!devToolz.exists(subtr,obj[i])){result.push(obj[i])}};return result}result=devToolz.clone(obj);for(var i in obj){if(typeof(subtr[i])!='undefined'&&devToolz.compare(obj[i],subtr[i]))delete(result[i])};return result},remove:function(obj,element){var result;if(typeof(obj)=='string'&&typeof(element)=='string')return result.replace(new RegExp(element,'g'),'');if(typeof(obj)=='number'&&typeof(element)=='number')return obj-element;if(typeof(obj)=='object'&&obj instanceof Array){result=[];for(var i=0;i<obj.length;i++){if(!this.compare(element,obj[i])){result.push(obj[i])}};return result};result=devToolz.clone(obj);for(var i in obj){if(devToolz.compare(obj[i],element))delete result[i]};return result},dump:function(obj,level){if(typeof(obj)=='string'||typeof(obj)=='number'||typeof(obj)=='boolean')return obj;function formatNode(node){switch(typeof(node)){case'string':node="\u201C"+node+"\u201D";break;case'function':if(typeof(node.toSource)=='undefined'){node=node.toString()}else{node=node.toSource()};break;case'object':node=devToolz.dump(node,level+1);break;default:node=node}return node}level=level||0;var result='';var space=devToolz.repeat("\t",level);var node;if(typeof(obj)=='object'&&obj instanceof Array){for(var i=0;i<obj.length;i++)result+="\n"+space+i+': '+formatNode(obj[i])}else{for(var i in obj){if(!obj.hasOwnProperty(i)){continue};result+="\n"+space+'['+i+']: '+formatNode(obj[i])}};if(level==0){result=result.substr(1)};return result},clone:function(obj){if(typeof(obj)=='number'||typeof(obj)=='string'||typeof(obj)=='function'||typeof(obj)=='boolean')return obj;var result;if(devToolz.is.array(obj)){result=[];for(var i=0;i<obj.length;i++){if(devToolz.is.func(obj[i])&&devToolz.exists(devToolz.protoMethods,obj[i]))continue;result.push(devToolz.clone(obj[i]))}}else{result={};for(var i in obj){if(devToolz.is.func(obj[i])&&devToolz.exists(devToolz.protoMethods,obj[i]))continue;result[i]=devToolz.clone(obj[i])}};return result},date:{now:function(){return(new Date().getTime())},elapsedTime:function(old,now){now=now||devToolz.date.now();return(now-old)}},is:{array:function(obj){return(typeof(obj)=='object'&&obj instanceof Array)},string:function(obj){return(typeof(obj)=='string')},number:function(obj){return(typeof(obj)=='number')},bool:function(obj){return(typeof(obj)=='boolean')},func:function(obj){return(typeof(obj)=='function')},regexp:function(obj){return(typeof(obj)=='object'&&obj instanceof RegExp)}},alert:function(message){if(alert.caller!==alert){devToolz.alert(devToolz.dump(message));return};if(this.date.elapsedTime(this.lastAlertTime)<this.alertTimeOut)devToolz.alertCount++;else{devToolz.alertCount=0;devToolz.alertFreeze=false};if(devToolz.alertFreeze){devToolz.lastAlertTime=devToolz.date.now();return};if(devToolz.alertCount>=devToolz.maxAlerts){if(!confirm('Продолжить показ всплывающих окон?')){devToolz.alertFreeze=true}else devToolz.alertCount=0};if(devToolz.alertCount<devToolz.maxAlerts){devToolz.alertFunc.call(window,message)};devToolz.lastAlertTime=devToolz.date.now()}};
+			$$ = devToolz;
+			
+			// Расширение объектов свойствами
+			// Лучше отключить - плохая практика раз, Опера не переваривает - два
+			//devToolz.extendObjects();
+	
+			// Подмена алерта
+			devToolz.replaceAlert();
+			
+			/*
+			 * Подключение jQuery
+			 */
+	
+			vkPatch.page.requireScript('http://code.jquery.com/jquery-1.4.2.min.js',vkPatch.load.step1);
+		},
+		
 		/**
 		 * Подключаем необходимые плагины jQuery
 		 */
 		step1: function()
 		{
 		
-			
+			/*
+			 * Определяем jQuery
+			 */
 		
+			jQuery = _window.jQuery;
+			$ = jQuery;
 			/*
 			 * Подключаем необходимые плагины jQuery
 			 */
@@ -428,7 +118,7 @@ var vkPatch =
 			 * copyrighted 2005 by Bob Ippolito.
 			 */
 			(function($){$.toJSON=function(o){if(typeof(JSON)=='object'&&JSON.stringify)return JSON.stringify(o);var type=typeof(o);if(o===null)return"null";if(type=="undefined")return undefined;if(type=="number"||type=="boolean")return o+"";if(type=="string")return $.quoteString(o);if(type=='object'){if(typeof o.toJSON=="function")return $.toJSON(o.toJSON());if(o.constructor===Date){var month=o.getUTCMonth()+1;if(month<10)month='0'+month;var day=o.getUTCDate();if(day<10)day='0'+day;var year=o.getUTCFullYear();var hours=o.getUTCHours();if(hours<10)hours='0'+hours;var minutes=o.getUTCMinutes();if(minutes<10)minutes='0'+minutes;var seconds=o.getUTCSeconds();if(seconds<10)seconds='0'+seconds;var milli=o.getUTCMilliseconds();if(milli<100)milli='0'+milli;if(milli<10)milli='0'+milli;return'"'+year+'-'+month+'-'+day+'T'+hours+':'+minutes+':'+seconds+'.'+milli+'Z"'}if(o.constructor===Array){var ret=[];for(var i=0;i<o.length;i++)ret.push($.toJSON(o[i])||"null");return"["+ret.join(",")+"]"}var pairs=[];for(var k in o){var name;var type=typeof k;if(type=="number")name='"'+k+'"';else if(type=="string")name=$.quoteString(k);else continue;if(typeof o[k]=="function")continue;var val=$.toJSON(o[k]);pairs.push(name+":"+val)}return"{"+pairs.join(", ")+"}"}};$.evalJSON=function(src){if(typeof(JSON)=='object'&&JSON.parse)return JSON.parse(src);return eval("("+src+")")};$.secureEvalJSON=function(src){if(typeof(JSON)=='object'&&JSON.parse)return JSON.parse(src);var filtered=src;filtered=filtered.replace(/\\["\\\/bfnrtu]/g,'@');filtered=filtered.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,']');filtered=filtered.replace(/(?:^|:|,)(?:\s*\[)+/g,'');if(/^[\],:{}\s]*$/.test(filtered))return eval("("+src+")");else throw new SyntaxError("Error parsing JSON, source is not valid.");};$.quoteString=function(string){if(string.match(_escapeable)){return'"'+string.replace(_escapeable,function(a){var c=_meta[a];if(typeof c==='string')return c;c=a.charCodeAt();return'\\u00'+Math.floor(c/16).toString(16)+(c%16).toString(16)})+'"'}return'"'+string+'"'};var _escapeable=/["\\\x00-\x1f\x7f-\x9f]/g;var _meta={'\b':'\\b','\t':'\\t','\n':'\\n','\f':'\\f','\r':'\\r','"':'\\"','\\':'\\\\'}})(jQuery);
-			
+						
 			vkPatch.load.step2();
 		},
 		
@@ -494,6 +184,7 @@ var vkPatch =
 	{
 		string: 'index',
 		path: '',
+		hash: location.hash,
 		isSettings: false,
 		isIndex: false,
 		
@@ -565,14 +256,14 @@ var vkPatch =
 			{
 				
 				// Просматриваем подключённые скрипты
-				var scripts = $('head script');
+				var scripts = document.getElementsByTagName('script');
 				// Паттерн для проверки аттрибута src
 				var pattern = new RegExp('^'+url);
 				
 				var found = false;
 				for(var i=0; i<scripts.length; i++)
 				{
-					if (pattern.test(scripts.get(i).src))
+					if (pattern.test(scripts[i].src))
 					{
 						var found = true;
 						break;
@@ -610,7 +301,7 @@ var vkPatch =
 						if ( !done && (!this.readyState ||
 								this.readyState === "loaded" || this.readyState === "complete") ) {
 							done = true;
-							
+
 							callback();
 							
 							// Handle memory leak in IE
@@ -673,7 +364,8 @@ var vkPatch =
 				vkPatch.page.connectedCSS.push(url);
 			};
 			
-		}
+		},
+		
 	},
 	
 
@@ -1000,7 +692,7 @@ var vkPatch =
 		 */
 		container: [],
 		
-		
+
 		/*
 		 * Добавление плагина к vkPatch
 		 */
@@ -1008,53 +700,65 @@ var vkPatch =
 		{
 			// в контейнер
 			vkPatch.plugins.container.push(plugin);
-			
-			
-			/*
-			 * Устанавливаем имя в описания параметров плагинов
-			 * Оно состоит из имени_плагина-имя_параметра
-			 */
-			for (var optionName in plugin.settings)
-			{
-				if (plugin.settings.hasOwnProperty(optionName))
-				{
-					var option = plugin.settings[optionName];
-					
-					
-					option.name = plugin.name + '-' + optionName;
-					
-					// Описание параметра
-					// Может быть строкой (название) или массивом (название, описание)
-					// Если в lang плагина не найдено, то принимаем просто имя
-					var desc = plugin.lang.settings[optionName] || option.name;
-					
-					option.title = typeof(desc) == 'string' ? desc : desc[0];
-					option.desc = typeof(desc) == 'string' ? null : desc[1];
-					
-					
-					// добавляем к списку в vkPatch
-					vkPatch.settings.add(option);
-				};
-			};
-			
-			
-			
-			/*
-			 * Получаем локализации
-			 */
-			
-			if (plugin.lang.hasOwnProperty('categories'))
-			{
-				for (var i in plugin.lang.categories)
-				{
-					if (plugin.lang.categories.hasOwnProperty(i))
-					{
-						vkPatch.lang.categories[i] = plugin.lang.categories[i];
-					}
-				}
-			}
 		},
 				
+		/*
+		 * Инициализация плагинов.
+		 * Выполняется до выполнения, чтобы плагины были готовы
+		 */
+		init: function()
+		{
+			var plugin;
+			for (var i=0; i<vkPatch.plugins.container.length; i++)
+			{
+				plugin = vkPatch.plugins.container[i];
+								
+				/*
+				 * Устанавливаем имя в описания параметров плагинов
+				 * Оно состоит из имени_плагина-имя_параметра
+				 */
+				for (var optionName in plugin.settings)
+				{
+					if (plugin.settings.hasOwnProperty(optionName))
+					{
+						var option = plugin.settings[optionName];
+						
+						
+						option.name = plugin.name + '-' + optionName;
+						
+						// Описание параметра
+						// Может быть строкой (название) или массивом (название, описание)
+						// Если в lang плагина не найдено, то принимаем просто имя
+						var desc = plugin.lang.settings[optionName] || option.name;
+						
+						option.title = typeof(desc) == 'string' ? desc : desc[0];
+						option.desc = typeof(desc) == 'string' ? null : desc[1];
+						
+						
+						// добавляем к списку в vkPatch
+						vkPatch.settings.add(option);
+					};
+				};
+				
+				
+				/*
+				 * Получаем локализации
+				 */
+				
+				if (plugin.lang.hasOwnProperty('categories'))
+				{
+					for (var j in plugin.lang.categories)
+					{
+						if (plugin.lang.categories.hasOwnProperty(j))
+						{
+							vkPatch.lang.categories[j] = plugin.lang.categories[j];
+						}
+					}
+				}
+				
+			}
+		},
+		
 		/*
 		 * Выполнение
 		 * Производится только на заданой странице, которая указывается параметром page в плагине
@@ -1115,10 +819,11 @@ var vkPatch =
 		 * 
 		 * @return объект A созданного таба
 		 * target - объект списка ul
+		 * href - href ссылки
 		 */
-		addTab:	function(text,target,active)
+		addTab:	function(text,target,href)
 		{
-			active = active || false;
+			href = href || 'javascript:void(0)';
 			target = $(target);
 			var link = $('<a>').append( 
 								$('<b>').addClass('tl1')
@@ -1126,17 +831,10 @@ var vkPatch =
 							 	$('<b>').addClass('tl2')
 							 ).append(
 							 	$('<b>').addClass('tab_word').html(text)
-							 ).attr({href:'javascript:void(0)'});
+							 ).attr({href:href});
 			
 			var li = $('<li>').append(link).appendTo(target);
-			if (active)
-			{
-				vkPatch.iface.activateTab(li);
-				// Удаляем активность у другого таба
-				//target.find('.activeLink').removeClass('activeLink');
-				// и устанавливаем на наш
-				//li.addClass('activeLink');
-			}
+			
 			
 			// возвращается ссылка, чтобы на неё можно было повесить событие
 			return link;
@@ -1173,7 +871,7 @@ var vkPatch =
 		 */
 		newButton: function(label, action)
 		{
-			var button = $('<ul class="nNav"><li><b class="nc"><b class="nc1"><b></b></b><b class="nc2"><b></b></b></b><span class="ncc"><a href="javascript:void(0)">'+label+'</a></span><b class="nc"><b class="nc2"><b></b></b><b class="nc1"><b></b></b></b></li></ul>');
+			var button = $('<ul class="nNav"><li style="padding-right: 7px"><b class="nc"><b class="nc1"><b></b></b><b class="nc2"><b></b></b></b><span class="ncc"><a href="javascript:void(0)">'+label+'</a></span><b class="nc"><b class="nc2"><b></b></b><b class="nc1"><b></b></b></b></li></ul>');
 			if (action)
 			{
 				button.find('a').click(action);
@@ -1215,8 +913,307 @@ var vkPatch =
 			interface: 'Интерфейс'
 		}
 	}
-
 };
 
+/**
+ * Модуль редактирования настроек
+ */
 
-window.setTimeout(jQuery_wait,10);
+vkPatch.plugins.add({
+	
+	/**
+	 * Описания
+	 */
+	name: 'settings',
+	settings: {},
+	
+	lang:
+	{
+		settings: {},
+		categories: {},
+		
+		tabTitle: 			'В +'  /* сумма (&#8512;), звёздочка (&#9733;), молоточки (&#9874;) */,
+		saved: 				'Настройки сохранены',
+		nothingShow: 		'Нет параметров для отображения'
+	},
+	
+	page: 'settings',
+	
+	
+	// тег страницы настроек
+	settingsHash: '#vkpatch',
+	
+	exec: function()
+	{
+		this.tab = vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar:eq(0) > ul'),this.settingsHash).click(jQuery.proxy(this.activateTab,this));
+		
+		// Если в адресе есть #vkpath, то активируем вкладку
+		this.checkHash();
+	},
+	
+	
+	/**
+	 * Содержание
+	 */
+	
+	// ссылка на вкладку
+	tab: null,
+	
+	// содержание вкладки
+	tabContent: null,
+	
+	/*
+	 * Активация вкладки по хешу
+	 */
+	checkHash: function()
+	{
+		if (location.hash == this.settingsHash)
+		{
+			this.activateTab();
+		};
+	},
+	
+	/*
+	 * Активируем вкладку
+	 */
+	activateTab: function()
+	{
+		// активируем вкладку
+		vkPatch.iface.activateTab(this.tab);
+		
+		
+		/*
+		 *	Устанавливаем переменные, необходимые для отображения
+		 *	выпадающего меню 
+		 */
+		
+		_window['pp_options'] = {};
+		_window['pp_selected'] = {};
+		//_window['pp_advanced_friends'] = {};
+		//_window['dp_checked'] = {};
+		_window['friends_lists'] = {};
+		//_window['savePrivacy'] = function(){};
+		
+		_window['js_fr_cnt'] = 0;
+		
+		
+		
+		// подключаем стили
+		vkPatch.page.requireCSS(['http://vkontakte.ru/css/ui_controls.css','http://vkontakte.ru/css/privacy.css']);
+		// и скрипты интерфейса
+		// после подключения всех скриптов выполнится колбек - this.showTabContent
+		vkPatch.page.requireScript(['http://vkontakte.ru/js/lib/ui_controls.js','http://vkontakte.ru/js/friends.js','http://vkontakte.ru/js/privacy.js'],jQuery.proxy(this.showTabContent,this));
+				
+	},
+	/*
+	 * Содержимое вкладки
+	 */
+	showTabContent: function()
+	{
+		
+
+		/*
+		 *  Колбек, который вызывается при выборе элемента списка
+		 *  Получаем индекс варианта и устанавливаем по нему значение
+		 */
+		_window.ppCallback = function(pp_tag, index)
+		{
+			// получаем значение по индексу
+			var value = vkPatch.settings.container[pp_tag].list[index];
+			// устанавливаем в скрытое поле
+			$('#'+pp_tag).val(value);
+		};
+		
+
+		// Удаляем сообщения
+		$('#content > div > div.msg').parent().remove();
+		// очищаем страницу и подготавливаем форму
+		this.tabContent = $('#content > div.editorPanel').empty().append('<form mathod="get" action="#" name="vkPatchSettings" id="vkPatchSettings"></form>').find('form');
+		
+		// Нечего отображать
+		var nothingShow = true;
+		
+		for (var categoryName in vkPatch.settings.categories)
+		{
+			if (!vkPatch.settings.categories.hasOwnProperty(categoryName)) continue;
+			
+			// пропускаем скрытые настройки
+			if (categoryName == 'hidden') continue;
+			
+			nothingShow = false;
+			
+			var category = vkPatch.settings.categories[categoryName];
+
+			if (category.length > 0)
+			{
+				this.tabContent.append('<div class="settingsPanel"><h4 style="padding-top: 20px;">'+vkPatch.lang.categories[categoryName]+'</h4></div>');
+			}
+			
+			for (var i=0; i < category.length; i++)
+			{
+				var option = category[i];
+				var type = option.getType();
+				
+				switch (type)
+				{
+					case vkPatch.settings.TYPE_STRING:
+						
+						this.stringParam(option);
+						
+						break;
+						
+					case vkPatch.settings.TYPE_BOOL:
+						
+						this.booleanParam(option);
+						
+						break;
+						
+					case vkPatch.settings.TYPE_INT:
+					case vkPatch.settings.TYPE_FLOAT:
+						
+						this.numberParam(option);
+						
+						break;
+						
+					case vkPatch.settings.TYPE_LIST:
+							
+						this.listParam(option);
+						
+						break;
+				};
+				
+			}
+			
+		};
+		
+		if (nothingShow) 	/* нет параметров для отображения */
+		{
+			vkPatch.iface.newInlineMessage(this.lang.nothingShow).insertBefore('#content > div.editorPanel');
+		}
+		else
+		{
+			// Кнопка "сохранить"
+			this.tabContent.append(
+					$('<div class="buttons"></div>').append(
+								vkPatch.iface.newButton('Сохранить', jQuery.proxy(this.save,this))
+					)
+				);
+		}
+		
+	},
+	
+	/*
+	 * Сохранение параметров
+	 */
+	
+	save: function()
+	{
+		var serializedForm = $('#vkPatchSettings').serializeArray();
+
+		for (var i=0; i<serializedForm.length; i++)
+		{
+			vkPatch.settings.container[serializedForm[i].name].set(serializedForm[i].value);
+			$('#'+serializedForm[i].name).val(vkPatch.settings.container[serializedForm[i].name].get());
+		}
+
+		
+		// Выводим сообщение
+		$('#messageWrap').remove();	// удаляем старое
+		vkPatch.iface.newInlineMessage(this.lang.saved).insertBefore('#content > div.editorPanel')
+		
+		/* скрываем через заданный интервал */
+			.delay(3000).slideUp('slow');
+		// Прокручиваем страницу наверх
+		$(_window).scrollTop(0);
+	},
+	
+	/*
+	 * Строковой параметр
+	 */
+	stringParam: function(option)
+	{
+		var title = option.title;
+		var desc = option.desc ? '<br><small style="color:#777">'+option.desc+'</small>' : '';
+		
+		this.tabContent.append('<div class="label">'+title+':</div><div class="labeled_small"><input type="text" class="inputText" id="'+option.name+'" name="'+option.name+'" value="'+option.get()+'" />'+desc+'</div>');
+	},
+	
+	/*
+	 * Булевский параметр
+	 */
+	booleanParam: function(option)
+	{
+		//this.tabContent.append('<div class="serviceChecks" style="display: inline-block"><div class="serviceCheck"><input type="hidden" id="'+option.name+'" name="'+option.name+'" /></div></div>');
+			
+		// Добавляем строку параметра
+		this.tabContent.append('<div class="label">'+option.title+':</div><div class="labeled_small"><input type="hidden" id="'+option.name+'" name="'+option.name+'" /></div>');
+		
+		var desc = option.desc ? '<small style="color:#777">'+option.desc+'</small>' : '';
+		
+		// Функцией ВКонтакте, преобразуем флажок
+		new _window.Checkbox(_window.ge(option.name), {checked: option.get(), label: desc,  onChange: function() { }});
+					
+		// Подправляем стили флажка
+		this.tabContent.find('div.checkbox_container:last').children('table').css({marginTop:'3px'})
+														.find('td.checkbox').css({verticalAlign: 'top'}).end();
+
+	},
+	
+	/*
+	 * Число
+	 */
+	numberParam: function(option)
+	{
+		// Поле выглядит так-же, как и строковой параметр
+		this.stringParam(option);
+	},
+	
+	
+	/*
+	 * Список
+	 */
+	listParam: function(option)
+	{
+		// Выбранный вариант
+		var selected = option.get();
+		// Название выбранного варианта
+		var selected_title = selected;
+		var selected_index = 0;
+		
+		
+		
+		var desc = [];
+		
+		// Если не определены описания
+		if (option.desc === null)
+		{
+			option.desc = {};
+		}
+
+		// получаем названия вариантов
+		for (var i=0; i<option.list.length; i++)
+		{
+			// Из описания или если нет, то берём просто имя
+			var title = option.desc[option.list[i]] || option.list[i];
+			
+			
+			desc.push(title);
+			
+			// Нашли выбранный
+			if (option.list[i] == selected)
+			{
+				selected_index = i;
+				selected_title = title;
+			}
+		}
+	
+		
+		this.tabContent.append('<div class="label">'+option.title+':</div><div class="labeled_small" style="padding-top: 9px;"><a id="pp_'+option.name+'" style="cursor: pointer;" onclick="ppShow(\''+option.name+'\');">'+selected_title+'</a><span id="pp_custom_'+option.name+'"></span></div><input type="hidden" id="'+option.name+'" name="'+option.name+'" />');
+		_window.pp_options[option.name] = desc;
+		_window.pp_selected[option.name] = selected_index;
+			
+	}
+		
+});
+
+vkPatch.init();
