@@ -1,5 +1,5 @@
 /*
- * devToolz 0.2
+ * devToolz 0.2.1
  * расширение объектов
  */
 var devToolz = {
@@ -86,7 +86,7 @@ var devToolz = {
 		if (obj1.length !== obj2.length)
 			return false;
 		
-		return (obj1.toSource() == obj2.toSource());
+		return (obj1.toString() == obj2.toString());
 		/*
 		if (!obj1.toSource || !obj2.toSource)
 			return false;

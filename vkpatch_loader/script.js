@@ -8,6 +8,6 @@
 
 // Загрузка скрипта
 var jQueryScript = document.createElement('script');
-jQueryScript.src = 'http://localhost/vkpatch/vkpatch.user.js';
+jQueryScript.src = 'http://localhost/vkpatch/vkpatch.user.js?' + Math.random();
 jQueryScript.type = 'text/javascript';
 window.document.getElementsByTagName('head')[0].appendChild(jQueryScript);

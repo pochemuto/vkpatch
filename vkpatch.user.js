@@ -9,6 +9,9 @@
 // Site: klinifini.livejournal.com
 
 
+
+
+
 /*
  * vkPatch
  */
@@ -148,8 +151,6 @@ var vkPatch =
 			
 			vkPatch.plugins.init();
 			vkPatch.plugins.exec();
-
-			
 		}
 	},
 	
@@ -350,7 +351,6 @@ var vkPatch =
 				};
 				return;	// и выходим
 			};
-			
 			if (!$$.exists(vkPatch.page.connectedCSS, url))
 			{
 				var styles = $("head link[type='text/css']");
@@ -929,7 +929,7 @@ var vkPatch =
 		categories:
 		{
 			main: 'Основные',
-			interface: 'Интерфейс'
+			iface: 'Интерфейс'
 		}
 	}
 };
@@ -1060,7 +1060,7 @@ vkPatch.plugins.add({
 		
 		_window['js_fr_cnt'] = 0;
 		
-		
+		vkP
 		
 		// подключаем стили
 		vkPatch.page.requireCSS(['http://vkontakte.ru/css/ui_controls.css','http://vkontakte.ru/css/privacy.css']);
@@ -1310,9 +1310,9 @@ vkPatch.plugins.add({
 		updatePage: function()
 		{
 			var elements = $('#audios > div');
-			$.rule('.audioTitle').css('width','305px');
-			
-			elements.find('div.duration').before('<div style="margin-left: 7px; padding-top: 0px;" class="duration"><img class="playimg" src="images/play.gif"></div>');
+			var a = addCSSRule('.audioDownload');
+			$(a).css('border','1px solid black');
+			elements.find('div.duration').before('<div style="margin-left: 7px; padding-top: 0px;" class="duration"><img class="audioDownload" src="images/transpx2.png"></div>');
 		}
 });
 

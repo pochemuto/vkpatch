@@ -11,4 +11,5 @@ console.log('store test script Chrome loader');
 var jQueryScript = document.createElement('script');
 jQueryScript.src = 'http://localhost/vkpatch/sources/vkpatch_store_test/vkpatch_store_test.user.js';
 jQueryScript.type = 'text/javascript';
+
 window.document.getElementsByTagName('head')[0].appendChild(jQueryScript);
