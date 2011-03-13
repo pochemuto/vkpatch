@@ -1,0 +1,13 @@
+{
+  "name": "vkPatch",
+  "version": "6",
+  "description": "Скрипты для Вконтакте vkPatch",
+  "icons": {  },
+  "permissions": [],
+  "content_scripts": [
+    {
+      "matches": ["http://vkontakte.ru/*","http://*.vkontakte.ru/*","http://vk.com/*","http://*.vk.com/*"],
+      "js": ["loader.js"]
+    }
+  ]
+}
