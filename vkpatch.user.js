@@ -52,12 +52,11 @@ var vkPatch =
 			 * Определяем, является ли текущая страница, страницей контакта. Это может быть полем редактирования заметки, например.
 			 * Если нет, то прекращаем выполнение vkPatch
 			 */
-			if (! (document.getElementById('vkontakte') && document.getElementById('vkontakte').tagName.toUpperCase() == 'HTML'))
-			{
-				return;
-			};
+//			if (! (document.getElementById('vkontakte') && document.getElementById('vkontakte').tagName.toUpperCase() == 'HTML'))
+//			{
+//				return;
+//			};
 
-			
 			/*
 			 * devToolz 0.2.1
 			 * расширение объектов
@@ -78,7 +77,6 @@ var vkPatch =
 		 */
 		step1: function()
 		{
-			console.log('step1');
 			/*
 			 * Определяем jQuery
 			 */
@@ -623,6 +621,7 @@ var vkPatch =
 			this.list = function(list)
 			{
 				node.list = list;
+				node.def = list[0];
 				return this;
 			}
 			
@@ -831,7 +830,7 @@ var vkPatch =
 					{
 						vkPatch.plugins.errorHandler(err.name + ': ' + err.message,null,'exception',null);
 					}
-					//_window.onerror = oldHandler
+					_window.onerror = oldHandler
 				};
 					
 			};
@@ -839,8 +838,7 @@ var vkPatch =
 		
 		errorHandler: function(desc,page,line,chr)
 		{
-			alert('Error. Plugin ' + vkPatch.plugins.current.name + '. ' + desc + ', line: ' + line);
-			vkpatch.console('Error. Plugin ' + vkPatch.plugins.current.name + '. ' + desc + ', line: ' + line);
+			vkPatch.console('Error. Plugin ' + vkPatch.plugins.current.name + '. ' + desc + ', line: ' + line);
 			return true;
 		}
 	},
@@ -1089,8 +1087,6 @@ vkPatch.plugins.add({
 	 */
 	showTabContent: function()
 	{
-		
-		alert(a);
 		/*
 		 *  Колбек, который вызывается при выборе элемента списка
 		 *  Получаем индекс варианта и устанавливаем по нему значение
