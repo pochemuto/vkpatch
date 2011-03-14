@@ -27,7 +27,6 @@ var vkPatch =
 	{
 		step0: function()
 		{
-			
 			_window = window;
 			if (typeof(unsafeWindow) != 'undefined')
 			{
@@ -404,6 +403,7 @@ var vkPatch =
 		TYPE_INT: 'int',
 		TYPE_FLOAT: 'float',
 		TYPE_LIST: 'list',			// набор
+		TYPE_BUTTON: 'button',		// кнопка
 		TYPE_OBJECT: 'object',		// объект. нет проверок
 		
 		
@@ -447,7 +447,9 @@ var vkPatch =
 				
 				// набор: массив возможных значений
 				list: null,
-
+				
+				// обработчик для параметра-кнопки
+				buttonHandler: null,
 				
 				// название и описание
 				title: null,
@@ -556,7 +558,11 @@ var vkPatch =
 				 */
 				getType: function()
 				{
-					if (_.isBoolean(this.def))				 /* булево */
+					if (this.buttonHandler !== null) /* этот параметр - кнопка */ 
+					{
+						return vkPatch.settings.TYPE_BUTTON;
+					}
+					else if (_.isBoolean(this.def))				 /* булево */
 					{
 						return vkPatch.settings.TYPE_BOOL;
 					}				
@@ -623,7 +629,17 @@ var vkPatch =
 				node.list = list;
 				node.def = list[0];
 				return this;
-			}
+			};
+			
+			/**
+			 * Тип параметра - кнопка
+			 * @param {function} handler - действие, которое будет выполнено при нажатии
+			 */
+			this.button = function(handler)
+			{
+				node.buttonHandler = handler;
+				return this;
+			};
 			
 			/*
 			 * Завершаем описание параметра и получаем объект описания
@@ -898,18 +914,28 @@ var vkPatch =
 			target.addClass('activeLink');
 		},
 		
-		/*
+		/**
 		 * Создание кнопка
-		 * label - Надпись
-		 * [action] - onclick действие
-		 * @return jQuery-объект
+		 * @param {string} label - Надпись
+		 * @param {function} action - onclick действие
+		 * @param {string} [id] - id кнопки
+		 * @return {string} html кнопки
 		 */
-		newButton: function(label, action)
+		newButton: function(label, action, id)
 		{
-			var button = $('<ul class="nNav"><li style="padding-right: 7px"><b class="nc"><b class="nc1"><b></b></b><b class="nc2"><b></b></b></b><span class="ncc"><a href="javascript:void(0)">'+label+'</a></span><b class="nc"><b class="nc2"><b></b></b><b class="nc1"><b></b></b></b></li></ul>');
+			if (id) 
+			{
+				id = ' id="' + id + '"';
+			}
+			else
+			{
+				id = '';
+			};
+			
+			var button = $('<div nosorthandle="1" class="button_blue"><button nosorthandle="1"'+id+'>'+label+'</button></div>');
 			if (action)
 			{
-				button.find('a').click(action);
+				button.find('button').click(function(e){e.preventDefault();}).click(action);
 			}
 			return button;
 		},
@@ -1155,6 +1181,12 @@ vkPatch.plugins.add({
 						this.listParam(option);
 						
 						break;
+						
+					case vkPatch.settings.TYPE_BUTTON:
+					
+						this.buttonParam(option);
+						
+						break;
 				};
 				
 			}
@@ -1168,11 +1200,7 @@ vkPatch.plugins.add({
 		else
 		{
 			// Кнопка "сохранить"
-			this.tabContent.append(
-					$('<div class="buttons"></div>').append(
-								vkPatch.iface.newButton('Сохранить', jQuery.proxy(this.save,this))
-					)
-				);
+			this.button('Сохранить', jQuery.proxy(this.save,this));	
 		}
 		
 	},
@@ -1288,6 +1316,36 @@ vkPatch.plugins.add({
 		_window.pp_options[option.name] = desc;
 		_window.pp_selected[option.name] = selected_index;
 			
+	},
+	
+	/**
+	 * Вывести параметр-кнопку
+	 * @param {object} option - описание параметра из vkPatch.settings.
+	 */
+	buttonParam: function(option) 
+	{
+		this.button(option.title, option.buttonHandler, option.name);		
+	},
+	
+	/**
+	 * Вывести кнопку на панель настроек
+	 * @param {string} label - текст кнопки
+	 * @param {function} handler - обработчик нажатия
+	 * @param {string} [id] - id кнопки
+	 */
+	button: function(label, handler, id) 
+	{
+		this.tabContent.append( 
+			$('<div>').css(
+				{
+					'text-align': 'center',
+					'margin': '5px 0px',
+					'clear': 'both'
+				})
+			.append(
+				vkPatch.iface.newButton(label, handler, id)
+			)
+		);
 	}
 		
 });
@@ -1300,8 +1358,9 @@ vkPatch.plugins.add({
 		title: 'Скачивание музыки',
 		desc: 'Добавляет кнопку для скачивания музыки',
 		
-		settings: {
-	
+		settings: 
+		{
+
 		},
 		
 		lang:
