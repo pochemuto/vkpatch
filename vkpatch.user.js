@@ -405,6 +405,7 @@ var vkPatch =
 		TYPE_LIST: 'list',			// набор
 		TYPE_BUTTON: 'button',		// кнопка
 		TYPE_OBJECT: 'object',		// объект. нет проверок
+		TYPE_PANEL: 'panel',			// панель, которая выводится с настройками
 		
 		
 		/*
@@ -450,6 +451,9 @@ var vkPatch =
 				
 				// обработчик для параметра-кнопки
 				buttonHandler: null,
+				
+				// HTML или функция его возвращающая, который будет выведен в табе настроек
+				panel: null,
 				
 				// название и описание
 				title: null,
@@ -558,7 +562,11 @@ var vkPatch =
 				 */
 				getType: function()
 				{
-					if (this.buttonHandler !== null) /* этот параметр - кнопка */ 
+					if (this.panel !== null)	/* панель. Просто выводится в табе настроек */
+					{
+						return vkPatch.settings.TYPE_PANEL;	
+					}
+					else if (this.buttonHandler !== null) /* этот параметр - кнопка */ 
 					{
 						return vkPatch.settings.TYPE_BUTTON;
 					}
@@ -638,6 +646,16 @@ var vkPatch =
 			this.button = function(handler)
 			{
 				node.buttonHandler = handler;
+				return this;
+			};
+			
+			/**
+			 * Тип параметра - панель. Просто выводится на настройках
+			 * @param {string,function} html - код или функция, котора его возвращает
+			 */
+			this.panel = function(html) 
+			{
+				node.panel = html;
 				return this;
 			};
 			
@@ -971,7 +989,8 @@ var vkPatch =
 		categories:
 		{
 			main: 'Основные',
-			iface: 'Интерфейс'
+			iface: 'Интерфейс',
+			audio: 'Аудио'
 		}
 	}
 };
@@ -1187,6 +1206,12 @@ vkPatch.plugins.add({
 						this.buttonParam(option);
 						
 						break;
+						
+					case vkPatch.settings.TYPE_PANEL:
+						
+						this.panelParam(option);
+						
+						break;
 				};
 				
 			}
@@ -1346,6 +1371,24 @@ vkPatch.plugins.add({
 				vkPatch.iface.newButton(label, handler, id)
 			)
 		);
+	},
+	
+	/**
+	 * Вывести панель
+	 * @param {object} option - описание параметра
+	 */
+	panelParam: function(option) 
+	{
+		if (_.isFunction(option.panel))
+		{
+			var panel = option.panel();
+		}
+		else
+		{
+			panel = option.panel;
+		};
+		
+		this.tabContent.append(panel);
 	}
 		
 });
@@ -1360,7 +1403,7 @@ vkPatch.plugins.add({
 		
 		settings: 
 		{
-
+			
 		},
 		
 		lang:
