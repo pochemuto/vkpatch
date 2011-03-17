@@ -945,7 +945,7 @@ var vkPatch =
 		 * @param {string} [id] - id кнопки
 		 * @return {string} html кнопки
 		 */
-		newButton: function(label, action, id)
+		button: function(label, action, id)
 		{
 			if (id) 
 			{
@@ -968,7 +968,7 @@ var vkPatch =
 		 * Рамка с сообщением
 		 * @return jQuery-объект
 		 */
-		newInlineMessage: function(message)
+		inlineMessage: function(message)
 		{
 			return $('<div id="messageWrap"><div style="margin: 0px;" class="msg">'+message+'</div></div>');
 		},
@@ -977,7 +977,7 @@ var vkPatch =
 		 * Рамка с сообщением об ошибке
 		 * @return jQuery-объект
 		 */
-		newInlineError: function(message)
+		inlineError: function(message)
 		{
 			return $('<div id="messageWrap"><div style="margin: 0px;" id="error">'+message+'</div></div>');
 		}
@@ -1234,7 +1234,7 @@ vkPatch.plugins.add({
 		
 		if (nothingShow) 	/* нет параметров для отображения */
 		{
-			vkPatch.iface.newInlineMessage(this.lang.nothingShow).insertBefore('#content > div.editorPanel');
+			vkPatch.iface.inlineMessage(this.lang.nothingShow).insertBefore('#content > div.editorPanel');
 		}
 		else
 		{
@@ -1261,7 +1261,7 @@ vkPatch.plugins.add({
 		
 		// Выводим сообщение
 		$('#messageWrap').remove();	// удаляем старое
-		vkPatch.iface.newInlineMessage(this.lang.saved).insertBefore('#content > div.editorPanel')
+		vkPatch.iface.inlineMessage(this.lang.saved).insertBefore('#content > div.editorPanel')
 		
 		/* скрываем через заданный интервал */
 			.delay(3000).slideUp('slow');
@@ -1400,7 +1400,7 @@ vkPatch.plugins.add({
 					'clear': 'both'
 				})
 			.append(
-				vkPatch.iface.newButton(label, handler, id)
+				vkPatch.iface.button(label, handler, id)
 			)
 		);
 	},
