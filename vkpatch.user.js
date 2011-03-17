@@ -980,6 +980,35 @@ var vkPatch =
 		inlineError: function(message)
 		{
 			return $('<div id="messageWrap"><div style="margin: 0px;" id="error">'+message+'</div></div>');
+		},
+		
+		/**
+		 * Привязать подсказку к элементу
+		 * @param {object} element - элемент DOM
+		 * @param {string} message - текст подсказки
+		 */
+		tooltip: function(element, message) 
+		{
+			element = $(element).get(0);
+			
+			// настройки для простого тултипа - копипаст с settings.php
+			var tooltip = function aboutTooltip(target, options)
+			{
+				return new BaseTooltip(target, extend({
+					className: 'base_tooltip tt_no_footer',
+					shift: [0, 10, 0, 1, 15],
+					contentTemplate: '<div class="tt_content" style="padding: 10px;">{text}</div>'
+				}, options));
+			}
+			
+			
+			// вешаем тултип
+			$(element).mouseover( jQuery.proxy(_window, function() 
+			{
+				_window.showTT($(element).get(0), tooltip, '', {
+			  		params: {text: message}
+				})
+			}));
 		}
 	},
 	
@@ -1277,7 +1306,19 @@ vkPatch.plugins.add({
 		var title = option.title;
 		var desc = option.desc || '';
 		
-		this.categoryContainer.append('<div style="margin: 4px 0px"><div style="display: inline-block; width: 200px;">'+title+':</div><div style="display: inline-block;"><input type="text" class="inputText" id="'+option.name+'" name="'+option.name+'" value="'+option.get()+'" /></div></div>');
+		var label = $('<div style="display: inline-block; width: 200px;">'+title+':</div>');
+		var input = $('<div style="display: inline-block;"><input type="text" class="inputText" id="'+option.name+'" name="'+option.name+'" value="'+option.get()+'" /></div>');
+		
+		this.categoryContainer.append(
+				$('<div style="margin: 4px 0px"></div>').append(label).append(input)
+			);
+		
+		// вешаем подсказку
+		if (option.desc) 
+		{
+			vkPatch.iface.tooltip(label, option.desc);
+		};
+		
 	},
 	
 	/*
@@ -1298,24 +1339,7 @@ vkPatch.plugins.add({
 		
 		if (option.desc)
 		{
-			
-			// функция создания нового тултипа (скопипащена с settings.php)
-			var tooltip = function aboutTooltip(target, options)
-			{
-				return new BaseTooltip(target, extend({
-					className: 'base_tooltip tt_no_footer',
-					shift: [0, 10, 0, 1, 15],
-					contentTemplate: '<div class="tt_content" style="padding: 10px;">{text}</div>'
-				}, options));
-			}
-			
-			// вешаем тултип на чекбокс
-			$('#'+wrapperId+' *:first-child').mouseover( jQuery.proxy(_window, function() 
-			{
-				_window.showTT(_window.ge(wrapperId).firstChild, tooltip, '', {
-			  		params: {text: option.desc}
-				})
-			}));
+			vkPatch.iface.tooltip( $('#' + wrapperId + ' > *:first'), option.desc);
 		}
 	},
 	
@@ -1381,7 +1405,7 @@ vkPatch.plugins.add({
 	 */
 	buttonParam: function(option) 
 	{
-		this.button(option.title, option.buttonHandler, option.name);		
+		this.button(option.title, option.buttonHandler, option.name, option.desc);		
 	},
 	
 	/**
@@ -1389,9 +1413,17 @@ vkPatch.plugins.add({
 	 * @param {string} label - текст кнопки
 	 * @param {function} handler - обработчик нажатия
 	 * @param {string} [id] - id кнопки
+	 * @param {string} desc - описание
 	 */
-	button: function(label, handler, id) 
+	button: function(label, handler, id, desc) 
 	{
+		var button = vkPatch.iface.button(label, handler, id);
+		// посказка
+		if (desc) 
+		{
+			vkPatch.iface.tooltip(button, desc);
+		};
+		
 		this.categoryContainer.append( 
 			$('<div>').css(
 				{
@@ -1399,9 +1431,7 @@ vkPatch.plugins.add({
 					'margin': '5px 0px',
 					'clear': 'both'
 				})
-			.append(
-				vkPatch.iface.button(label, handler, id)
-			)
+			.append( button	)
 		);
 	},
 	
@@ -1434,14 +1464,12 @@ vkPatch.plugins.add({
 		desc: 'Добавляет кнопку для скачивания музыки',
 		
 		settings: 
-		
 		{
-			
 		},
 		
 		lang:
 		{
-			settings: {},
+			settings: {t:['Настрока','Описание\nВторая строка']},
 			categories: {}
 		},
 		
