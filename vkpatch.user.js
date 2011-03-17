@@ -132,7 +132,6 @@ var vkPatch =
 		 */
 		step2: function()
 		{
-			console.log('step2');
 			// Определение страницы
 			vkPatch.page.get();
 	
@@ -378,6 +377,13 @@ var vkPatch =
 		
 	},
 	
+	/**
+	 * Системные методы
+	 */
+	sys: 
+	{
+		extendFunction: function(){}
+	},
 
 	/**
 	 * Настройки
@@ -1076,7 +1082,10 @@ vkPatch.plugins.add({
 	tab: null,
 	
 	// содержание вкладки
-	tabContent: null,
+	tabContainer: null,
+	
+	// элемент, в который добавляется содержимое категории
+	categoryContainer: null,
 	
 	/*
 	 * Активация вкладки по хешу
@@ -1147,8 +1156,9 @@ vkPatch.plugins.add({
 
 		// Удаляем сообщения
 		$('#content > div > div.msg').parent().remove();
+		
 		// очищаем страницу и подготавливаем форму
-		this.tabContent = $('#content > div.editorPanel').empty().append('<form mathod="get" action="#" name="vkPatchSettings" id="vkPatchSettings"></form>').find('form');
+		this.tabContainer = $('#content > div.editorPanel').empty().append('<form mathod="get" action="#" name="vkPatchSettings" id="vkPatchSettings"></form>').find('form');
 		
 		// Нечего отображать
 		var nothingShow = true;
@@ -1166,7 +1176,9 @@ vkPatch.plugins.add({
 
 			if (category.length > 0)
 			{
-				this.tabContent.append('<div class="settingsPanel"><h4 style="margin-top: 10px;">'+vkPatch.lang.categories[categoryName]+'</h4></div>');
+				this.categoryContainer = $('<div class="settingsPanel"></div>');
+				this.categoryContainer.append('<h4 style="margin-top: 10px;">'+(vkPatch.lang.categories[categoryName]||categoryName)+'</h4>');
+				this.tabContainer.append(this.categoryContainer);
 			}
 			
 			for (var i=0; i < category.length; i++)
@@ -1214,7 +1226,9 @@ vkPatch.plugins.add({
 						break;
 				};
 				
-			}
+			};
+			
+			
 			
 		};
 		
@@ -1261,9 +1275,9 @@ vkPatch.plugins.add({
 	stringParam: function(option)
 	{
 		var title = option.title;
-		var desc = option.desc ? '<br><small style="color:#777">'+option.desc+'</small>' : '';
+		var desc = option.desc || '';
 		
-		this.tabContent.append('<div class="label">'+title+':</div><div class="labeled_small"><input type="text" class="inputText" id="'+option.name+'" name="'+option.name+'" value="'+option.get()+'" />'+desc+'</div>');
+		this.categoryContainer.append('<div style="margin: 4px 0px"><div style="display: inline-block; width: 200px;">'+title+':</div><div style="display: inline-block;"><input type="text" class="inputText" id="'+option.name+'" name="'+option.name+'" value="'+option.get()+'" /></div></div>');
 	},
 	
 	/*
@@ -1271,20 +1285,38 @@ vkPatch.plugins.add({
 	 */
 	booleanParam: function(option)
 	{
-		//this.tabContent.append('<div class="serviceChecks" style="display: inline-block"><div class="serviceCheck"><input type="hidden" id="'+option.name+'" name="'+option.name+'" /></div></div>');
-			
-		// Добавляем строку параметра
-		this.tabContent.append('<div class="label">'+option.title+':</div><div class="labeled_small"><input type="hidden" id="'+option.name+'" name="'+option.name+'" /></div>');
 		
-		var desc = option.desc ? '<small style="color:#777">'+option.desc+'</small>' : '';
+		// Добавляем строку параметра
+		var wrapperId = option.name + '_wrapper';
+		this.categoryContainer.append('<div id="'+wrapperId+'"><input type="hidden" id="'+option.name+'" name="'+option.name+'" /></div>');
+		
+		
+		var input = _window.ge(option.name);
 		
 		// Функцией ВКонтакте, преобразуем флажок
-		new _window.Checkbox(_window.ge(option.name), {checked: option.get(), label: desc,  onChange: function() { }});
+		new _window.Checkbox(input, {checked: option.get(), label: option.title,  onChange: function() { }});
 		
-		// Подправляем стили флажка
-		this.tabContent.find('div.checkbox_container:last').children('table').css({marginTop:'3px'})
-														.find('td.checkbox').css({verticalAlign: 'top'}).end();
-
+		if (option.desc)
+		{
+			
+			// функция создания нового тултипа (скопипащена с settings.php)
+			var tooltip = function aboutTooltip(target, options)
+			{
+				return new BaseTooltip(target, extend({
+					className: 'base_tooltip tt_no_footer',
+					shift: [0, 10, 0, 1, 15],
+					contentTemplate: '<div class="tt_content" style="padding: 10px;">{text}</div>'
+				}, options));
+			}
+			
+			// вешаем тултип на чекбокс
+			$('#'+wrapperId+' *:first-child').mouseover( jQuery.proxy(_window, function() 
+			{
+				_window.showTT(_window.ge(wrapperId).firstChild, tooltip, '', {
+			  		params: {text: option.desc}
+				})
+			}));
+		}
 	},
 	
 	/*
@@ -1337,10 +1369,10 @@ vkPatch.plugins.add({
 		}
 	
 
-		this.tabContent.append('<div class="label">'+option.title+':</div><div class="labeled_small" style="padding-top: 9px;"><a id="pp_'+option.name+'" style="cursor: pointer;" onclick="ppShow(\''+option.name+'\');">'+selected_title+'</a><span id="pp_custom_'+option.name+'"></span></div><input type="hidden" id="'+option.name+'" name="'+option.name+'" />');
+		this.categoryContainer.append('<div style="margin: 4px 0px"><div style="display: inline-block; width: 200px">'+option.title+':</div><div style="display: inline-block;padding: 4px;"><a id="pp_'+option.name+'" style="cursor: pointer;" onclick="ppShow(\''+option.name+'\');">'+selected_title+'</a><span id="pp_custom_'+option.name+'"></span></div><input type="hidden" id="'+option.name+'" name="'+option.name+'" /></div>');
 		_window.pp_options[option.name] = desc;
 		_window.pp_selected[option.name] = selected_index;
-			
+
 	},
 	
 	/**
@@ -1360,7 +1392,7 @@ vkPatch.plugins.add({
 	 */
 	button: function(label, handler, id) 
 	{
-		this.tabContent.append( 
+		this.categoryContainer.append( 
 			$('<div>').css(
 				{
 					'text-align': 'center',
@@ -1388,7 +1420,7 @@ vkPatch.plugins.add({
 			panel = option.panel;
 		};
 		
-		this.tabContent.append(panel);
+		this.categoryContainer.append(panel);
 	}
 		
 });
@@ -1402,6 +1434,7 @@ vkPatch.plugins.add({
 		desc: 'Добавляет кнопку для скачивания музыки',
 		
 		settings: 
+		
 		{
 			
 		},
