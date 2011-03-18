@@ -439,9 +439,9 @@ var vkPatch =
 		handle: function(property, before, after, context) 
 		{
 			context = context || this;
-			before = before || jQuery.noop();
-			after = after || jQuery.noop();
-			
+			var before = before || jQuery.noop;
+			var after = after || jQuery.noop;
+
 			vkPatch.sys.extend(property, function(original) 
 			{
 				return function() 
