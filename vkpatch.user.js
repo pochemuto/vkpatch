@@ -132,6 +132,12 @@ var vkPatch =
 		 */
 		step2: function()
 		{
+			// объявление событий
+			vkPatch.events = _.map(vkPatch.events, function(item, name)
+			{
+				return new vkPatch.event(name);
+			});
+
 			// Определение страницы
 			vkPatch.page.get();
 	
@@ -139,6 +145,33 @@ var vkPatch =
 			vkPatch.browser.determine();
 			_window.onhashchange = vkPatch.page.hashchangeHandler;
 			window.onhashchange = function() {alert('change')}
+			
+			vkPatch.sys.handle('stManager.add', function(files, callback) 
+			{
+				var args = [].slice.call(arguments);
+				var files;
+				if (!_.isArray(files)) 
+				{
+					files = [files];
+				}
+				
+				// подменяем колбек - 2й параметр
+				args[1] = function()
+				{
+					if (callback) 
+					{
+						callback();
+					};
+					
+					// для каждого файла вызываем событие, что он загружен
+					_.each(files, function(file)
+					{
+						vkPatch.events.resourceLoaded.raise(file);
+					});
+				};
+
+				return args;
+			});
 			
 			vkPatch.plugins.init();
 			vkPatch.plugins.exec();
@@ -422,7 +455,7 @@ var vkPatch =
 		/**
 		 * Привязывание функций к другой функции. Будет выполнена сначала before, потом оригинальная ф-ия, потом after
 		 * @param {string} property - имя свойства-метода
-		 * @param {Object} before - функция, выполняемая перед оригинальной
+		 * @param {Object} before - функция, выполняемая перед оригинальной. Агрументы, которые возвращает, будут переданы оригинальной ф-ии
 		 * @param {Object} after - функция выполняемая после оригинальной
 		 * @param {object} context - контекст дополнительных ф-ий
 		 * @example
@@ -446,17 +479,72 @@ var vkPatch =
 			{
 				return function() 
 				{
-					before.apply(context, arguments);
+					var args = before.apply(context, arguments);
+					// если ф-ия не вернула новые аргументы, то используем оригинальные
+					if (!args) 
+					{
+						args = arguments;
+					};
+
+					original.apply(this, args);
 					
-					original.apply(this, arguments);
-					
-					after.apply(context, arguments);
+					after.apply(context, args);
 				};
 			});
 			
 		}
 	},
 
+	/**
+	 * Конструктор события vkPatch
+	 * @param {string} name - имя события
+	 */
+	event: function(name)
+	{
+		// обработчики
+		var handlers = [];
+		
+		var name = name;
+		
+		/**
+		 * Повесить обработчик на событие
+		 * @param {function} handler - обработчик
+		 */
+		this.bind = function(handler) 
+		{
+			handlers.push(handler);
+		};
+		
+		/**
+		 * Отвязать обработчик от события
+		 * @param {function} handler - обработчик
+		 */
+		this.unbind = function(handler) 
+		{
+			handlers = _.remove(handlers, handler);
+		};
+		
+		/**
+		 * Вызвать событие. Аргументы будут переданы обработчикам
+		 */
+		this.raise = function() 
+		{
+			console.log(name + ' raised: '+[].join.call(arguments,', '));
+			for (var i=0; i < handlers.length; i++)
+			{
+				handlers[i].apply(this, arguments);
+			};
+		};
+	},
+	
+	/**
+	 * Коллекция событий
+	 */
+	events: 
+	{
+		resourceLoaded: null
+	},
+	
 	/**
 	 * Настройки
 	 * 
@@ -1503,7 +1591,7 @@ vkPatch.plugins.add({
 					'margin': '5px 0px',
 					'clear': 'both'
 				})
-			.append( button	)
+			.append( button )
 		);
 	},
 	
