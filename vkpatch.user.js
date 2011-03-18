@@ -161,9 +161,16 @@ var vkPatch =
 				}
 			});
 			
-			vkPatch.sys.handle('nav.setLoc', null, function(page) 	// смена страницы
+			vkPatch.sys.handle('nav.setLoc', null, function(loc) 	// смена страницы
 			{
-				vkPatch.events.pageChanged.raise(page.split('?')[0]);
+				if (loc.tagName && loc.tagName.toLowerCase() == 'a' && loc.href) {
+      			loc = loc.href;
+    			}
+				else if(typeof(loc) == 'object' && loc[0])	// setLoc может принимать объект с параметрами
+				{
+					loc = loc[0];
+				}
+				vkPatch.events.pageChanged.raise(loc.split('?')[0]);
 			});
 						
 			vkPatch.plugins.init();
@@ -388,7 +395,6 @@ var vkPatch =
 		
 		hashchangeHandler: function()
 		{
-			alert(location.hash);
 			$(this).trigger('hashchange',[location.hash]);
 		}
 		
@@ -1632,7 +1638,7 @@ vkPatch.plugins.add({
 		{
 			'audio' : function()
 			{
-				alert('a')
+				
 			}
 		},
 		
