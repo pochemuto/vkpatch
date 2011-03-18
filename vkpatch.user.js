@@ -159,8 +159,15 @@ var vkPatch =
 					}
 			});
 			
+			
+			
 			vkPatch.plugins.init();
-			vkPatch.plugins.exec();
+			
+			// обработчик на смену страницы - выполнение ф-ий страницы
+			vkPatch.events.pageChanged.bind(vkPatch.plugins.pageChangedHandler);
+			
+			// вызываем событие смены страницы, чтобы выполнились все ф-ии плагинов на текущей странице
+			vkPatch.events.pageChanged.raise(vkPatch.page.string);
 		}
 	},
 	
@@ -221,24 +228,10 @@ var vkPatch =
 			var page = location.pathname.substring(1);	// удаляем ведущий слеш /
 			vkPatch.page.path = page;
 			
-			if (/^id[0-9]*$/.test(page))
-			{
-				vkPatch.page.isIndex = true;
-			}
-			else
-			{
-				// удаляем .php
-				page = page.substring(0,page.length-4);
-			};
+			// удаляем .php
+			page = page.replace('.php','').replace(/[0-9]+$/,'');
+
 			vkPatch.page.string = page;
-			
-			switch(page)
-			{
-				case 'settings':
-					vkPatch.page.isSettings = true;
-					break;
-			
-			};
 		},
 		
 		/*
@@ -528,7 +521,17 @@ var vkPatch =
 	 */
 	events: 
 	{
-		resourceLoaded: null
+		/*
+		 * Подружен файл - скрипт или стиль. Выполняется после выполнения скрипта
+		 * function(имя_ресурса)
+		 */
+		resourceLoaded: null,
+		
+		/*
+		 * Изменена страница
+		 * function(имя_страницы)
+		 */
+		pageChanged: null
 	},
 	
 	/**
@@ -896,7 +899,11 @@ var vkPatch =
 		 */
 		container: [],
 		
-
+		/*
+		 * Ассоциативный массив, где ключ - имя страницы, а значение - массив ф-ий из плагинов
+		 */
+		pages: {},
+	
 		/*
 		 * Добавление плагина к vkPatch
 		 */
@@ -913,10 +920,35 @@ var vkPatch =
 		init: function()
 		{
 			var plugin;
+			
 			for (var i=0; i<vkPatch.plugins.container.length; i++)
 			{
 				plugin = vkPatch.plugins.container[i];
-								
+				
+				/*
+				 * Раскладываем ф-ии плагинов, выполняемые на страницах в pages 
+				 */
+				_.each(plugin.pages, function(func, pages) 
+				{
+						var func = jQuery.proxy(func, plugin);	// задаём ф-ии контекст плагина
+						
+						// страницы могу быть разделены | 
+						var pages = pages.split('|');
+						
+						_.each(pages, function(p) 
+						{
+							p = p.replace(/(^\s+)|(\s+$)/g,'');	// обрезаем пробелы
+							
+							if (!vkPatch.plugins.pages[p])
+							{
+								vkPatch.plugins.pages[p] = [];
+							};
+							
+							// кладём ф-ию
+							vkPatch.plugins.pages[p].push(func);
+						});
+				});
+				
 				/*
 				 * Устанавливаем имя в описания параметров плагинов
 				 * Оно состоит из имени_плагина-имя_параметра
@@ -958,67 +990,37 @@ var vkPatch =
 							vkPatch.lang.categories[j] = plugin.lang.categories[j];
 						}
 					}
-				}
-				
-			}
-		},
-		
-		/*
-		 * Выполнение
-		 * Производится только на заданой странице, которая указывается параметром page в плагине
-		 */
-		exec: function()
-		{
-			var container = vkPatch.plugins.container;
-			/*
-			 * Проходим по всем
-			 */
-			for (var i=0; i < container.length; i++)
-			{
-				var plugin = container[i];
-				
-				if (!_.isArray(plugin.page))
-				{
-					plugin.page = [plugin.page];
 				};
-
+				
 				/*
-				 * Определяем необходимость выполнения
+				 * Выполнение собственных функции инициализации в плагинах
 				 */
-				var mustRun = false;
-				for (var j=0; j < plugin.page.length; j++)
+				oldHandler = _window.onerror;
+				_window.onerror = vkPatch.plugins.errorHandler;
+				vkPatch.plugins.current = plugin;
+				try
 				{
-					var page = plugin.page[j];
-					
-					if (	( page instanceof RegExp && page.test(vkPatch.page.path) )	/* задано регулярное выражение */
-						||	( page === '*' )					/* все страницы */
-						||	( page === vkPatch.page.string)
-						)
-					{
-						mustRun = true;
-						break;
-					};
-				};
+					plugin.init.call(plugin);
+				}
+				catch (err)
+				{
+					vkPatch.plugins.errorHandler(err.name + ': ' + err.message,null,'exception',null);
+				}
+				_window.onerror = oldHandler
 				
-				if (mustRun)
+			};
+			
+			console.log(vkPatch.plugins.pages);
+		},
+			
+		pageChangedHandler: function(page) 
+		{
+			if (vkPatch.plugins.pages[page])
+			{
+				_.each(vkPatch.plugins.pages[page], function(func) 
 				{
-					/*
-					 * Выполняем плагин в своем контексте
-					 */
-					oldHandler = _window.onerror;
-					_window.onerror = vkPatch.plugins.errorHandler;
-					vkPatch.plugins.current = plugin;
-					try
-					{
-						plugin.exec.call(plugin);
-					}
-					catch (err)
-					{
-						vkPatch.plugins.errorHandler(err.name + ': ' + err.message,null,'exception',null);
-					}
-					_window.onerror = oldHandler
-				};
-					
+					func();	// выполняем фукнцию, связанную с этой страницей
+				});
 			};
 		},
 		
@@ -1197,13 +1199,15 @@ var module = {
 			
 		},
 		
-		page: '',
+		/**
+		 * Функции, привязанные к страницам
+		 */
+		pages: {},
 		
-
-		exec: function()
-		{
-			
-		}
+		/**
+		 * Инициализация плагина
+		 */
+		init: null
 };
 
 /**
@@ -1235,16 +1239,18 @@ vkPatch.plugins.add({
 		nothingShow: 		'Нет параметров для отображения'
 	},
 	
-	page: 'settings',
-	
-
-	exec: function()
+	pages: 
 	{
-		this.tab = vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar:eq(0) > ul'),this.settingsHash).click(jQuery.proxy(this.tabClickHandler,this));
+		'settings': function()
+		{
+			this.tab = vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar:eq(0) > ul'),this.settingsHash).click(jQuery.proxy(this.tabClickHandler,this));
 		
-		// Если в адресе есть #vkpath, то активируем вкладку
-		this.checkHash();
+			// Если в адресе есть #vkpath, то активируем вкладку
+			this.checkHash();
+		}
 	},
+	
+	init: null,
 	
 	// тег страницы настроек
 	settingsHash: '#vkpatch',
@@ -1619,10 +1625,16 @@ vkPatch.plugins.add({
 			categories: {}
 		},
 		
-		page: 'audio',
+		pages: 
+		{
+			'audio' : function()
+			{
+				alert('a')
+			}
+		},
 		
 
-		exec: function()
+		init: function()
 		{
 			this.updatePage();
 		},
