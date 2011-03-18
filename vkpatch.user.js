@@ -382,7 +382,46 @@ var vkPatch =
 	 */
 	sys: 
 	{
-		extendFunction: function(){}
+		/**
+		 * Преобразование свойства объекта
+		 * @param {string} property - путь к свойству, например "audio.play"
+		 * @param {function} func - функция, преобразующая свойство function(элемент, имя_свойства, родительский контейнер)
+		 * @param {object} context - контекст фукнции
+		 * @param {object} [container=window] - контейнер, содержащий объект
+		 * @return {bool} true - если успешно, false - если объект не существует
+		 * @example 
+		 * 	var container = {
+		 * 		names: {
+		 * 			first: 'Arnold'
+		 * 		}
+		 * 	};
+		 * 	extend('names.first', function(fname){return fname+' junior';}, null, container);
+		 * 	alert( container.names.first );	// 'Arnold junior';
+		 */
+		extend: function(property, func, context, container)
+		{
+			var names = property.split('.');
+			var element = container || _window, propName, parent;
+			
+			// добираемся до объекта пробегаяся по всей цепочке свойств
+			while(names.length) 
+			{
+				propName = names.shift()
+				parent = element;
+				element = parent[propName];
+				
+				// одно из промежуточных свойств не определено
+				if (typeof(element) == 'undefined' && names.length != 0) return false;
+			};
+			
+			parent[propName] = func.call(context, element, propName, parent);
+			
+			return true;
+		},
+		
+		handle: function(property, before, after) 
+		{
+		}
 	},
 
 	/**
