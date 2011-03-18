@@ -1342,7 +1342,7 @@ vkPatch.plugins.add({
 		$('#content > div > div.msg').parent().remove();
 		
 		// очищаем страницу и подготавливаем форму
-		this.tabContainer = $('#content > div.editorPanel').empty().append('<form mathod="get" action="#" name="vkPatchSettings" id="vkPatchSettings"></form>').find('form');
+		this.tabContainer = $('#content > div.editorPanel').nextAll().remove().end().empty().append('<form mathod="get" action="#" name="vkPatchSettings" id="vkPatchSettings"></form>').find('form');
 		
 		// Нечего отображать
 		var nothingShow = true;
