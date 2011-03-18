@@ -146,21 +146,26 @@ var vkPatch =
 			_window.onhashchange = vkPatch.page.hashchangeHandler;
 			window.onhashchange = function() {alert('change')}
 			
-			// события на подрузку файлов
-			vkPatch.sys.handle('stManager.done', function(file) 		// подзагрузка скриптов
+			/*
+			 * Вешаем обработчики для ф-ий вконтакте
+			 */
+			vkPatch.sys.handle('stManager.done', null, function(file) 		// подзагрузка скриптов
 			{
+				vkPatch.events.resourceLoaded.raise(file);
+			});
+			vkPatch.sys.handle('stManager._add', null, function(file) 	// подзагрузка стилей
+			{
+				if (file.indexOf('.css') != -1)
+				{
 					vkPatch.events.resourceLoaded.raise(file);
+				}
 			});
-			vkPatch.sys.handle('stManager._add', function(file) 	// подзагрузка стилей
+			
+			vkPatch.sys.handle('nav.setLoc', null, function(page) 	// смена страницы
 			{
-					if (file.indexOf('.css') != -1)
-					{
-						vkPatch.events.resourceLoaded.raise(file);
-					}
+				vkPatch.events.pageChanged.raise(page.split('?')[0]);
 			});
-			
-			
-			
+						
 			vkPatch.plugins.init();
 			
 			// обработчик на смену страницы - выполнение ф-ий страницы
@@ -1009,8 +1014,6 @@ var vkPatch =
 				_window.onerror = oldHandler
 				
 			};
-			
-			console.log(vkPatch.plugins.pages);
 		},
 			
 		pageChangedHandler: function(page) 
