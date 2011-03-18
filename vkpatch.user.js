@@ -146,31 +146,17 @@ var vkPatch =
 			_window.onhashchange = vkPatch.page.hashchangeHandler;
 			window.onhashchange = function() {alert('change')}
 			
-			vkPatch.sys.handle('stManager.add', function(files, callback) 
+			// события на подрузку файлов
+			vkPatch.sys.handle('stManager.done', function(file) 		// подзагрузка скриптов
 			{
-				var args = [].slice.call(arguments);
-				var files;
-				if (!_.isArray(files)) 
-				{
-					files = [files];
-				}
-				
-				// подменяем колбек - 2й параметр
-				args[1] = function()
-				{
-					if (callback) 
-					{
-						callback();
-					};
-					
-					// для каждого файла вызываем событие, что он загружен
-					_.each(files, function(file)
+					vkPatch.events.resourceLoaded.raise(file);
+			});
+			vkPatch.sys.handle('stManager._add', function(file) 	// подзагрузка стилей
+			{
+					if (file.indexOf('.css') != -1)
 					{
 						vkPatch.events.resourceLoaded.raise(file);
-					});
-				};
-
-				return args;
+					}
 			});
 			
 			vkPatch.plugins.init();
