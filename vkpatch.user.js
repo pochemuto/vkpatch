@@ -175,11 +175,18 @@ var vkPatch =
 						
 			vkPatch.plugins.init();
 			
+			/*
+			 * Обработчики событий vkPatch
+			 */
 			// обработчик на смену страницы - выполнение ф-ий страницы
 			vkPatch.events.pageChanged.bind(vkPatch.plugins.pageChangedHandler);
 			
+			// Выполнение расрирешия объектов при загрузке ресурса
+			vkPatch.events.resourceLoaded.bind(vkPatch.sys.handleLazyResourceHandler);
+			
 			// вызываем событие смены страницы, чтобы выполнились все ф-ии плагинов на текущей странице
 			vkPatch.events.pageChanged.raise(vkPatch.page.string);
+
 		}
 	},
 	
@@ -257,6 +264,11 @@ var vkPatch =
 		requireScript: function(url,callback)
 		{
 			callback = callback || function(){};
+			
+			/*
+			 * в колбек не вызываем событие resourceLoad, потомоу что во всех файлх js
+			 * вконтакте вконце есть событие stManager.done, которое отлавливается 
+			 */
 			
 			// если первым параметром передан массив, то последовательно подключаем все скрипты
 			if (_.isArray(url))
@@ -448,6 +460,7 @@ var vkPatch =
 		 * @param {Object} before - функция, выполняемая перед оригинальной. Агрументы, которые возвращает, будут переданы оригинальной ф-ии
 		 * @param {Object} after - функция выполняемая после оригинальной
 		 * @param {object} context - контекст дополнительных ф-ий
+		 * @return {bool} true - в случае удачи, и false - если обхект не существует
 		 * @example
 		 * var obj = {
 		 * 	foo: function(mess) {alert(mess + ' original')}
@@ -465,7 +478,7 @@ var vkPatch =
 			var before = before || jQuery.noop;
 			var after = after || jQuery.noop;
 
-			vkPatch.sys.extend(property, function(original) 
+			return vkPatch.sys.extend(property, function(original) 
 			{
 				return function() 
 				{
@@ -482,6 +495,58 @@ var vkPatch =
 				};
 			});
 			
+		},
+		
+		/**
+		 * Обработчик события заргузки файла
+		 * Проверяем загрузку файла и выполняет расрирешие объектов, находящхся в очереди
+		 * @param {string} resource
+		 */
+		handleLazyResourceHandler: function(resource) 
+		{
+			if (vkPatch.sys.handleLazy.queue && vkPatch.sys.handleLazy.queue[resource]) 
+			{
+				_.each(vkPatch.sys.handleLazy.queue[resource], function(func)
+				{
+					func();	// выполняем ф-ию расширения для данного файла
+				});
+			};
+		},
+		
+		
+		/**
+		 * Привязывание функций к другой функции, после загрузки файла, содержащего исходную функцию
+		 * @see handle
+		 * @example
+		 * handleLazy('player.js/Player.play',function(){alert('start playing')});
+		 * // функция будет привязана к Player.play, когда подгрузится player.js
+		 */
+		handleLazy: function(property, before, after, context)
+		{
+			property = property.split('/');
+			var file = property[0];
+			property = property[1];
+			
+			var handle = function()
+			{
+				return vkPatch.sys.handle(property, before, after, context);
+			};
+			
+			// пытаемся привязать уже сейчас, возможно обхект уже существует
+			handle();
+			
+			/*
+			 * Добавляем в очередь. Если файл ещё не загружен, или будет загружен повторно
+			 * будет вызвана функция расширения файла 
+			 */
+			var queue = arguments.callee.queue = arguments.callee.queue || {};
+			if (!queue[file]) 
+			{
+				queue[file] = [];
+			};
+			
+			// добавляем в очередь
+			queue[file].push(handle);
 		}
 	},
 
