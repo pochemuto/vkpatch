@@ -419,8 +419,41 @@ var vkPatch =
 			return true;
 		},
 		
-		handle: function(property, before, after) 
+		/**
+		 * Привязывание функций к другой функции. Будет выполнена сначала before, потом оригинальная ф-ия, потом after
+		 * @param {string} property - имя свойства-метода
+		 * @param {Object} before - функция, выполняемая перед оригинальной
+		 * @param {Object} after - функция выполняемая после оригинальной
+		 * @param {object} context - контекст дополнительных ф-ий
+		 * @example
+		 * var obj = {
+		 * 	foo: function(mess) {alert(mess + ' original')}
+		 * };
+		 * handle('obj.foo', function(mess) {alert(mess + ' before')}, function(mess) {alert(mess + ' after')});
+		 * 
+		 * obj.foo('test');
+		 * // test before
+		 * // test original
+		 * // test after
+		 */
+		handle: function(property, before, after, context) 
 		{
+			context = context || this;
+			before = before || jQuery.noop();
+			after = after || jQuery.noop();
+			
+			vkPatch.sys.extend(property, function(original) 
+			{
+				return function() 
+				{
+					before.apply(context, arguments);
+					
+					original.apply(this, arguments);
+					
+					after.apply(context, arguments);
+				};
+			});
+			
 		}
 	},
 
