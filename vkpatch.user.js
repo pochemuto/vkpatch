@@ -1253,7 +1253,26 @@ var vkPatch =
 		}
 	},
 	
-	
+	/**
+	 * Вызывает функцию по истечению времени
+	 * @param {function} callback - колбек
+	 * @param {integer} delay - время в милисекундах
+	 * @param {bool} [autostart=true] - запустить таймер сразу после создания
+	 */
+	timer: function(callback, delay, autostart) 
+	{
+		var callback = callback;
+		var delay = delay;
+		var autostart = typeof(autostart) == 'undefined' ? true : autostart;
+		
+		this.id = null;
+		
+		this.start = function() 
+		{
+			clearTimeout(this,id);
+			this.id = setTimeout(callback, delay);
+		};
+	},
 	
 	console_browser: function(){},
 	console: function(mess) {
