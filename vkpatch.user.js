@@ -702,6 +702,8 @@ var vkPatch =
 			this.ownerId = arr[0];
 			// id трека
 			this.id = arr[1];
+			// id контейнера, соддержащего аудиозапись
+			this.aid = arr.aid;
 			// ссылка на mp3 файл
 			this.url = arr[2];
 			// продолжительность в секундах
@@ -1985,11 +1987,15 @@ vkPatch.plugins.add({
 		
 		settings: 
 		{
+			playingIcon: vkPatch.settings.create().def(true).category('iface').done()
 		},
 		
 		lang:
 		{
-			settings: {},
+			settings: 
+			{
+				playingIcon: ['Иконка при прослушивании аудио','Показывать иконку напротив аудиозаписи при её проигрывании']
+			},
 			categories: {}
 		},
 		
@@ -1998,7 +2004,38 @@ vkPatch.plugins.add({
 
 		init: function()
 		{
-			
+			if (this.settings.playingIcon.get())
+			{
+				// показывать иконку при воспроизведении
+				this.playingIconElement = $('<img style="margin-bottom: -2px; margin-right: 4px; margin-left: -16px; z-index: 99999; position: relative;">')
+				// вешаем обработчик на событие
+				vkPatch.events.audioRedraw.bind($.proxy(this.redrawPlayingIcon,this));
+			};			
+		},
+		
+		/**
+		 * jQuery-объект содержащий img иконки при воспроизведении
+		 */
+		playingIconElement: null,
+		
+		/**
+		 * Обработчик события audioRedraw
+		 * @param {string} state - состояние аудио
+		 * @param {vkPatch.audio.trackInfo} track - информация о треке
+		 */
+		redrawPlayingIcon: function(state, track) 
+		{
+			switch (state)
+			{
+				case 'load':
+					
+					this.playingIconElement.attr('src','http://cdn.last.fm/flatness/global/icon_eq.gif');
+					
+					$('#audio'+track.aid).find('div.duration:first')
+					.prepend(this.playingIconElement);
+					
+				break;
+			}
 		}
 });
 
