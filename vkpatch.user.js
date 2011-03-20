@@ -707,15 +707,15 @@ var vkPatch =
 			// продолжительность в секундах
 			this.duration = arr[3];
 			// продолжителность в формате mm:ss
-			this.durationTest = arr[4];
+			var dur = this.durationTest = arr[4];
 			// имя артиста
-			this.artist = arr[5];
+			var artist = this.artist = vkPatch.encoder.htmlDecode(arr[5]);
 			// название трека
-			this.title = arr[6];
+			var title = this.title = vkPatch.encoder.htmlDecode(arr[6]);
 			
 			this.toString = function() 
 			{
-				return arr[5] + ' - ' + arr[6] + ' (' + arr[4] + ')';
+				return artist + ' - ' + title + ' (' + dur + ')';
 			};
 		},
 		
