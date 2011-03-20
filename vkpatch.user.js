@@ -1261,37 +1261,121 @@ var vkPatch =
 	 */
 	timer: function(callback, delay, autostart) 
 	{
-		var callback = callback;
-		var delay = delay;
-		var autostart = typeof(autostart) == 'undefined' ? true : autostart;
-		var startTime;
-		var timeLeft;
-		this.id = null;
+		/*
+		 * Состояния таймера
+		 */
+		var STATE_STOPPED = this.STATE_STOPPED = 'stopped',
+			 STATE_STARTED = this.STATE_STARTED = 'started',
+			 STATE_PAUSED = this.STATE_PAUSED = 'paused';
 		
-		this.start = function() 
+		
+		var _callback = function(){callback();_stop()},
+			 _delay = delay,
+			 _autostart = typeof(autostart) == 'undefined' ? true : autostart,
+			 _startTime, 
+			 _timeLeft = delay;
+		
+		/**
+		 * Идентификатор таймера
+		 */
+		var _id = this.id = null;
+		
+		/**
+		 * Состояние таймера
+		 */
+		var _state = this.STATE_STOPPED;
+				
+		/**
+		 * Запустить таймер или продолжить после паузы
+		 */
+		var _start = this.start = function() 
 		{
-			this.stop();
-			timeLeft = delay;
-			this.resume();
+			switch (_state)
+			{
+				case STATE_STOPPED:
+				case STATE_PAUSED:
+				
+					_id = setTimeout(_callback, _timeLeft);
+					_startTime = +new Date;
+				
+				break;
+			};
+			
+			_state = STATE_STARTED;
 		};
 		
-		this.pause = function()
+		/**
+		 * Приостановить
+		 */
+		var _pause = this.pause = function()
 		{
-			timeLeft = +new Date - startTime;
-			this.stop();
+			switch (_state)
+			{
+				case STATE_STARTED:
+				
+					clearTimeout(_id);
+					_timeLeft = +new Date - _startTime;
+					_state = STATE_PAUSED;
+					
+				break;
+			};
 		};
 		
-		this.resume = function() 
+		/**
+		 * Продолжить с паузы
+		 */
+		var _resume = this.resume = function() 
 		{
-			this.id = setTimeout(callback, timeLeft);
-			startTime = +new Date;
+			if (_state == STATE_PAUSED)
+			{
+				_start();
+			}
 		};
 		
-		this.stop = function()
+		/**
+		 * Остановить таймер и сбросить время
+		 */
+		var _stop = this.stop = function()
 		{
-			clearTimeout(this.id);
-			this.id = startTime = null;
+			clearTimeout(_id);
+			_timeLeft = _delay;
+			_startTime = null;
+			_state = STATE_STOPPED;
 		};
+		
+		/**
+		 * Оставшееся время
+		 */
+		this.left = function() 
+		{
+			switch (_state)
+			{
+				case STATE_STOPPED:
+					return _delay;	
+				break;
+				
+				case STATE_STARTED:		
+					return _timeLeft - (+new Date - _startTime);
+				break;
+				
+				case STATE_PAUSED:
+					return _timeLeft;
+				break;
+			}
+		};
+		
+		/**
+		 * Состояние таймера
+		 */
+		this.state = function()
+		{
+			return _state;
+		};
+		
+		if (autostart) 
+		{
+			_start();
+		}
 	},
 	
 	console_browser: function(){},
