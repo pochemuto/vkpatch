@@ -1165,7 +1165,15 @@ var vkPatch =
 				
 				plugin.resources = _.map(plugin.resources, function(resource) 
 				{
-					return vkPatch.extensionUrl + 'resources/' + plugin.name + '/' + resource;
+					var url = resource;
+					
+					// разворачиваем относительные ссылки
+					if (resource.charAt(0) == '/')
+					{
+						url = vkPatch.extensionUrl + 'resources/' + plugin.name + resource;
+					};
+					
+					return url;
 				});
 				
 				/*
@@ -1578,7 +1586,7 @@ vkPatch.plugins.add({
 	
 	resources: 
 	{
-		tabIcon: 'tab_icon.png'
+		tabIcon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADBElEQVR4nHWSa0iTYRTH/+/zbm6+28plS0OXNS276C4GlYhFXr5U3uhKVBQVBUVB0AWKDAqxL32R6CLdPkVElKJ0EZdOKbJlK8t1WTedkbm1ze3Vxd73efpQFpr+4cDhcPgdzjl/YAIVF+ZpAcCSlUEKli3WTNTHj1d01J2oObjDdn1A1N/dWJK+smqfya5JMH1tdrxyTQgoW7VcqD668YBal/Qhz6rbMGNazGzOIIWWDLpKUA5O6nz707k4Jy20pSK94ns4sdPr7WMAwI0Abl4+eHhNUVJ1RAyFhLhhLWEiDyrid0QgDg2F1XxETRBR7D+XWVxzsaEZAMgIoK7Jcy0S/h7SxgUmE9nPQ/IDku9P+KFRDOh45lM63/BdX76hY9QK7bf31OTbVBuMhmEzR0MENAj3p+EPt1pIbfdn+syYODA7nv8hQA5BrRB5S1rQajNnJjW2fO3A0rwcbbR71xB7t4kxdwVjr4tZd2OBp7ysxDgyZcfmIstwuyDSx3GMtquZ7IhnT67MclqtVgUAYOfW8pwvLSves1f5jL20sXOnCqvHXvts5aL9cls8k1sF9uBspn3t6pI5AECy588gBTniQn28T/93X1VEPRZgNvrnQSJgEsFMvZg8NzliBAA+w5QmnN4t2gVlYBJoEKCDSNX7Z4fJ0vtO18d+ALhw3Lau1NpTBZlwkHkkqGMGTRxd4PSmXuYAoOpI0TaNKpqyvfD5IUEZ04FyiP5UDrl7Ex1alaRLnzqYC8oRUILXfXqP/W3K1d6AtutM7b36vz44tneJpXK96ykBlKAEoBwYJYDM/cspB+8Pbc+BW9nW23WNgVE+MBqkXEKJwumZ/tIfEnxM4gGJgMkETObR3TfF4/XrevSqWFJyAmf+z8reoKHT7ctuu9NhOGlJjVin66Lz7e7Uh0zmowmqmOFGp+nMeUfK9o6+lKZHrt62/v5+BgCKEYDL9YK6XC+aAWCFJbeVSvzMS+3pu02JYWPpgm+nvUFNV33D3QCA1rEfGldZWVmK8fKx+gVkCk2ZX8BevgAAAABJRU5ErkJggg=='
 	},
 	
 	lang:
@@ -1598,7 +1606,7 @@ vkPatch.plugins.add({
 	{
 		'settings': function()
 		{
-			var tabImg = $('<img>').attr('src',this.resources.tabIcon).css('margin','-2px 0px -4px 0px');
+			var tabImg = $('<img>').attr('src',this.resources.tabIcon).css('margin','-2px 0px -4px 0px').css('height','16px');
 			this.tab = vkPatch.iface.addTab(tabImg, $('#content > div.tBar:eq(0) > ul'),this.settingsHash).click(jQuery.proxy(this.tabClickHandler,this));
 			// Если в адресе есть #vkpath, то активируем вкладку
 			this.checkHash();
@@ -2029,7 +2037,7 @@ vkPatch.plugins.add({
 		
 		resources: 
 		{
-			playingIcon: 'playing_icon.gif'
+			playingIcon: 'data:image/gif;base64,R0lGODlhDAAMALMAAP///9bW1s7Ozr29vbW1ta2traWlpZycnJSUlIyMjAAAAAAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQEBQD/ACwAAAAADAAMAAAEORAEQisNQJRdKDeCIXKbKB7oYQBAiiIwcrAxnCB0DiR8wvq7X+9H3A2DSB6ix+whBs3mADBYNp+ACAAh+QQEBQD/ACwAAAAADAAMAAAEOBAEQisNQJRdKDeCIXKbKB7oYaYoggDAAbt08gJ3nexw0vc7H0BIDP6GQERwGUQMmMwBYKBkOgERACH5BAQFAP8ALAAAAAAMAAwAAAQ3EARCKw1AlF0oN4IhcpsoHuhhAECKIjBysDGc1LSd7GzS70AfQEgE9o7DW3B5GzCDA8AAwUREIwAh+QQEBQD/ACwAAAAADAAMAAAEOBAEQisNQJRdKDeCIW4AUIjioR5GuapIjBylHCd2XSZ8n+y7HhDwIwqJQx7Cx8QNmr4BYLBkIqQRACH5BAQFAP8ALAAAAAAMAAwAAAQ4EARCKw1AlF0oN4IhcpsoHuhhAECKIjBysDGc1LSd7GzS9zsfQEgM/oZARHAZRAyYzAFgoGQ6AREAIfkEBAUA/wAsAAAAAAwADAAABDgQBEIrDUCUXSg3giFymyge6GGmKOIiBwC8boLI91wnvJz4vOAPMCwGfUiiTci0DZrCAWCAaCKkEQAh+QQEBQD/ACwAAAAADAAMAAAENxAEQisNQJRdKDeCIXKbKB7oYaYoggBA6s7JC9h0osMJz+s9QHAI9Al/CKASiBgslwPAILlsAiIAIfkEBAUA/wAsAAAAAAwADAAABDYQBEIrDUCUXSg3giFymygeBwCYaIsgqqu+CQy8r5rsie4DvB7wFyTqasFkbaAMDgADhBLxjAAAIfkEBAUA/wAsAAAAAAwADAAABDcQBEIrDUCUXSg3giFymyge6GGmKIIAQOrOyQvMdKLDCc/rPUBwCPQJfwigEogYLJcDwCC5bAIiACH5BAQFAP8ALAAAAAAMAAwAAAQ3EARCKw1AlF0oN4IhcpsoHuhhpiiCAEDqzskL2HaiJzAP+Dtgr7cb/oiIoLI2WAYHgEFSiYBGAAAh+QQEBQD/ACwAAAAADAAMAAAENxAEQisNQJRdKDeCIXKbKB7oYaYo4iIHALxuQstvoicyD/g7YK+3G/6IiKDSNlgGB4BBUomARgAAOw=='
 		},
 		
 		pages: {},
