@@ -1290,13 +1290,14 @@ var vkPatch =
 		},
 		
 		/**
-		 * Создание кнопка
+		 * Создание кнопки
 		 * @param {string} label - Надпись
 		 * @param {function} action - onclick действие
 		 * @param {string} [id] - id кнопки
-		 * @return {string} html кнопки
+		 * @param {string} [color=blue] - цвет кнопки (blue, gray)
+		 * @return {jQuery} jQuery-объект кнопки
 		 */
-		button: function(label, action, id)
+		button: function(label, action, id, color)
 		{
 			if (id) 
 			{
@@ -1307,7 +1308,9 @@ var vkPatch =
 				id = '';
 			};
 			
-			var button = $('<div nosorthandle="1" class="button_blue"><button nosorthandle="1"'+id+'>'+label+'</button></div>');
+			color = color || 'blue';
+			
+			var button = $('<div nosorthandle="1" class="button_'+color+'"><button nosorthandle="1"'+id+'>'+label+'</button></div>');
 			if (action)
 			{
 				button.find('button').click(function(e){e.preventDefault();}).click(action);
@@ -1610,6 +1613,7 @@ vkPatch.plugins.add({
 		// отменяем обработчик события поумолчанию
 		// чтобы IE не брал страницу из кеша
 		e.preventDefault();
+		location.hash = this.settingsHash;
 		this.activateTab();
 	},
 	
@@ -1883,7 +1887,7 @@ vkPatch.plugins.add({
 	 */
 	buttonParam: function(option) 
 	{
-		this.button(option.title, option.buttonHandler, option.name, option.desc);		
+		this.button(option.title, option.buttonHandler, option.name, option.desc, 'gray');		
 	},
 	
 	/**
@@ -1893,9 +1897,9 @@ vkPatch.plugins.add({
 	 * @param {string} [id] - id кнопки
 	 * @param {string} desc - описание
 	 */
-	button: function(label, handler, id, desc) 
+	button: function(label, handler, id, desc, color) 
 	{
-		var button = vkPatch.iface.button(label, handler, id);
+		var button = vkPatch.iface.button(label, handler, id, color);
 		// посказка
 		if (desc) 
 		{
