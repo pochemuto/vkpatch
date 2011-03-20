@@ -56,6 +56,14 @@ var vkPatch =
 //				return;
 //			};
 
+			if (!_window.vkpatchUrl) 
+			{
+				return;
+			};
+			
+			// абсолютный URL плагина
+			vkPatch.extensionUrl = _window.vkpatchUrl;
+			
 			/*
 			 * devToolz 0.2.1
 			 * расширение объектов
@@ -140,7 +148,6 @@ var vkPatch =
 			// Определение браузера и задание специфичный параметров
 			vkPatch.browser.determine();
 			_window.onhashchange = vkPatch.page.hashchangeHandler;
-			window.onhashchange = function() {alert('change')}
 			
 			/*
 			 * Вешаем обработчики для ф-ий вконтакте
@@ -425,7 +432,7 @@ var vkPatch =
 		
 		hashchangeHandler: function()
 		{
-			$(this).trigger('hashchange',[location.hash]);
+			
 		}
 		
 	},
@@ -1156,6 +1163,11 @@ var vkPatch =
 						});
 				});
 				
+				plugin.resources = _.map(plugin.resources, function(resource) 
+				{
+					return vkPatch.extensionUrl + 'resources/' + plugin.name + '/' + resource;
+				});
+				
 				/*
 				 * Устанавливаем имя в описания параметров плагинов
 				 * Оно состоит из имени_плагина-имя_параметра
@@ -1527,6 +1539,13 @@ var module = {
 		{
 			settings: {},
 			categories: {}
+		},
+		
+		/**
+		 * Ссылки на ресурсы, хранящиеся в resources/[имя плагина]/
+		 */
+		resources:
+		{
 			
 		},
 		
@@ -1557,6 +1576,11 @@ vkPatch.plugins.add({
 
 	},
 	
+	resources: 
+	{
+		tabIcon: 'tab_icon.png'
+	},
+	
 	lang:
 	{
 		settings: {
@@ -1574,8 +1598,8 @@ vkPatch.plugins.add({
 	{
 		'settings': function()
 		{
-			this.tab = vkPatch.iface.addTab(this.lang.tabTitle, $('#content > div.tBar:eq(0) > ul'),this.settingsHash).click(jQuery.proxy(this.tabClickHandler,this));
-		
+			var tabImg = $('<img>').attr('src',this.resources.tabIcon).css('margin','-2px 0px -4px 0px');
+			this.tab = vkPatch.iface.addTab(tabImg, $('#content > div.tBar:eq(0) > ul'),this.settingsHash).click(jQuery.proxy(this.tabClickHandler,this));
 			// Если в адресе есть #vkpath, то активируем вкладку
 			this.checkHash();
 		}
@@ -1965,6 +1989,10 @@ vkPatch.plugins.add({
 			}
 		},
 		
+		resources: 
+		{
+			
+		},
 
 		init: function()
 		{
@@ -1999,6 +2027,11 @@ vkPatch.plugins.add({
 			categories: {}
 		},
 		
+		resources: 
+		{
+			playingIcon: 'playing_icon.gif'
+		},
+		
 		pages: {},
 		
 
@@ -2029,7 +2062,7 @@ vkPatch.plugins.add({
 			{
 				case 'load':
 					
-					this.playingIconElement.attr('src','http://cdn.last.fm/flatness/global/icon_eq.gif');
+					this.playingIconElement.attr('src',this.resources.playingIcon);
 					
 					$('#audio'+track.aid).find('div.duration:first')
 					.prepend(this.playingIconElement);
