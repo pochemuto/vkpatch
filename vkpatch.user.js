@@ -1264,13 +1264,33 @@ var vkPatch =
 		var callback = callback;
 		var delay = delay;
 		var autostart = typeof(autostart) == 'undefined' ? true : autostart;
-		
+		var startTime;
+		var timeLeft;
 		this.id = null;
 		
 		this.start = function() 
 		{
-			clearTimeout(this,id);
-			this.id = setTimeout(callback, delay);
+			this.stop();
+			timeLeft = delay;
+			this.resume();
+		};
+		
+		this.pause = function()
+		{
+			timeLeft = +new Date - startTime;
+			this.stop();
+		};
+		
+		this.resume = function() 
+		{
+			this.id = setTimeout(callback, timeLeft);
+			startTime = +new Date;
+		};
+		
+		this.stop = function()
+		{
+			clearTimeout(this.id);
+			this.id = startTime = null;
 		};
 	},
 	
