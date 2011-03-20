@@ -145,44 +145,17 @@ var vkPatch =
 			/*
 			 * Вешаем обработчики для ф-ий вконтакте
 			 */
-			vkPatch.sys.handle('stManager.done', null, function(file) 		// подзагрузка скриптов
-			{
-				vkPatch.events.resourceLoaded.raise(file);
-			});
-			vkPatch.sys.handle('stManager._add', null, function(file) 	// подзагрузка стилей
-			{
-				if (file.indexOf('.css') != -1)
-				{
-					vkPatch.events.resourceLoaded.raise(file);
-				}
-			});
 			
-			vkPatch.sys.handle('nav.setLoc', null, function(loc) 	// смена страницы
-			{
-				if (loc.tagName && loc.tagName.toLowerCase() == 'a' && loc.href) {
-      			loc = loc.href;
-    			}
-				else if(typeof(loc) == 'object' && loc[0])	// setLoc может принимать объект с параметрами
-				{
-					loc = loc[0];
-				}
-				vkPatch.events.pageChanged.raise(loc.split('?')[0]);
-			});
 			
-			vkPatch.sys.handleLazy('new_player.js/audioPlayer.setGraphics', function(state) 	// смена страницы
-			{
-				var id = audioPlayer.lastSong.aid,		// id аудио как в audioPlaylist
-					 artist = vkPatch.encoder.htmlDecode(audioPlayer.lastSong[5]),	
-					 title = vkPatch.encoder.htmlDecode(audioPlayer.lastSong[6]),	
-					 duration = audioPlayer.lastSong[3];	// продолжительность в секундах
-
-				vkPatch.events.audioStateChanged.raise(state, id, artist, title, duration);
-			});
-
-			vkPatch.events.audioStateChanged.bind(function(state, id, artist, title, duration)
-			{
-				console.log(artist + ' - ' + title + ' ' + state);
-			});
+			/**
+			 * Инициализация внутренних объектов vkPatch
+			 */
+			// скрипты, стили, подзагрузка, информация о странице
+			vkPatch.page.init();
+			
+			// аудио
+			vkPatch.audio.init();
+			
 			/**
 			 * Инициализация плагинов
 			 */
@@ -251,6 +224,38 @@ var vkPatch =
 		isSettings: false,
 		isIndex: false,
 		
+		/**
+		 * .page init
+		 */
+		init: function() 
+		{
+			/*
+			 * Привязываем события vkpatch к функциям vkontakte
+			 */
+			vkPatch.sys.handle('stManager.done', null, function(file) 		// подзагрузка скриптов
+			{
+				vkPatch.events.resourceLoaded.raise(file);
+			});
+			vkPatch.sys.handle('stManager._add', null, function(file) 	// подзагрузка стилей
+			{
+				if (file.indexOf('.css') != -1)
+				{
+					vkPatch.events.resourceLoaded.raise(file);
+				}
+			});
+			
+			vkPatch.sys.handle('nav.setLoc', null, function(loc) 	// смена страницы
+			{
+				if (loc.tagName && loc.tagName.toLowerCase() == 'a' && loc.href) {
+      			loc = loc.href;
+    			}
+				else if(typeof(loc) == 'object' && loc[0])	// setLoc может принимать объект с параметрами
+				{
+					loc = loc[0];
+				}
+				vkPatch.events.pageChanged.raise(loc.split('?')[0]);
+			});
+		},
 		
 		/*
 		 * Получение информации о текущей странице
@@ -623,10 +628,115 @@ var vkPatch =
 		pageChanged: null,
 		
 		/*
-		 * Изменено состояние аудио
-		 * function(state, id, artist, title, duration)
+		 * Перерисовка состояния проигрывания
+		 * function(state, trackInfo)
 		 */
-		audioStateChanged: null
+		audioRedraw: null,
+		
+		/*
+		 * Начало проигрывания или продолжение из паузы
+		 * function(trackInfo)
+		 */
+		audioPlay: null,
+		
+		/*
+		 * Аудиозапись поставилась на паузу
+		 * function(trackInfo)
+		 */
+		audioPause: null,
+		
+		/*
+		 * Аудиозапись остановлена или закончилась
+		 * function(trackInfo)
+		 */
+		audioStop: null
+	},
+	
+	/**
+	 * Функции связанные с аудиозаписями и звуками 
+	 */
+	audio: 
+	{
+		/**
+		 * Привязываение обработчиков событий и инициализация объектов audio
+		 */
+		init: function()
+		{
+			/*
+			 * Привязываем события vkpatch к функциям vkontakte
+			 */
+			vkPatch.sys.handleLazy('new_player.js/audioPlayer.playback', function(pause)
+			{
+				var trackInfo = vkPatch.audio.currentTrackInfo();
+				if (pause) 
+				{
+					vkPatch.events.audioPause.raise(trackInfo);
+				}
+				else
+				{
+					vkPatch.events.audioPlay.raise(trackInfo);
+				}
+			});
+
+			vkPatch.sys.handleLazy('new_player.js/audioPlayer.stop', function()
+			{
+				vkPatch.events.audioStop.raise( vkPatch.audio.currentTrackInfo() );
+			});
+			
+			vkPatch.sys.handleLazy('new_player.js/audioPlayer.setGraphics', function(state) 	// смена страницы
+			{
+				var trackInfo = vkPatch.audio.currentTrackInfo();
+
+				vkPatch.events.audioRedraw.raise(state, trackInfo);
+			});
+		},
+		
+		/**
+		 * Конструктор информации о треке
+		 * @param {array} arr - массив, содержащий поля информации о треке
+		 * @return {object} 
+		 */
+		trackInfo: function(arr)
+		{
+			// id владельца аудио
+			this.ownerId = arr[0];
+			// id трека
+			this.id = arr[1];
+			// ссылка на mp3 файл
+			this.url = arr[2];
+			// продолжительность в секундах
+			this.duration = arr[3];
+			// продолжителность в формате mm:ss
+			this.durationTest = arr[4];
+			// имя артиста
+			this.artist = arr[5];
+			// название трека
+			this.title = arr[6];
+			
+			this.toString = function() 
+			{
+				return arr[5] + ' - ' + arr[6] + ' (' + arr[4] + ')';
+			};
+		},
+		
+		/**
+		 * Получить информацию о текущем треке
+		 * @return {vkPatch.audio.trackInfo}
+		 */
+		currentTrackInfo: function() 
+		{
+			return new vkPatch.audio.trackInfo(_window.audioPlayer.lastSong);
+		},
+		
+		/**
+		 * Получить информацию о треке по id
+		 * Работает только если трек присутствует на странице
+		 * @param {integer} id
+		 */
+		trackInfoById: function(id)
+		{
+			return new vkPatch.audio.trackInfo(_window.audios[id]);
+		}
 	},
 	
 	/**
