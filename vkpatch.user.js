@@ -1971,4 +1971,31 @@ vkPatch.plugins.add({
 		}
 });
 
+vkPatch.plugins.add({
+		/**
+		 * Kikuyutoo
+		 */
+		name: 'kikuyutoo',
+		title: 'Скробблер Last.fm',
+		desc: 'Скробблит ваши прослушивания, и обновляет информацию "Сейчас играет" в вашем профиле на Last.fm',
+		
+		settings: 
+		{
+		},
+		
+		lang:
+		{
+			settings: {},
+			categories: {}
+		},
+		
+		pages: {},
+		
+
+		init: function()
+		{
+			
+		}
+});
+
 vkPatch.init();
