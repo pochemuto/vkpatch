@@ -1,0 +1,4 @@
+syntax: regexp
+^chrome extension/vkpatch\.user\.js$
+^opera extension/vkpatch\.user\.js$
+^chrome extension/resources$
