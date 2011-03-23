@@ -1168,7 +1168,7 @@ var vkPatch =
 							};
 							
 							// кладём ф-ию
-							vkPatch.plugins.pages[p].push(func);
+							vkPatch.plugins.pages[p].push([plugin, func]);
 						});
 				});
 				
@@ -1231,36 +1231,70 @@ var vkPatch =
 				/*
 				 * Выполнение собственных функции инициализации в плагинах
 				 */
-				oldHandler = _window.onerror;
-				_window.onerror = vkPatch.plugins.errorHandler;
-				vkPatch.plugins.current = plugin;
-				try
-				{
-					plugin.init.call(plugin);
-				}
-				catch (err)
-				{
-					vkPatch.plugins.errorHandler(err.name + ': ' + err.message, null, 'exception',null);
-				}
-				_window.onerror = oldHandler
+				vkPatch.plugins.callFunction(plugin, plugin.init);
 				
 			};
 		},
+		
+		/**
+		 * Выполнение функции в плагине. Вызывает в контексте плагина с обработкой ошибок
+		 * @param {object} plugin - обхект плагина
+		 * @param {function} func - вызываемая функция
+		 */
+		callFunction: function(plugin, func) 
+		{
+			var oldHandler = _window.onerror;
+			_window.onerror = vkPatch.plugins.onerrorHandler;
 			
+			vkPatch.plugins.current = plugin;
+			
+			try
+			{
+				func.call(plugin);
+			}
+			catch (err)
+			{
+				vkPatch.plugins.errorHandler(err, plugin);
+			};
+			
+			_window.onerror = oldHandler;
+		},
+		
 		pageChangedHandler: function(page) 
 		{
 			if (vkPatch.plugins.pages[page])
 			{
-				_.each(vkPatch.plugins.pages[page], function(func) 
+				_.each(vkPatch.plugins.pages[page], function(node) 
 				{
-					func();	// выполняем фукнцию, связанную с этой страницей
+					vkPatch.plugins.callFunction(node[0], node[1]); // выполняем фукнцию, связанную с этой страницей
 				});
 			};
 		},
 		
-		errorHandler: function(desc,page,line,chr)
+		/**
+		 * Обработчик ошибок onerror
+		 * @param {string} message - текст ошибки
+		 * @param {string} url - ссылка на файл
+		 * @param {string} lineNumber - номер строки
+		 */
+		onerrorHandler: function(message, url, lineNumber) 
 		{
-			vkPatch.log('Error. Plugin ' + vkPatch.plugins.current.name + '. ' + desc + ', line: ' + line);
+			vkPatch.log('Error in plugin "' + vkPatch.plugins.current.name + '": ' + message + ' at ' + url + ':' + lineNumber);
+		},
+		
+		/**
+		 * Обработчик ошибок try
+		 * @param {Error} err
+		 */
+		errorHandler: function(err)
+		{
+			var info = '';
+			for (var prop in err) 
+			{
+				info += "\n\t " + prop + " = ["+ err[prop]+ "]"; 
+			} 
+		   info += "\n\t string = [" + err.toString() + "]"; 
+			vkPatch.log('Error in plugin "' + vkPatch.plugins.current.name + '": ' + info);
 			return true;
 		}
 	},
