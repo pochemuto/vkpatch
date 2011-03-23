@@ -1231,7 +1231,10 @@ var vkPatch =
 				/*
 				 * Выполнение собственных функции инициализации в плагинах
 				 */
-				vkPatch.plugins.callFunction(plugin, plugin.init);
+				if (plugin.init) 
+				{
+					vkPatch.plugins.callFunction(plugin, plugin.init);
+				}
 				
 			};
 		},
