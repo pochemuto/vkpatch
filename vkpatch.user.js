@@ -65,7 +65,7 @@ var vkPatch =
 			/*
 			 * Подключение jQuery
 			 */
-			vkPatch.page.requireScript('http://code.jquery.com/jquery-1.4.2.min.js',vkPatch.load.step1);
+			vkPatch.page.requireScript('http://code.jquery.com/jquery-1.5.1.min.js',vkPatch.load.step1);
 		},
 		
 		/**
@@ -355,7 +355,7 @@ var vkPatch =
 				}
 				else	// если не был, то подключаем и ждём
 				{
-					vkPatch.log('load script: ');
+					vkPatch.log('load script: ' + url);
 
 					//jQuery.getScript(url,callback);
 					
@@ -2151,6 +2151,17 @@ vkPatch.plugins.add({
 				vkPatch.events.audioRedraw.bind($.proxy(this.redrawPlayingIcon,this));
 			};	
 		},
+		
+		/**********************
+		 *      Last.fm
+		 *********************/
+		apiKey: 'bd51d4cc4ae2ce6be98e4008c6ba60e4',
+		apiSecret: 'f1ce75e817a2a4e2701357aa47405d4e',
+		
+		
+		/**********************
+		 *    Интерфейс
+		 *********************/
 		
 		// jQuery-объект содержащий img иконки при воспроизведении
 		playingIconElement: null,
