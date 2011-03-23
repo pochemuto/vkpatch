@@ -581,6 +581,22 @@ var vkPatch =
 			
 			// добавляем в очередь
 			queue[file].push(handle);
+		},
+		
+		/**
+		 * Случайное целое число в интервале [a;b] или в [0;a] если b не указано
+		 * @param {Object} a
+		 * @param {Object} b
+		 */
+		random: function(a, b) 
+		{
+			if (typeof(b) == 'undefined')
+			{
+				b = a;
+				a = 0;
+			};
+			
+			return Math.floor(Math.random() * (b - a + 1)) + a;
 		}
 	},
 
@@ -2087,7 +2103,13 @@ vkPatch.plugins.add({
 		
 		resources: 
 		{
-			playingIcon: 'data:image/gif;base64,R0lGODlhDAAMALMAAP///9bW1s7Ozr29vbW1ta2traWlpZycnJSUlIyMjAAAAAAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQEBQD/ACwAAAAADAAMAAAEORAEQisNQJRdKDeCIXKbKB7oYQBAiiIwcrAxnCB0DiR8wvq7X+9H3A2DSB6ix+whBs3mADBYNp+ACAAh+QQEBQD/ACwAAAAADAAMAAAEOBAEQisNQJRdKDeCIXKbKB7oYaYoggDAAbt08gJ3nexw0vc7H0BIDP6GQERwGUQMmMwBYKBkOgERACH5BAQFAP8ALAAAAAAMAAwAAAQ3EARCKw1AlF0oN4IhcpsoHuhhAECKIjBysDGc1LSd7GzS70AfQEgE9o7DW3B5GzCDA8AAwUREIwAh+QQEBQD/ACwAAAAADAAMAAAEOBAEQisNQJRdKDeCIW4AUIjioR5GuapIjBylHCd2XSZ8n+y7HhDwIwqJQx7Cx8QNmr4BYLBkIqQRACH5BAQFAP8ALAAAAAAMAAwAAAQ4EARCKw1AlF0oN4IhcpsoHuhhAECKIjBysDGc1LSd7GzS9zsfQEgM/oZARHAZRAyYzAFgoGQ6AREAIfkEBAUA/wAsAAAAAAwADAAABDgQBEIrDUCUXSg3giFymyge6GGmKOIiBwC8boLI91wnvJz4vOAPMCwGfUiiTci0DZrCAWCAaCKkEQAh+QQEBQD/ACwAAAAADAAMAAAENxAEQisNQJRdKDeCIXKbKB7oYaYoggBA6s7JC9h0osMJz+s9QHAI9Al/CKASiBgslwPAILlsAiIAIfkEBAUA/wAsAAAAAAwADAAABDYQBEIrDUCUXSg3giFymygeBwCYaIsgqqu+CQy8r5rsie4DvB7wFyTqasFkbaAMDgADhBLxjAAAIfkEBAUA/wAsAAAAAAwADAAABDcQBEIrDUCUXSg3giFymyge6GGmKIIAQOrOyQvMdKLDCc/rPUBwCPQJfwigEogYLJcDwCC5bAIiACH5BAQFAP8ALAAAAAAMAAwAAAQ3EARCKw1AlF0oN4IhcpsoHuhhpiiCAEDqzskL2HaiJzAP+Dtgr7cb/oiIoLI2WAYHgEFSiYBGAAAh+QQEBQD/ACwAAAAADAAMAAAENxAEQisNQJRdKDeCIXKbKB7oYaYo4iIHALxuQstvoicyD/g7YK+3G/6IiKDSNlgGB4BBUomARgAAOw=='
+			playingIcon: 'data:image/gif;base64,R0lGODlhDAAMALMAAP///9bW1s7Ozr29vbW1ta2traWlpZycnJSUlIyMjAAAAAAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQEBQD/ACwAAAAADAAMAAAEORAEQisNQJRdKDeCIXKbKB7oYQBAiiIwcrAxnCB0DiR8wvq7X+9H3A2DSB6ix+whBs3mADBYNp+ACAAh+QQEBQD/ACwAAAAADAAMAAAEOBAEQisNQJRdKDeCIXKbKB7oYaYoggDAAbt08gJ3nexw0vc7H0BIDP6GQERwGUQMmMwBYKBkOgERACH5BAQFAP8ALAAAAAAMAAwAAAQ3EARCKw1AlF0oN4IhcpsoHuhhAECKIjBysDGc1LSd7GzS70AfQEgE9o7DW3B5GzCDA8AAwUREIwAh+QQEBQD/ACwAAAAADAAMAAAEOBAEQisNQJRdKDeCIW4AUIjioR5GuapIjBylHCd2XSZ8n+y7HhDwIwqJQx7Cx8QNmr4BYLBkIqQRACH5BAQFAP8ALAAAAAAMAAwAAAQ4EARCKw1AlF0oN4IhcpsoHuhhAECKIjBysDGc1LSd7GzS9zsfQEgM/oZARHAZRAyYzAFgoGQ6AREAIfkEBAUA/wAsAAAAAAwADAAABDgQBEIrDUCUXSg3giFymyge6GGmKOIiBwC8boLI91wnvJz4vOAPMCwGfUiiTci0DZrCAWCAaCKkEQAh+QQEBQD/ACwAAAAADAAMAAAENxAEQisNQJRdKDeCIXKbKB7oYaYoggBA6s7JC9h0osMJz+s9QHAI9Al/CKASiBgslwPAILlsAiIAIfkEBAUA/wAsAAAAAAwADAAABDYQBEIrDUCUXSg3giFymygeBwCYaIsgqqu+CQy8r5rsie4DvB7wFyTqasFkbaAMDgADhBLxjAAAIfkEBAUA/wAsAAAAAAwADAAABDcQBEIrDUCUXSg3giFymyge6GGmKIIAQOrOyQvMdKLDCc/rPUBwCPQJfwigEogYLJcDwCC5bAIiACH5BAQFAP8ALAAAAAAMAAwAAAQ3EARCKw1AlF0oN4IhcpsoHuhhpiiCAEDqzskL2HaiJzAP+Dtgr7cb/oiIoLI2WAYHgEFSiYBGAAAh+QQEBQD/ACwAAAAADAAMAAAENxAEQisNQJRdKDeCIXKbKB7oYaYo4iIHALxuQstvoicyD/g7YK+3G/6IiKDSNlgGB4BBUomARgAAOw==',
+			
+			// Кадры иконки проигрывания
+			playingIconFrames: 'data:image/gif;base64,R0lGODlhhAAMAPcAAIyOjJSWlJyenKSmpKyurLS2tLy+vMzOzNTW1Pz+/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAhAAMAAAI/wATIChAsCBBBAkEGjSIUOHCgwkHFiCwsKHEiQwjPoTo8KHFjQU+bhTpUePIBAcIqBxAkMAAlwdSqqQ4cWXMmTRnDrg5s+XLnTJVtrQZNCdRnENhFk0KFGlNpUhxNl3J9MCAqzhdXt36UipXrF6/qkyoVWxYsyu/dtWpVmdZrlnVrlUpoO1ZAXjrJsybNwDerQL88vU7YK9fwYH1JuDbVzFexHkBH37892rivgkBMxa8FfJlzZvrWkYcoLTfhKYBmN6LurRq06cTwJ4toHWA16Zry3ZN2zbsvY95lwYeOCFuw4GFByCeuvfu27cBGJ+eAIB16dWNu77uWvt169Cpf8PvXn27dfHRr6NPj/11e/XlobMXb5z7be3zs+v/Tr86/Pff8bfff+IR6F+A/QnYXn3n7cfgggM2CKGCBUpY4YQPJmgggBge2CGFEX64YYYOeqihhSGeKCKKHKroYokgtgjjiP6xF6B7N9qXo4474rijeTkCeaOQARI5no1FIjmeAT0CYACTPT7ZpJRRQrkjlVdamSOWW2p5I5dfehmgAQkYgGQAZJZ5ZppmDsnmmgm1WeSbbsYJp5p14jmnnXnKuWQCAQEAOw==',
+			
+			// прозрачный однопиксельный png
+			blank: 'data:image/gif;base64,R0lGODlhAQABAPcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAP8ALAAAAAABAAEAAAgEAP8FBAA7'
 		},
 		
 		pages: {},
@@ -2097,17 +2119,52 @@ vkPatch.plugins.add({
 		{
 			if (this.settings.playingIcon.get())
 			{
-				// показывать иконку при воспроизведении
-				this.playingIconElement = $('<img style="margin-bottom: -2px; margin-right: 4px; margin-left: -16px; z-index: 99999; position: relative;">')
-				// вешаем обработчик на событие
+				// иконки при воспроизведении и паузе
+				var icon = $('<img style="border: 0px; margin-bottom: -2px; margin-right: 4px; margin-left: -16px; z-index: 99999; position: relative; width: 12px; height: 12px;">');
+				this.playingIconElement = icon.clone().attr('src',this.resources.playingIcon).attr('id','vkpatch_playing_icon');
+				this.pausedIconElement = icon.clone().attr('src',this.resources.blank).css('background-image','url("'+this.resources.playingIconFrames+'")');
+				
+				// перерисовка
 				vkPatch.events.audioRedraw.bind($.proxy(this.redrawPlayingIcon,this));
-			};			
+			};	
 		},
 		
-		/**
-		 * jQuery-объект содержащий img иконки при воспроизведении
-		 */
+		// jQuery-объект содержащий img иконки при воспроизведении
 		playingIconElement: null,
+		
+		// Номер кадра иконки, на котором остановилось проигрывание
+		pausedIconFrame: null,
+		
+		// id контейнера, содержащего иконку
+		playingIconContainerId: null,
+		
+		/**
+		 * Установить иконку проигрывания
+		 * @param {state} type - состояние иконка
+		 * @param {integer} frame - номер кадра, если иконка паузы
+		 */
+		setPlayingIcon: function(state, frame) 
+		{
+			switch (state)
+			{
+				case 'play':
+					
+					this.pausedIconElement.hide();
+					
+					this.playingIconElement.show();
+					
+					
+				break;
+				
+				case 'pause':
+				
+					this.playingIconElement.hide();
+					
+					this.pausedIconElement.css('background-position-x',12*frame).show();
+					
+				break;
+			}
+		},
 		
 		/**
 		 * Обработчик события audioRedraw
@@ -2118,15 +2175,52 @@ vkPatch.plugins.add({
 		{
 			switch (state)
 			{
-				case 'load':
-					
-					this.playingIconElement.attr('src',this.resources.playingIcon);
-					
-					$('#audio'+track.aid).find('div.duration:first')
-					.prepend(this.playingIconElement);
+				case 'stop':
+				
+					this.pausedIconFrame = null;
 					
 				break;
+				
+				case 'load':
+				
+					if (this.pausedIconFrame == null) 
+					{
+						this.setPlayingIcon('play');
+					};
+					
+				break;
+				
+				case 'play':
+					
+					this.pausedIconFrame = null;
+					this.setPlayingIcon('play');
+					
+				break;
+				
+				case 'pause':
+					
+					// выбираем случайно кадр, на котором остановили
+					if (this.pausedIconFrame == null) 
+					{
+						this.pausedIconFrame = vkPatch.sys.random(10);
+					};
+					
+					this.setPlayingIcon('pause', this.pausedIconFrame);
+
+					
+				break;
+			};
+			
+			// если иконок нет в DOM или надо изменить положение
+			if (!$('#vkpatch_playing_icon').length || track.aid != this.playingIconContainerId) 
+			{
+				$('#audio'+track.aid).find('div.duration:first')
+					.prepend(this.playingIconElement)
+					.prepend(this.pausedIconElement);
+					
+				this.playingIconContainerId = track.aid;
 			}
+			
 		}
 });
 
