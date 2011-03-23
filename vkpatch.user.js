@@ -271,9 +271,17 @@ var vkPatch =
 				else if(typeof(loc) == 'object' && loc[0])	// setLoc может принимать объект с параметрами
 				{
 					loc = loc[0];
-				}
+				};
+				
 				vkPatch.events.pageChanged.raise(loc.split('?')[0]);
 			});
+			
+			vkPatch.events.pageChanged.bind(function()
+			{
+				vkPatch.page.parseGet();
+			});
+			
+			//vkPatch.page.parseGet();	// при старты вызывается событие pageChanged
 		},
 		
 		/*
