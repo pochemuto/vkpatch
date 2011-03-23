@@ -85,7 +85,7 @@ var vkPatch =
 			
 			// jQBrowser v0.2: http://davecardwell.co.uk/javascript/jquery/plugins/jquery-browserdetect/
 			// Добавлен Chrome - $.browser.chrome()
-			new function(){var a={'browser':function(){return b.browser},'version':{'number':function(){return b.version.number},'string':function(){return b.version.string}},'OS':function(){return b.OS},'aol':function(){return b.aol},'camino':function(){return b.camino},'firefox':function(){return b.firefox},'flock':function(){return b.flock},'icab':function(){return b.icab},'konqueror':function(){return b.konqueror},'mozilla':function(){return b.mozilla},'msie':function(){return b.msie},'netscape':function(){return b.netscape},'opera':function(){return b.opera},'safari':function(){return b.safari},'chrome':function(){return b.chrome},'linux':function(){return b.linux},'mac':function(){return b.mac},'win':function(){return b.win}};$.browser=a;var b={'browser':'Unknown','version':{'number':undefined,'string':'Unknown'},'OS':'Unknown','aol':false,'camino':false,'firefox':false,'flock':false,'icab':false,'konqueror':false,'mozilla':false,'msie':false,'netscape':false,'opera':false,'safari':false,'chrome':false,'linux':false,'mac':false,'win':false};for(var i=0,ua=navigator.userAgent,ve=navigator.vendor,data=[{'name':'Safari','browser':function(){return/Apple/.test(ve)}},{'name':'Opera','browser':function(){return window.opera!=undefined}},{'name':'iCab','browser':function(){return/iCab/.test(ve)}},{'name':'Konqueror','browser':function(){return/KDE/.test(ve)}},{'identifier':'aol','name':'AOL Explorer','browser':function(){return/America Online Browser/.test(ua)},'version':function(){return ua.match(/rev(\d+(?:\.\d+)+)/)}},{'name':'Flock','browser':function(){return/Flock/.test(ua)}},{'name':'Camino','browser':function(){return/Camino/.test(ve)}},{'name':'Firefox','browser':function(){return/Firefox/.test(ua)}},{'name':'Netscape','browser':function(){return/Netscape/.test(ua)}},{'identifier':'msie','name':'Internet Explorer','browser':function(){return/MSIE/.test(ua)},'version':function(){return ua.match(/MSIE (\d+(?:\.\d+)+(?:b\d*)?)/)}},{'name':'Chrome','browser':function(){return/chrome/.test(ua)}},{'name':'Mozilla','browser':function(){return/Gecko|Mozilla/.test(ua)},'version':function(){return ua.match(/rv:(\d+(?:\.\d+)+)/)}}];i<data.length;i++){if(data[i].browser()){var c=data[i].identifier?data[i].identifier:data[i].name.toLowerCase();b[c]=true;b.browser=data[i].name;var d;if(data[i].version!=undefined&&(d=data[i].version())){b.version.string=d[1];b.version.number=parseFloat(d[1])}else{var e=new RegExp(data[i].name+'(?:\\s|\\/)(\\d+(?:\\.\\d+)+(?:(?:a|b)\\d*)?)');d=ua.match(e);if(d!=undefined){b.version.string=d[1];b.version.number=parseFloat(d[1])}}break}};for(var i=0,pl=navigator.platform,data=[{'identifier':'win','name':'Windows','OS':function(){return/Win/.test(pl)}},{'name':'Mac','OS':function(){return/Mac/.test(pl)}},{'name':'Linux','OS':function(){return/Linux/.test(pl)}}];i<data.length;i++){if(data[i].OS()){var c=data[i].identifier?data[i].identifier:data[i].name.toLowerCase();b[c]=true;b.OS=data[i].name;break}}}();
+			new function(){var a={'browser':function(){return b.browser},'version':{'number':function(){return b.version.number},'string':function(){return b.version.string}},'OS':function(){return b.OS},'aol':function(){return b.aol},'camino':function(){return b.camino},'firefox':function(){return b.firefox},'flock':function(){return b.flock},'icab':function(){return b.icab},'konqueror':function(){return b.konqueror},'mozilla':function(){return b.mozilla},'msie':function(){return b.msie},'netscape':function(){return b.netscape},'opera':function(){return b.opera},'safari':function(){return b.safari},'chrome':function(){return b.chrome},'linux':function(){return b.linux},'mac':function(){return b.mac},'win':function(){return b.win}};$.browser=a;var b={'browser':'Unknown','version':{'number':undefined,'string':'Unknown'},'OS':'Unknown','aol':false,'camino':false,'firefox':false,'flock':false,'icab':false,'konqueror':false,'mozilla':false,'msie':false,'netscape':false,'opera':false,'safari':false,'chrome':false,'linux':false,'mac':false,'win':false};for(var i=0,ua=navigator.userAgent,ve=navigator.vendor,data=[{'name':'Safari','browser':function(){return/Apple/.test(ve)}},{'name':'Opera','browser':function(){return window.opera!=undefined}},{'name':'iCab','browser':function(){return/iCab/.test(ve)}},{'name':'Konqueror','browser':function(){return/KDE/.test(ve)}},{'identifier':'aol','name':'AOL Explorer','browser':function(){return/America Online Browser/.test(ua)},'version':function(){return ua.match(/rev(\d+(?:\.\d+)+)/)}},{'name':'Flock','browser':function(){return/Flock/.test(ua)}},{'name':'Camino','browser':function(){return/Camino/.test(ve)}},{'name':'Firefox','browser':function(){return/Firefox/.test(ua)}},{'name':'Netscape','browser':function(){return/Netscape/.test(ua)}},{'identifier':'msie','name':'Internet Explorer','browser':function(){return/MSIE/.test(ua)},'version':function(){return ua.match(/MSIE (\d+(?:\.\d+)+(?:b\d*)?)/)}},{'name':'Chrome','browser':function(){return/Chrome/.test(ua)}},{'name':'Mozilla','browser':function(){return/Gecko|Mozilla/.test(ua)},'version':function(){return ua.match(/rv:(\d+(?:\.\d+)+)/)}}];i<data.length;i++){if(data[i].browser()){var c=data[i].identifier?data[i].identifier:data[i].name.toLowerCase();b[c]=true;b.browser=data[i].name;var d;if(data[i].version!=undefined&&(d=data[i].version())){b.version.string=d[1];b.version.number=parseFloat(d[1])}else{var e=new RegExp(data[i].name+'(?:\\s|\\/)(\\d+(?:\\.\\d+)+(?:(?:a|b)\\d*)?)');d=ua.match(e);if(d!=undefined){b.version.string=d[1];b.version.number=parseFloat(d[1])}}break}};for(var i=0,pl=navigator.platform,data=[{'identifier':'win','name':'Windows','OS':function(){return/Win/.test(pl)}},{'name':'Mac','OS':function(){return/Mac/.test(pl)}},{'name':'Linux','OS':function(){return/Linux/.test(pl)}}];i<data.length;i++){if(data[i].OS()){var c=data[i].identifier?data[i].identifier:data[i].name.toLowerCase();b[c]=true;b.OS=data[i].name;break}}}();
 		
 			// Cookies
 			// http://plugins.jquery.com/node/1387
@@ -125,6 +125,9 @@ var vkPatch =
 		 */
 		step2: function()
 		{
+			// Определение браузера и задание специфичный параметров
+			vkPatch.browser.determine();
+			
 			// объявление событий
 			vkPatch.events = _.map(vkPatch.events, function(item, name)
 			{
@@ -134,8 +137,7 @@ var vkPatch =
 			// Определение страницы
 			vkPatch.page.get();
 	
-			// Определение браузера и задание специфичный параметров
-			vkPatch.browser.determine();
+			
 			_window.onhashchange = vkPatch.page.hashchangeHandler;
 			
 			/**
@@ -172,25 +174,46 @@ var vkPatch =
 	 */
 	browser:
 	{
+		/**
+		 * Имя браузера
+		 */
+		name: null,
+		
 		isFirefox: false,
 		isOpera: false,
 		isIE: false,
 		isChrome: false,
+		
+		/**
+		 * Объект консоли браузера - контекст log
+		 */
+		console: {},
+		
+		/**
+		 * Функция вывода сообщения в консоль браузера
+		 */
+		log: function(){},
 		
 		/*
 		 * Задание специфичных для браузера установок
 		 */
 		determine: function()
 		{
+			vkPatch.browser.name = $.browser.browser();
+			
 			if ($.browser.opera())
 			{
 				vkPatch.browser.isOpera = true;
-				vkPatch.console_browser = opera.postError;
+				
+				vkPatch.browser.console = opera;
+				vkPatch.browser.log = opera.postError;
 			}
 			else if ($.browser.firefox())
 			{
 				vkPatch.browser.isFirefox = true;
-				vkPatch.console_browser = console.log;
+				
+				vkPatch.browser.console = console;
+				vkPatch.browser.log = console.log;
 			}
 			else if ($.browser.msie())
 			{
@@ -198,8 +221,10 @@ var vkPatch =
 			}
 			else if ($.browser.chrome())
 			{
-				vkPatch.console_browser = console.log;
 				vkPatch.browser.isChrome = true;
+				
+				vkPatch.browser.console = console;
+				vkPatch.browser.log = console.log;
 			};
 		}
 	},
@@ -593,7 +618,7 @@ var vkPatch =
 		 */
 		this.raise = function() 
 		{
-			console.log(name + ' raised: '+[].join.call(arguments,', '));
+			vkPatch.log(name + ' raised: '+[].join.call(arguments,', '));
 			for (var i=0; i < handlers.length; i++)
 			{
 				handlers[i].apply(this, arguments);
@@ -1215,7 +1240,7 @@ var vkPatch =
 				}
 				catch (err)
 				{
-					vkPatch.plugins.errorHandler(err.name + ': ' + err.message,null,'exception',null);
+					vkPatch.plugins.errorHandler(err.name + ': ' + err.message, null, 'exception',null);
 				}
 				_window.onerror = oldHandler
 				
@@ -1499,7 +1524,8 @@ var vkPatch =
 	
 	console_browser: function(){},
 	log: function(mess) {
-		vkPatch.console_browser(mess);
+		// вызываем в контексте консоли
+		vkPatch.browser.log.call( vkPatch.browser.console, mess );
 	},
 	
 	lang:
@@ -2007,14 +2033,17 @@ vkPatch.plugins.add({
 		
 		settings: 
 		{
-			playingIcon: vkPatch.settings.create().def(true).category('iface').done()
+			playingIcon: vkPatch.settings.create().def(true).category('iface').done(),
+			connectLastfm: vkPatch.settings.create().button(function(){}).category('iface').done()
 		},
 		
 		lang:
 		{
 			settings: 
 			{
-				playingIcon: ['Иконка при прослушивании аудио','Показывать иконку напротив аудиозаписи при её проигрывании']
+				playingIcon: ['Иконка при прослушивании аудио','Показывать иконку напротив аудиозаписи при её проигрывании'],
+				connectLastfm: 'Связать с аккаунтом Last.fm',
+				disconnectLastfm: 'Отключить от <b></b>'
 			},
 			categories: {}
 		},
