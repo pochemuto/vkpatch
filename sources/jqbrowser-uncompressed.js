@@ -229,7 +229,7 @@ new function() {
                 { // Chrome <www.google.com/chrome/?hl=ru>
                           'name': 'Chrome',
                        'browser': function() {
-                                      return /chrome/.test(ua);
+                                      return /chrome/i.test(ua);
                                   }
                  },
                  { // Mozilla <http://www.mozilla.org/products/mozilla1.x/>
