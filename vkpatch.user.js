@@ -1407,10 +1407,10 @@ var vkPatch =
 			var tabs = target.parent();
 			
 			// Удаляем активность у другого таба
-			tabs.find('.activeLink').removeClass('activeLink');
+			tabs.find('.activeLink, .active_link').removeClass('activeLink active_link');
 			
 			// Добавляем нашему
-			target.addClass('activeLink');
+			target.addClass('activeLink active_link');
 		},
 		
 		/**
@@ -1710,7 +1710,7 @@ vkPatch.plugins.add({
 		'settings': function()
 		{
 			var tabImg = $('<img>').attr('src',this.resources.tabIcon).css('margin','-2px 0px -4px 0px').css('height','16px');
-			this.tab = vkPatch.iface.addTab(tabImg, $('#content > div.tBar:eq(0) > ul'),this.settingsHash).click(jQuery.proxy(this.tabClickHandler,this));
+			this.tab = vkPatch.iface.addTab(tabImg, $('#content > div.tBar:first > ul,#content > div.tabs:first > ul'),this.settingsHash).click(jQuery.proxy(this.tabClickHandler,this));
 			// Если в адресе есть #vkpath, то активируем вкладку
 			this.checkHash();
 		}
@@ -1747,6 +1747,13 @@ vkPatch.plugins.add({
 	
 	tabClickHandler: function(e,data)
 	{
+		// временный фикс для вкладки Приватность - сильное отличие в подключённых скриптах/стилях и самой страницы от других вкладок
+		if (vkPatch.page.params.act == 'privacy')
+		{
+			location.href = 'http://vkontakte.ru/settings.php#vkpatch';
+			return false;
+		};
+		
 		// отменяем обработчик события поумолчанию
 		// чтобы IE не брал страницу из кеша
 		e.preventDefault();
