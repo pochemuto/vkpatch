@@ -2193,9 +2193,27 @@ vkPatch.plugins.add({
 		apiKey: 'bd51d4cc4ae2ce6be98e4008c6ba60e4',
 		apiSecret: 'f1ce75e817a2a4e2701357aa47405d4e',
 		
+		lastfm: 
+		{
+			/**
+			 * Получить url для запроса токена на авторизацию
+			 * @param {string} api_key - ключ к api
+			 * @param {string} callback - url, на который будет перенаправлен пользователь после авторизации приложения
+			 * @return {string} url
+			 */
+			getTokenUrl: function(api_key, callback) 
+			{
+				if (callback)
+				{
+					callback = "&cp=" + escape(callback);
+				}
+				return "http://www.last.fm/api/auth/?api_key="+api_key+callback;
+			}
+		},
+		
 		connectButtonHandler: function() 
 		{
-			
+			location.href = this.lastfm.getTokenUrl(this.apiKey, 'http://vkontakte.ru/settings.php?act=vkpatch');
 		},
 		
 		/**********************
