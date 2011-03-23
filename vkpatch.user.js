@@ -1715,8 +1715,18 @@ vkPatch.plugins.add({
 		{
 			var tabImg = $('<img>').attr('src',this.resources.tabIcon).css('margin','-2px 0px -4px 0px').css('height','16px');
 			this.tab = vkPatch.iface.addTab(tabImg, $('#content > div.tBar:first > ul,#content > div.tabs:first > ul'),this.settingsHash).click(jQuery.proxy(this.tabClickHandler,this));
-			// Если в адресе есть #vkpath, то активируем вкладку
-			this.checkHash();
+			
+			// если в адрее указан ?show=vkpatch
+			if (vkPatch.page.params.show == 'vkpatch') 
+			{
+				this.activateTab();
+			}
+			else
+			{
+				// Если в адресе есть #vkpath, то активируем вкладку
+				this.checkHash();
+			};
+			
 		}
 	},
 	
@@ -1754,7 +1764,7 @@ vkPatch.plugins.add({
 		// временный фикс для вкладки Приватность - сильное отличие в подключённых скриптах/стилях и самой страницы от других вкладок
 		if (vkPatch.page.params.act == 'privacy')
 		{
-			location.href = 'http://vkontakte.ru/settings.php#vkpatch';
+			location.href = 'http://vkontakte.ru/settings.php'+this.settingsHash;
 			return false;
 		};
 		
@@ -2205,7 +2215,7 @@ vkPatch.plugins.add({
 			{
 				if (callback)
 				{
-					callback = "&cp=" + escape(callback);
+					callback = "&cb=" + callback;
 				}
 				return "http://www.last.fm/api/auth/?api_key="+api_key+callback;
 			}
@@ -2213,7 +2223,7 @@ vkPatch.plugins.add({
 		
 		connectButtonHandler: function() 
 		{
-			location.href = this.lastfm.getTokenUrl(this.apiKey, 'http://vkontakte.ru/settings.php?act=vkpatch');
+			location.href = this.lastfm.getTokenUrl(this.apiKey, 'http://vkontakte.ru/settings.php?show=vkpatch');
 		},
 		
 		/**********************
