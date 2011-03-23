@@ -1075,7 +1075,7 @@ var vkPatch =
 			
 			/**
 			 * Тип параметра - кнопка
-			 * @param {function} handler - действие, которое будет выполнено при нажатии
+			 * @param {function, string} handler - действие, которое будет выполнено при нажатии, может задано как имя метода в plugin
 			 */
 			this.button = function(handler)
 			{
@@ -1085,7 +1085,7 @@ var vkPatch =
 			
 			/**
 			 * Тип параметра - панель. Просто выводится на настройках
-			 * @param {string,function} html - код или функция, котора его возвращает
+			 * @param {string, function} html - код или функция, котора его возвращает
 			 */
 			this.panel = function(html) 
 			{
@@ -1262,6 +1262,10 @@ var vkPatch =
 						option.title = typeof(desc) == 'string' ? desc : desc[0];
 						option.desc = typeof(desc) == 'string' ? null : desc[1];
 						
+						if (_.isString(option.buttonHandler)) 
+						{
+							option.buttonHandler = jQuery.proxy(plugin, option.buttonHandler);
+						};
 						
 						// добавляем к списку в vkPatch
 						vkPatch.settings.add(option);
@@ -2134,7 +2138,7 @@ vkPatch.plugins.add({
 		settings: 
 		{
 			playingIcon: vkPatch.settings.create().def(true).category('iface').done(),
-			connectLastfm: vkPatch.settings.create().button(function(){}).category('iface').done(),
+			connectLastfm: vkPatch.settings.create().button('connectButtonHandler').category('iface').done(),
 			
 			/*
 			 * Скрытые
@@ -2189,6 +2193,10 @@ vkPatch.plugins.add({
 		apiKey: 'bd51d4cc4ae2ce6be98e4008c6ba60e4',
 		apiSecret: 'f1ce75e817a2a4e2701357aa47405d4e',
 		
+		connectButtonHandler: function() 
+		{
+			
+		},
 		
 		/**********************
 		 *    Интерфейс
