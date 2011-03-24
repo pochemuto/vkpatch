@@ -1140,15 +1140,17 @@ var vkPatch =
 	 */
 	storage:
 	{
-	
+		// префикс параметров vkpatch
+		paramsPrefix: 'vkpatch::',
+		
 		set: function(name,value)
 		{
-			localStorage.setItem(name,$.toJSON(value));
+			localStorage.setItem(vkPatch.storage.paramsPrefix + name,$.toJSON(value));
 		},
 		
 		get: function(name)
 		{
-			var value = localStorage.getItem(name);
+			var value = localStorage.getItem(vkPatch.storage.paramsPrefix + name);
 
 			if (value !== null)
 			{
@@ -1159,7 +1161,7 @@ var vkPatch =
 		
 		remove: function(name)
 		{
-			localStorage.removeItem(name);
+			localStorage.removeItem(vkPatch.storage.paramsPrefix + name);
 		},
 		
 		clear: function()
