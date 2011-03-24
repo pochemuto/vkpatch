@@ -145,7 +145,6 @@ var vkPatch =
 
 			// Определение страницы
 			vkPatch.page.get();
-	
 			
 			_window.onhashchange = vkPatch.page.hashchangeHandler;
 			
@@ -289,8 +288,7 @@ var vkPatch =
 			{
 				vkPatch.page.parseGet();
 			});
-			
-			//vkPatch.page.parseGet();	// при старты вызывается событие pageChanged
+			vkPatch.page.parseGet();
 		},
 		
 		/*
@@ -2239,12 +2237,7 @@ vkPatch.plugins.add({
 		{
 			'settings': function()
 			{
-				if (vkPatch.page.params.token) 
-				{
-					// Выводим сообщение
-					$('#messageWrap').remove();	// удаляем старое
-					vkPatch.iface.inlineMessage('Kikuyutoo связан с вами').insertBefore('#content > div.editorPanel');
-				}
+				
 			}
 		},
 		
@@ -2260,6 +2253,17 @@ vkPatch.plugins.add({
 				
 				// перерисовка
 				vkPatch.events.audioRedraw.bind($.proxy(this.redrawPlayingIcon,this));
+				if (vkPatch.page.params.token) 
+				{
+					vkPatch.plugins.settings.events.tabActivated.bind(jQuery.proxy(function()
+					{
+						this.settings.token.set(vkPatch.page.params.token);
+						// Выводим сообщение
+						vkPatch.plugins.settings.showMessage('Kikuyutoo связан с вами','normal',10000);
+						
+					},this));
+					
+				}
 			};	
 		},
 		
