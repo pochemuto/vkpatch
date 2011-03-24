@@ -1207,6 +1207,18 @@ var vkPatch =
 				plugin = vkPatch.plugins.container[i];
 				
 				/*
+				 * Добавляем плагин к vkPatch.settings.[pluginName]
+				 */
+				if (!vkPatch.plugins[plugin.name])
+				{
+					vkPatch.plugins[plugin.name] = plugin;
+				}
+				else
+				{
+					vkPatch.log('plugin name conflict: '+plugin.name);
+				};
+				
+				/*
 				 * Раскладываем ф-ии плагинов, выполняемые на страницах в pages 
 				 */
 				_.each(plugin.pages, function(func, pages) 
