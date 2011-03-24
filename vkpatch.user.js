@@ -1725,7 +1725,7 @@ vkPatch.plugins.add({
 	
 	events: 
 	{
-		tabActivated: null,
+		tabActivated: null
 	},
 	
 	pages: 
@@ -1916,8 +1916,7 @@ vkPatch.plugins.add({
 				
 			};
 			
-			
-			
+			this.events.tabActivated.raise();
 		};
 		
 		if (nothingShow) 	/* нет параметров для отображения */
