@@ -140,7 +140,7 @@ var vkPatch =
 			// объявление событий
 			vkPatch.events = _.map(vkPatch.events, function(item, name)
 			{
-				return new vkPatch.event(name);
+				return new vkPatch.event(name, 'core');
 			});
 
 			// Определение страницы
@@ -643,14 +643,16 @@ var vkPatch =
 	/**
 	 * Конструктор события vkPatch
 	 * @param {string} name - имя события
+	 * @param {string} pluginName - имя плагина-владельца
 	 */
-	event: function(name)
+	event: function(name, pluginName)
 	{
 		// обработчики
 		var handlers = [];
 		
 		var name = name;
-		
+		var pluginName = pluginName+'.' || '';
+		 
 		/**
 		 * Повесить обработчик на событие
 		 * @param {function} handler - обработчик
@@ -674,7 +676,7 @@ var vkPatch =
 		 */
 		this.raise = function() 
 		{
-			vkPatch.log(name + ' raised: '+[].join.call(arguments,', '));
+			vkPatch.log(pluginName + name + ' raised: '+[].join.call(arguments,', '));
 			for (var i=0; i < handlers.length; i++)
 			{
 				handlers[i].apply(this, arguments);
@@ -1242,6 +1244,18 @@ var vkPatch =
 				});
 				
 				/*
+				 * Создаём объекты событий
+				 */
+				if (plugin.events) 
+				{
+					plugin.events = _.map(plugin.events, function(event, name) 
+					{
+						return new vkPatch.event(name, plugin.name);
+					});
+				};
+				
+				
+				/*
 				 * Устанавливаем имя в описания параметров плагинов
 				 * Оно состоит из имени_плагина-имя_параметра
 				 */
@@ -1709,6 +1723,11 @@ vkPatch.plugins.add({
 		nothingShow: 		'Нет параметров для отображения'
 	},
 	
+	events: 
+	{
+		tabActivated: null,
+	},
+	
 	pages: 
 	{
 		'settings': function()
@@ -1909,7 +1928,7 @@ vkPatch.plugins.add({
 		{
 			// Кнопка "сохранить"
 			this.button('Сохранить', jQuery.proxy(this.save,this));	
-		}
+		};
 		
 	},
 	
@@ -2180,7 +2199,18 @@ vkPatch.plugins.add({
 			blank: 'data:image/gif;base64,R0lGODlhAQABAPcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAP8ALAAAAAABAAEAAAgEAP8FBAA7'
 		},
 		
-		pages: {},
+		pages: 
+		{
+			'settings': function()
+			{
+				if (vkPatch.page.params.token) 
+				{
+					// Выводим сообщение
+					$('#messageWrap').remove();	// удаляем старое
+					vkPatch.iface.inlineMessage('Kikuyutoo связан с вами').insertBefore('#content > div.editorPanel');
+				}
+			}
+		},
 		
 
 		init: function()
