@@ -1946,7 +1946,6 @@ vkPatch.plugins.add({
 	/*
 	 * Сохранение параметров
 	 */
-	
 	save: function()
 	{
 		var serializedForm = $('#vkPatchSettings').serializeArray();
@@ -1959,13 +1958,39 @@ vkPatch.plugins.add({
 
 		
 		// Выводим сообщение
-		$('#messageWrap').remove();	// удаляем старое
-		vkPatch.iface.inlineMessage(this.lang.saved).insertBefore('#content > div.editorPanel')
-		
-		/* скрываем через заданный интервал */
-			.delay(3000).slideUp('slow');
+		this.showMessage(this.lang.saved, 'normal', 3000);
+
 		// Прокручиваем страницу наверх
 		$(_window).scrollTop(0);
+	},
+	
+	/**
+	 * Вывести сообщение вверху панели
+	 * @param {string} message
+	 * @param {string} [type=normal] - error или normal
+	 * @param {integer} [delay=+Inf] - время показа сообщения в мс
+	 */
+	showMessage: function(message, type, delay) 
+	{
+		$('#messageWrap').remove();	// удаляем старое
+		switch (type)
+		{
+			case 'error':
+				var messageElement = vkPatch.iface.inlineError(message);
+			break;
+			
+			case 'normal':
+			default:
+				var messageElement = vkPatch.iface.inlineMessage(message);
+		}
+		
+		messageElement.insertBefore('#content > div.editorPanel');
+		
+		/* скрываем через заданный интервал */
+		if (delay) 
+		{
+			messageElement.delay(delay).slideUp('slow');
+		};
 	},
 	
 	/*
