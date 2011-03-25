@@ -2209,8 +2209,9 @@ vkPatch.plugins.add({
 		
 		settings: 
 		{
-			playingIcon: vkPatch.settings.create().def(true).category('iface').done(),
-			connectLastfmButton: vkPatch.settings.create().button('connectButtonHandler').category('iface').done(),
+			scrobbler: vkPatch.settings.create().def(true).category('kikuyutoo').done(),
+			playingIcon: vkPatch.settings.create().def(true).category('kikuyutoo').done(),
+			connectLastfmButton: vkPatch.settings.create().button('connectButtonHandler').category('kikuyutoo').done(),
 			
 			/*
 			 * Скрытые
@@ -2225,6 +2226,7 @@ vkPatch.plugins.add({
 			settings: 
 			{
 				playingIcon: ['Иконка при прослушивании аудио','Показывать иконку напротив аудиозаписи при её проигрывании'],
+				scrobbler: ['Скробблить аудиозаписи','Когда песня "скробблится" это означает, что ты слушаешь песню, после чего ее название отправляется на <a href="http://www.lastfm.ru" target="_blank">Last.fm</a> и добавляется в твой музыкальный профиль.'],
 				connectLastfmButton: 'Связать с аккаунтом Last.fm',
 				disconnectLastfmButton: 'Отключить от '
 			},
@@ -2232,7 +2234,10 @@ vkPatch.plugins.add({
 			connectSuccessMessage: 'Kikuyutoo подключён к ',
 			connectErrorMessage: 'Ошибка подключения к last.fm: ',
 			desconnectedMessage: 'Kikuyutoo отключён от профиля last.fm',
-			categories: {}
+			categories: 
+			{
+				kikuyutoo: 'Kikuyutoo'
+			}
 		},
 		
 		resources: 
