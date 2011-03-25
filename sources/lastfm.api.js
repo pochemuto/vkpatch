@@ -71,7 +71,7 @@ function LastFM(options){
 			/* Open iframe document and write a form. */
 			doc.open();
 			doc.clear();
-			doc.write('<form method="post" action="' + apiUrl + '" id="form">');
+			doc.write('<form method="post" action="' + apiUrl + '" id="form" accept-charset="UTF-8">');
 
 			/* Write POST parameters as input fields. */
 			for(var param in params){
