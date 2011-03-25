@@ -124,7 +124,7 @@ var vkPatch =
 			/*
 			 * Кодирование строки в md
 			 */
-			vkPatch.sys.md5 = function (str){var RotateLeft=function(lValue,iShiftBits){return(lValue<<iShiftBits)|(lValue>>>(32-iShiftBits))};var AddUnsigned=function(lX,lY){var lX4,lY4,lX8,lY8,lResult;lX8=(lX&0x80000000);lY8=(lY&0x80000000);lX4=(lX&0x40000000);lY4=(lY&0x40000000);lResult=(lX&0x3FFFFFFF)+(lY&0x3FFFFFFF);if(lX4&lY4){return(lResult^0x80000000^lX8^lY8)}if(lX4|lY4){if(lResult&0x40000000){return(lResult^0xC0000000^lX8^lY8)}else{return(lResult^0x40000000^lX8^lY8)}}else{return(lResult^lX8^lY8)}};var F=function(x,y,z){return(x&y)|((~x)&z)};var G=function(x,y,z){return(x&z)|(y&(~z))};var H=function(x,y,z){return(x^y^z)};var I=function(x,y,z){return(y^(x|(~z)))};var FF=function(a,b,c,d,x,s,ac){a=AddUnsigned(a,AddUnsigned(AddUnsigned(F(b,c,d),x),ac));return AddUnsigned(RotateLeft(a,s),b)};var GG=function(a,b,c,d,x,s,ac){a=AddUnsigned(a,AddUnsigned(AddUnsigned(G(b,c,d),x),ac));return AddUnsigned(RotateLeft(a,s),b)};var HH=function(a,b,c,d,x,s,ac){a=AddUnsigned(a,AddUnsigned(AddUnsigned(H(b,c,d),x),ac));return AddUnsigned(RotateLeft(a,s),b)};var II=function(a,b,c,d,x,s,ac){a=AddUnsigned(a,AddUnsigned(AddUnsigned(I(b,c,d),x),ac));return AddUnsigned(RotateLeft(a,s),b)};var ConvertToWordArray=function(str){var lWordCount;var lMessageLength=str.length;var lNumberOfWords_temp1=lMessageLength+8;var lNumberOfWords_temp2=(lNumberOfWords_temp1-(lNumberOfWords_temp1%64))/64;var lNumberOfWords=(lNumberOfWords_temp2+1)*16;var lWordArray=Array(lNumberOfWords-1);var lBytePosition=0;var lByteCount=0;while(lByteCount<lMessageLength){lWordCount=(lByteCount-(lByteCount%4))/4;lBytePosition=(lByteCount%4)*8;lWordArray[lWordCount]=(lWordArray[lWordCount]|(str.charCodeAt(lByteCount)<<lBytePosition));lByteCount++}lWordCount=(lByteCount-(lByteCount%4))/4;lBytePosition=(lByteCount%4)*8;lWordArray[lWordCount]=lWordArray[lWordCount]|(0x80<<lBytePosition);lWordArray[lNumberOfWords-2]=lMessageLength<<3;lWordArray[lNumberOfWords-1]=lMessageLength>>>29;return lWordArray};var WordToHex=function(lValue){var WordToHexValue="",WordToHexValue_temp="",lByte,lCount;for(lCount=0;lCount<=3;lCount++){lByte=(lValue>>>(lCount*8))&255;WordToHexValue_temp="0"+lByte.toString(16);WordToHexValue=WordToHexValue+WordToHexValue_temp.substr(WordToHexValue_temp.length-2,2)}return WordToHexValue};var x=Array();var k,AA,BB,CC,DD,a,b,c,d;var S11=7,S12=12,S13=17,S14=22;var S21=5,S22=9,S23=14,S24=20;var S31=4,S32=11,S33=16,S34=23;var S41=6,S42=10,S43=15,S44=21;str=vkPatch.sys.utf8_encode(str);x=ConvertToWordArray(str);a=0x67452301;b=0xEFCDAB89;c=0x98BADCFE;d=0x10325476;for(k=0;k<x.length;k+=16){AA=a;BB=b;CC=c;DD=d;a=FF(a,b,c,d,x[k+0],S11,0xD76AA478);d=FF(d,a,b,c,x[k+1],S12,0xE8C7B756);c=FF(c,d,a,b,x[k+2],S13,0x242070DB);b=FF(b,c,d,a,x[k+3],S14,0xC1BDCEEE);a=FF(a,b,c,d,x[k+4],S11,0xF57C0FAF);d=FF(d,a,b,c,x[k+5],S12,0x4787C62A);c=FF(c,d,a,b,x[k+6],S13,0xA8304613);b=FF(b,c,d,a,x[k+7],S14,0xFD469501);a=FF(a,b,c,d,x[k+8],S11,0x698098D8);d=FF(d,a,b,c,x[k+9],S12,0x8B44F7AF);c=FF(c,d,a,b,x[k+10],S13,0xFFFF5BB1);b=FF(b,c,d,a,x[k+11],S14,0x895CD7BE);a=FF(a,b,c,d,x[k+12],S11,0x6B901122);d=FF(d,a,b,c,x[k+13],S12,0xFD987193);c=FF(c,d,a,b,x[k+14],S13,0xA679438E);b=FF(b,c,d,a,x[k+15],S14,0x49B40821);a=GG(a,b,c,d,x[k+1],S21,0xF61E2562);d=GG(d,a,b,c,x[k+6],S22,0xC040B340);c=GG(c,d,a,b,x[k+11],S23,0x265E5A51);b=GG(b,c,d,a,x[k+0],S24,0xE9B6C7AA);a=GG(a,b,c,d,x[k+5],S21,0xD62F105D);d=GG(d,a,b,c,x[k+10],S22,0x2441453);c=GG(c,d,a,b,x[k+15],S23,0xD8A1E681);b=GG(b,c,d,a,x[k+4],S24,0xE7D3FBC8);a=GG(a,b,c,d,x[k+9],S21,0x21E1CDE6);d=GG(d,a,b,c,x[k+14],S22,0xC33707D6);c=GG(c,d,a,b,x[k+3],S23,0xF4D50D87);b=GG(b,c,d,a,x[k+8],S24,0x455A14ED);a=GG(a,b,c,d,x[k+13],S21,0xA9E3E905);d=GG(d,a,b,c,x[k+2],S22,0xFCEFA3F8);c=GG(c,d,a,b,x[k+7],S23,0x676F02D9);b=GG(b,c,d,a,x[k+12],S24,0x8D2A4C8A);a=HH(a,b,c,d,x[k+5],S31,0xFFFA3942);d=HH(d,a,b,c,x[k+8],S32,0x8771F681);c=HH(c,d,a,b,x[k+11],S33,0x6D9D6122);b=HH(b,c,d,a,x[k+14],S34,0xFDE5380C);a=HH(a,b,c,d,x[k+1],S31,0xA4BEEA44);d=HH(d,a,b,c,x[k+4],S32,0x4BDECFA9);c=HH(c,d,a,b,x[k+7],S33,0xF6BB4B60);b=HH(b,c,d,a,x[k+10],S34,0xBEBFBC70);a=HH(a,b,c,d,x[k+13],S31,0x289B7EC6);d=HH(d,a,b,c,x[k+0],S32,0xEAA127FA);c=HH(c,d,a,b,x[k+3],S33,0xD4EF3085);b=HH(b,c,d,a,x[k+6],S34,0x4881D05);a=HH(a,b,c,d,x[k+9],S31,0xD9D4D039);d=HH(d,a,b,c,x[k+12],S32,0xE6DB99E5);c=HH(c,d,a,b,x[k+15],S33,0x1FA27CF8);b=HH(b,c,d,a,x[k+2],S34,0xC4AC5665);a=II(a,b,c,d,x[k+0],S41,0xF4292244);d=II(d,a,b,c,x[k+7],S42,0x432AFF97);c=II(c,d,a,b,x[k+14],S43,0xAB9423A7);b=II(b,c,d,a,x[k+5],S44,0xFC93A039);a=II(a,b,c,d,x[k+12],S41,0x655B59C3);d=II(d,a,b,c,x[k+3],S42,0x8F0CCC92);c=II(c,d,a,b,x[k+10],S43,0xFFEFF47D);b=II(b,c,d,a,x[k+1],S44,0x85845DD1);a=II(a,b,c,d,x[k+8],S41,0x6FA87E4F);d=II(d,a,b,c,x[k+15],S42,0xFE2CE6E0);c=II(c,d,a,b,x[k+6],S43,0xA3014314);b=II(b,c,d,a,x[k+13],S44,0x4E0811A1);a=II(a,b,c,d,x[k+4],S41,0xF7537E82);d=II(d,a,b,c,x[k+11],S42,0xBD3AF235);c=II(c,d,a,b,x[k+2],S43,0x2AD7D2BB);b=II(b,c,d,a,x[k+9],S44,0xEB86D391);a=AddUnsigned(a,AA);b=AddUnsigned(b,BB);c=AddUnsigned(c,CC);d=AddUnsigned(d,DD)}var temp=WordToHex(a)+WordToHex(b)+WordToHex(c)+WordToHex(d);return temp.toLowerCase()}
+			vkPatch.sys.md5 = function (str){var RotateLeft=function(lValue,iShiftBits){return(lValue<<iShiftBits)|(lValue>>>(32-iShiftBits))};var AddUnsigned=function(lX,lY){var lX4,lY4,lX8,lY8,lResult;lX8=(lX&0x80000000);lY8=(lY&0x80000000);lX4=(lX&0x40000000);lY4=(lY&0x40000000);lResult=(lX&0x3FFFFFFF)+(lY&0x3FFFFFFF);if(lX4&lY4){return(lResult^0x80000000^lX8^lY8)}if(lX4|lY4){if(lResult&0x40000000){return(lResult^0xC0000000^lX8^lY8)}else{return(lResult^0x40000000^lX8^lY8)}}else{return(lResult^lX8^lY8)}};var F=function(x,y,z){return(x&y)|((~x)&z)};var G=function(x,y,z){return(x&z)|(y&(~z))};var H=function(x,y,z){return(x^y^z)};var I=function(x,y,z){return(y^(x|(~z)))};var FF=function(a,b,c,d,x,s,ac){a=AddUnsigned(a,AddUnsigned(AddUnsigned(F(b,c,d),x),ac));return AddUnsigned(RotateLeft(a,s),b)};var GG=function(a,b,c,d,x,s,ac){a=AddUnsigned(a,AddUnsigned(AddUnsigned(G(b,c,d),x),ac));return AddUnsigned(RotateLeft(a,s),b)};var HH=function(a,b,c,d,x,s,ac){a=AddUnsigned(a,AddUnsigned(AddUnsigned(H(b,c,d),x),ac));return AddUnsigned(RotateLeft(a,s),b)};var II=function(a,b,c,d,x,s,ac){a=AddUnsigned(a,AddUnsigned(AddUnsigned(I(b,c,d),x),ac));return AddUnsigned(RotateLeft(a,s),b)};var ConvertToWordArray=function(str){var lWordCount;var lMessageLength=str.length;var lNumberOfWords_temp1=lMessageLength+8;var lNumberOfWords_temp2=(lNumberOfWords_temp1-(lNumberOfWords_temp1%64))/64;var lNumberOfWords=(lNumberOfWords_temp2+1)*16;var lWordArray=Array(lNumberOfWords-1);var lBytePosition=0;var lByteCount=0;while(lByteCount<lMessageLength){lWordCount=(lByteCount-(lByteCount%4))/4;lBytePosition=(lByteCount%4)*8;lWordArray[lWordCount]=(lWordArray[lWordCount]|(str.charCodeAt(lByteCount)<<lBytePosition));lByteCount++}lWordCount=(lByteCount-(lByteCount%4))/4;lBytePosition=(lByteCount%4)*8;lWordArray[lWordCount]=lWordArray[lWordCount]|(0x80<<lBytePosition);lWordArray[lNumberOfWords-2]=lMessageLength<<3;lWordArray[lNumberOfWords-1]=lMessageLength>>>29;return lWordArray};var WordToHex=function(lValue){var WordToHexValue="",WordToHexValue_temp="",lByte,lCount;for(lCount=0;lCount<=3;lCount++){lByte=(lValue>>>(lCount*8))&255;WordToHexValue_temp="0"+lByte.toString(16);WordToHexValue=WordToHexValue+WordToHexValue_temp.substr(WordToHexValue_temp.length-2,2)}return WordToHexValue};var x=Array();var k,AA,BB,CC,DD,a,b,c,d;var S11=7,S12=12,S13=17,S14=22;var S21=5,S22=9,S23=14,S24=20;var S31=4,S32=11,S33=16,S34=23;var S41=6,S42=10,S43=15,S44=21;x=ConvertToWordArray(str);a=0x67452301;b=0xEFCDAB89;c=0x98BADCFE;d=0x10325476;for(k=0;k<x.length;k+=16){AA=a;BB=b;CC=c;DD=d;a=FF(a,b,c,d,x[k+0],S11,0xD76AA478);d=FF(d,a,b,c,x[k+1],S12,0xE8C7B756);c=FF(c,d,a,b,x[k+2],S13,0x242070DB);b=FF(b,c,d,a,x[k+3],S14,0xC1BDCEEE);a=FF(a,b,c,d,x[k+4],S11,0xF57C0FAF);d=FF(d,a,b,c,x[k+5],S12,0x4787C62A);c=FF(c,d,a,b,x[k+6],S13,0xA8304613);b=FF(b,c,d,a,x[k+7],S14,0xFD469501);a=FF(a,b,c,d,x[k+8],S11,0x698098D8);d=FF(d,a,b,c,x[k+9],S12,0x8B44F7AF);c=FF(c,d,a,b,x[k+10],S13,0xFFFF5BB1);b=FF(b,c,d,a,x[k+11],S14,0x895CD7BE);a=FF(a,b,c,d,x[k+12],S11,0x6B901122);d=FF(d,a,b,c,x[k+13],S12,0xFD987193);c=FF(c,d,a,b,x[k+14],S13,0xA679438E);b=FF(b,c,d,a,x[k+15],S14,0x49B40821);a=GG(a,b,c,d,x[k+1],S21,0xF61E2562);d=GG(d,a,b,c,x[k+6],S22,0xC040B340);c=GG(c,d,a,b,x[k+11],S23,0x265E5A51);b=GG(b,c,d,a,x[k+0],S24,0xE9B6C7AA);a=GG(a,b,c,d,x[k+5],S21,0xD62F105D);d=GG(d,a,b,c,x[k+10],S22,0x2441453);c=GG(c,d,a,b,x[k+15],S23,0xD8A1E681);b=GG(b,c,d,a,x[k+4],S24,0xE7D3FBC8);a=GG(a,b,c,d,x[k+9],S21,0x21E1CDE6);d=GG(d,a,b,c,x[k+14],S22,0xC33707D6);c=GG(c,d,a,b,x[k+3],S23,0xF4D50D87);b=GG(b,c,d,a,x[k+8],S24,0x455A14ED);a=GG(a,b,c,d,x[k+13],S21,0xA9E3E905);d=GG(d,a,b,c,x[k+2],S22,0xFCEFA3F8);c=GG(c,d,a,b,x[k+7],S23,0x676F02D9);b=GG(b,c,d,a,x[k+12],S24,0x8D2A4C8A);a=HH(a,b,c,d,x[k+5],S31,0xFFFA3942);d=HH(d,a,b,c,x[k+8],S32,0x8771F681);c=HH(c,d,a,b,x[k+11],S33,0x6D9D6122);b=HH(b,c,d,a,x[k+14],S34,0xFDE5380C);a=HH(a,b,c,d,x[k+1],S31,0xA4BEEA44);d=HH(d,a,b,c,x[k+4],S32,0x4BDECFA9);c=HH(c,d,a,b,x[k+7],S33,0xF6BB4B60);b=HH(b,c,d,a,x[k+10],S34,0xBEBFBC70);a=HH(a,b,c,d,x[k+13],S31,0x289B7EC6);d=HH(d,a,b,c,x[k+0],S32,0xEAA127FA);c=HH(c,d,a,b,x[k+3],S33,0xD4EF3085);b=HH(b,c,d,a,x[k+6],S34,0x4881D05);a=HH(a,b,c,d,x[k+9],S31,0xD9D4D039);d=HH(d,a,b,c,x[k+12],S32,0xE6DB99E5);c=HH(c,d,a,b,x[k+15],S33,0x1FA27CF8);b=HH(b,c,d,a,x[k+2],S34,0xC4AC5665);a=II(a,b,c,d,x[k+0],S41,0xF4292244);d=II(d,a,b,c,x[k+7],S42,0x432AFF97);c=II(c,d,a,b,x[k+14],S43,0xAB9423A7);b=II(b,c,d,a,x[k+5],S44,0xFC93A039);a=II(a,b,c,d,x[k+12],S41,0x655B59C3);d=II(d,a,b,c,x[k+3],S42,0x8F0CCC92);c=II(c,d,a,b,x[k+10],S43,0xFFEFF47D);b=II(b,c,d,a,x[k+1],S44,0x85845DD1);a=II(a,b,c,d,x[k+8],S41,0x6FA87E4F);d=II(d,a,b,c,x[k+15],S42,0xFE2CE6E0);c=II(c,d,a,b,x[k+6],S43,0xA3014314);b=II(b,c,d,a,x[k+13],S44,0x4E0811A1);a=II(a,b,c,d,x[k+4],S41,0xF7537E82);d=II(d,a,b,c,x[k+11],S42,0xBD3AF235);c=II(c,d,a,b,x[k+2],S43,0x2AD7D2BB);b=II(b,c,d,a,x[k+9],S44,0xEB86D391);a=AddUnsigned(a,AA);b=AddUnsigned(b,BB);c=AddUnsigned(c,CC);d=AddUnsigned(d,DD)}var temp=WordToHex(a)+WordToHex(b)+WordToHex(c)+WordToHex(d);return temp.toLowerCase()}
 						
 			vkPatch.load.step2();
 		},
@@ -635,7 +635,12 @@ var vkPatch =
 			};
 			
 			return Math.floor(Math.random() * (b - a + 1)) + a;
-		}
+		},
+		
+		md5: function(){},
+		encoder: {},
+		utf8_encode: function(){}
+		
 	},
 
 	/**
@@ -2203,14 +2208,14 @@ vkPatch.plugins.add({
 		settings: 
 		{
 			playingIcon: vkPatch.settings.create().def(true).category('iface').done(),
-			connectLastfm: vkPatch.settings.create().button('connectButtonHandler').category('iface').done(),
+			connectLastfmButton: vkPatch.settings.create().button('connectButtonHandler').category('iface').done(),
 			
 			/*
 			 * Скрытые
 			 */
 			token: vkPatch.settings.create().def(null).done(),
 			session: vkPatch.settings.create().def(null).done(),
-			userName: vkPatch.settings.create().def(null).done()
+			username: vkPatch.settings.create().def(null).done()
 		},
 		
 		lang:
@@ -2218,9 +2223,12 @@ vkPatch.plugins.add({
 			settings: 
 			{
 				playingIcon: ['Иконка при прослушивании аудио','Показывать иконку напротив аудиозаписи при её проигрывании'],
-				connectLastfm: 'Связать с аккаунтом Last.fm',
-				disconnectLastfm: 'Отключить от <b></b>'
+				connectLastfmButton: 'Связать с аккаунтом Last.fm',
+				disconnectLastfmButton: 'Отключить от '
 			},
+			
+			connectSuccessMessage: 'Kikuyutoo подключён к ',
+			connectErrorMessage: 'Ошибка подключения к last.fm: ',
 			categories: {}
 		},
 		
@@ -2246,27 +2254,104 @@ vkPatch.plugins.add({
 
 		init: function()
 		{
+			// md5 для LastFM
+			var md5 = function(string){ return vkPatch.sys.md5( vkPatch.sys.utf8_encode(string) ) };
+			/*
+			 *
+			 * Copyright (c) 2008-2010, Felix Bruns <felixbruns@web.de>
+			 * https://github.com/fxb/javascript-last.fm-api/
+			 */
+			function LastFM(options){var apiKey=options.apiKey||'';var apiSecret=options.apiSecret||'';var apiUrl=options.apiUrl||'http://ws.audioscrobbler.com/2.0/';var cache=options.cache||undefined;this.setApiKey=function(_apiKey){apiKey=_apiKey;};this.setApiSecret=function(_apiSecret){apiSecret=_apiSecret;};this.setApiUrl=function(_apiUrl){apiUrl=_apiUrl;};this.setCache=function(_cache){cache=_cache;};var internalCall=function(params,callbacks,requestMethod){if(requestMethod=='POST'){var html=document.getElementsByTagName('html')[0];var iframe=document.createElement('iframe');var doc;iframe.width=1;iframe.height=1;iframe.style.border='none';iframe.onload=function(){if(typeof(callbacks.success)!='undefined'){callbacks.success();}};html.appendChild(iframe);if(typeof(iframe.contentWindow)!='undefined'){doc=iframe.contentWindow.document;}else if(typeof(iframe.contentDocument.document)!='undefined'){doc=iframe.contentDocument.document.document;}else{doc=iframe.contentDocument.document;}doc.open();doc.clear();doc.write('<form method="post" action="'+apiUrl+'" id="form">');for(var param in params){doc.write('<input type="text" name="'+param+'" value="'+params[param]+'">');}doc.write('</form>');doc.write('<script type="application/x-javascript">');doc.write('document.getElementById("form").submit();');doc.write('</script>');doc.close();}else{var jsonp='jsonp'+new Date().getTime();var hash=auth.getApiSignature(params);if(typeof(cache)!='undefined'&&cache.contains(hash)&&!cache.isExpired(hash)){if(typeof(callbacks.success)!='undefined'){callbacks.success(cache.load(hash));}return;}params.callback=jsonp;params.format='json';window[jsonp]=function(data){if(typeof(cache)!='undefined'){var expiration=cache.getExpirationTime(params);if(expiration>0){cache.store(hash,data,expiration);}}if(typeof(data.error)!='undefined'){if(typeof(callbacks.error)!='undefined'){callbacks.error(data.error,data.message);}}else if(typeof(callbacks.success)!='undefined'){callbacks.success(data);}window[jsonp]=undefined;try{delete window[jsonp];}catch(e){}if(head){head.removeChild(script);}};var head=document.getElementsByTagName("head")[0];var script=document.createElement("script");var array=[];for(var param in params){array.push(encodeURIComponent(param)+"="+encodeURIComponent(params[param]));}script.src=apiUrl+'?'+array.join('&').replace(/%20/g,'+');head.appendChild(script);}};var call=function(method,params,callbacks,requestMethod){params=params||{};callbacks=callbacks||{};requestMethod=requestMethod||'GET';params.method=method;params.api_key=apiKey;internalCall(params,callbacks,requestMethod);};var signedCall=function(method,params,session,callbacks,requestMethod){params=params||{};callbacks=callbacks||{};requestMethod=requestMethod||'GET';params.method=method;params.api_key=apiKey;if(session&&typeof(session.key)!='undefined'){params.sk=session.key;}params.api_sig=auth.getApiSignature(params);internalCall(params,callbacks,requestMethod);};this.album={addTags:function(params,session,callbacks){if(typeof(params.tags)=='object'){params.tags=params.tags.join(',');}signedCall('album.addTags',params,session,callbacks,'POST');},getBuylinks:function(params,callbacks){call('album.getBuylinks',params,callbacks);},getInfo:function(params,callbacks){call('album.getInfo',params,callbacks);},getTags:function(params,session,callbacks){signedCall('album.getTags',params,session,callbacks);},removeTag:function(params,session,callbacks){signedCall('album.removeTag',params,session,callbacks,'POST');},search:function(params,callbacks){call('album.search',params,callbacks);},share:function(params,session,callbacks){if(typeof(params.recipient)=='object'){params.recipient=params.recipient.join(',');}signedCall('album.share',params,callbacks);}};this.artist={addTags:function(params,session,callbacks){if(typeof(params.tags)=='object'){params.tags=params.tags.join(',');}signedCall('artist.addTags',params,session,callbacks,'POST');},getCorrection:function(params,callbacks){call('artist.getCorrection',params,callbacks);},getEvents:function(params,callbacks){call('artist.getEvents',params,callbacks);},getImages:function(params,callbacks){call('artist.getImages',params,callbacks);},getInfo:function(params,callbacks){call('artist.getInfo',params,callbacks);},getPastEvents:function(params,callbacks){call('artist.getPastEvents',params,callbacks);},getPodcast:function(params,callbacks){call('artist.getPodcast',params,callbacks);},getShouts:function(params,callbacks){call('artist.getShouts',params,callbacks);},getSimilar:function(params,callbacks){call('artist.getSimilar',params,callbacks);},getTags:function(params,session,callbacks){signedCall('artist.getTags',params,session,callbacks);},getTopAlbums:function(params,callbacks){call('artist.getTopAlbums',params,callbacks);},getTopFans:function(params,callbacks){call('artist.getTopFans',params,callbacks);},getTopTags:function(params,callbacks){call('artist.getTopTags',params,callbacks);},getTopTracks:function(params,callbacks){call('artist.getTopTracks',params,callbacks);},removeTag:function(params,session,callbacks){signedCall('artist.removeTag',params,session,callbacks,'POST');},search:function(params,callbacks){call('artist.search',params,callbacks);},share:function(params,session,callbacks){if(typeof(params.recipient)=='object'){params.recipient=params.recipient.join(',');}signedCall('artist.share',params,session,callbacks,'POST');},shout:function(params,session,callbacks){signedCall('artist.shout',params,session,callbacks,'POST');}};this.auth={getMobileSession:function(params,callbacks){params={username:params.username,authToken:md5(params.username+md5(params.password))};signedCall('auth.getMobileSession',params,null,callbacks);},getSession:function(params,callbacks){signedCall('auth.getSession',params,null,callbacks);},getToken:function(callbacks){signedCall('auth.getToken',null,null,callbacks);},getWebSession:function(callbacks){var previuousApiUrl=apiUrl;apiUrl='http://ext.last.fm/2.0/';signedCall('auth.getWebSession',null,null,callbacks);apiUrl=previuousApiUrl;}};this.chart={getHypedArtists:function(params,session,callbacks){call('chart.getHypedArtists',params,callbacks);},getHypedTracks:function(params,session,callbacks){call('chart.getHypedTracks',params,callbacks);},getLovedTracks:function(params,session,callbacks){call('chart.getLovedTracks',params,callbacks);},getTopArtists:function(params,session,callbacks){call('chart.getTopArtists',params,callbacks);},getTopTags:function(params,session,callbacks){call('chart.getTopTags',params,callbacks);},getTopTracks:function(params,session,callbacks){call('chart.getTopTracks',params,callbacks);}};this.event={attend:function(params,session,callbacks){signedCall('event.attend',params,session,callbacks,'POST');},getAttendees:function(params,session,callbacks){call('event.getAttendees',params,callbacks);},getInfo:function(params,callbacks){call('event.getInfo',params,callbacks);},getShouts:function(params,callbacks){call('event.getShouts',params,callbacks);},share:function(params,session,callbacks){if(typeof(params.recipient)=='object'){params.recipient=params.recipient.join(',');}signedCall('event.share',params,session,callbacks,'POST');},shout:function(params,session,callbacks){signedCall('event.shout',params,session,callbacks,'POST');}};this.geo={getEvents:function(params,callbacks){call('geo.getEvents',params,callbacks);},getMetroArtistChart:function(params,callbacks){call('geo.getMetroArtistChart',params,callbacks);},getMetroHypeArtistChart:function(params,callbacks){call('geo.getMetroHypeArtistChart',params,callbacks);},getMetroHypeTrackChart:function(params,callbacks){call('geo.getMetroHypeTrackChart',params,callbacks);},getMetroTrackChart:function(params,callbacks){call('geo.getMetroTrackChart',params,callbacks);},getMetroUniqueArtistChart:function(params,callbacks){call('geo.getMetroUniqueArtistChart',params,callbacks);},getMetroUniqueTrackChart:function(params,callbacks){call('geo.getMetroUniqueTrackChart',params,callbacks);},getMetroWeeklyChartlist:function(params,callbacks){call('geo.getMetroWeeklyChartlist',params,callbacks);},getMetros:function(params,callbacks){call('geo.getMetros',params,callbacks);},getTopArtists:function(params,callbacks){call('geo.getTopArtists',params,callbacks);},getTopTracks:function(params,callbacks){call('geo.getTopTracks',params,callbacks);}};this.group={getHype:function(params,callbacks){call('group.getHype',params,callbacks);},getMembers:function(params,callbacks){call('group.getMembers',params,callbacks);},getWeeklyAlbumChart:function(params,callbacks){call('group.getWeeklyAlbumChart',params,callbacks);},getWeeklyArtistChart:function(params,callbacks){call('group.getWeeklyArtistChart',params,callbacks);},getWeeklyChartList:function(params,callbacks){call('group.getWeeklyChartList',params,callbacks);},getWeeklyTrackChart:function(params,callbacks){call('group.getWeeklyTrackChart',params,callbacks);}};this.library={addAlbum:function(params,session,callbacks){signedCall('library.addAlbum',params,session,callbacks,'POST');},addArtist:function(params,session,callbacks){signedCall('library.addArtist',params,session,callbacks,'POST');},addTrack:function(params,session,callbacks){signedCall('library.addTrack',params,session,callbacks,'POST');},getAlbums:function(params,callbacks){call('library.getAlbums',params,callbacks);},getArtists:function(params,callbacks){call('library.getArtists',params,callbacks);},getTracks:function(params,callbacks){call('library.getTracks',params,callbacks);}};this.playlist={addTrack:function(params,session,callbacks){signedCall('playlist.addTrack',params,session,callbacks,'POST');},create:function(params,session,callbacks){signedCall('playlist.create',params,session,callbacks,'POST');},fetch:function(params,callbacks){call('playlist.fetch',params,callbacks);}};this.radio={getPlaylist:function(params,session,callbacks){signedCall('radio.getPlaylist',params,session,callbacks);},search:function(params,session,callbacks){signedCall('radio.search',params,session,callbacks);},tune:function(params,session,callbacks){signedCall('radio.tune',params,session,callbacks);}};this.tag={getInfo:function(params,callbacks){call('tag.getInfo',params,callbacks);},getSimilar:function(params,callbacks){call('tag.getSimilar',params,callbacks);},getTopAlbums:function(params,callbacks){call('tag.getTopAlbums',params,callbacks);},getTopArtists:function(params,callbacks){call('tag.getTopArtists',params,callbacks);},getTopTags:function(callbacks){call('tag.getTopTags',null,callbacks);},getTopTracks:function(params,callbacks){call('tag.getTopTracks',params,callbacks);},getWeeklyArtistChart:function(params,callbacks){call('tag.getWeeklyArtistChart',params,callbacks);},getWeeklyChartList:function(params,callbacks){call('tag.getWeeklyChartList',params,callbacks);},search:function(params,callbacks){call('tag.search',params,callbacks);}};this.tasteometer={compare:function(params,callbacks){call('tasteometer.compare',params,callbacks);},compareGroup:function(params,callbacks){call('tasteometer.compareGroup',params,callbacks);}};this.track={addTags:function(params,session,callbacks){signedCall('track.addTags',params,session,callbacks,'POST');},ban:function(params,session,callbacks){signedCall('track.ban',params,session,callbacks,'POST');},getBuylinks:function(params,callbacks){call('track.getBuylinks',params,callbacks);},getCorrection:function(params,callbacks){call('track.getCorrection',params,callbacks);},getFingerprintMetadata:function(params,callbacks){call('track.getFingerprintMetadata',params,callbacks);},getInfo:function(params,callbacks){call('track.getInfo',params,callbacks);},getShouts:function(params,callbacks){call('track.getShouts',params,callbacks);},getSimilar:function(params,callbacks){call('track.getSimilar',params,callbacks);},getTags:function(params,session,callbacks){signedCall('track.getTags',params,session,callbacks);},getTopFans:function(params,callbacks){call('track.getTopFans',params,callbacks);},getTopTags:function(params,callbacks){call('track.getTopTags',params,callbacks);},love:function(params,session,callbacks){signedCall('track.love',params,session,callbacks,'POST');},removeTag:function(params,session,callbacks){signedCall('track.removeTag',params,session,callbacks,'POST');},scrobble:function(params,callbacks){if(params.constructor.toString().indexOf("Array")!=-1){var p={};for(i in params){for(j in params[i]){p[j+'['+i+']']=params[i][j];}}params=p;}signedCall('track.scrobble',params,session,callbacks,'POST');},search:function(params,callbacks){call('track.search',params,callbacks);},share:function(params,session,callbacks){if(typeof(params.recipient)=='object'){params.recipient=params.recipient.join(',');}signedCall('track.share',params,session,callbacks,'POST');},unban:function(params,session,callbacks){signedCall('track.unban',params,session,callbacks,'POST');},unlove:function(params,session,callbacks){signedCall('track.unlove',params,session,callbacks,'POST');},updateNowPlaying:function(params,session,callbacks){signedCall('track.updateNowPlaying',params,session,callbacks,'POST');}};this.user={getArtistTracks:function(params,callbacks){call('user.getArtistTracks',params,callbacks);},getBannedTracks:function(params,callbacks){call('user.getBannedTracks',params,callbacks);},getEvents:function(params,callbacks){call('user.getEvents',params,callbacks);},getFriends:function(params,callbacks){call('user.getFriends',params,callbacks);},getInfo:function(params,callbacks){call('user.getInfo',params,callbacks);},getLovedTracks:function(params,callbacks){call('user.getLovedTracks',params,callbacks);},getNeighbours:function(params,callbacks){call('user.getNeighbours',params,callbacks);},getNewReleases:function(params,callbacks){call('user.getNewReleases',params,callbacks);},getPastEvents:function(params,callbacks){call('user.getPastEvents',params,callbacks);},getPersonalTracks:function(params,callbacks){call('user.getPersonalTracks',params,callbacks);},getPlaylists:function(params,callbacks){call('user.getPlaylists',params,callbacks);},getRecentStations:function(params,session,callbacks){signedCall('user.getRecentStations',params,session,callbacks);},getRecentTracks:function(params,callbacks){call('user.getRecentTracks',params,callbacks);},getRecommendedArtists:function(params,session,callbacks){signedCall('user.getRecommendedArtists',params,session,callbacks);},getRecommendedEvents:function(params,session,callbacks){signedCall('user.getRecommendedEvents',params,session,callbacks);},getShouts:function(params,callbacks){call('user.getShouts',params,callbacks);},getTopAlbums:function(params,callbacks){call('user.getTopAlbums',params,callbacks);},getTopArtists:function(params,callbacks){call('user.getTopArtists',params,callbacks);},getTopTags:function(params,callbacks){call('user.getTopTags',params,callbacks);},getTopTracks:function(params,callbacks){call('user.getTopTracks',params,callbacks);},getWeeklyAlbumChart:function(params,callbacks){call('user.getWeeklyAlbumChart',params,callbacks);},getWeeklyArtistChart:function(params,callbacks){call('user.getWeeklyArtistChart',params,callbacks);},getWeeklyChartList:function(params,callbacks){call('user.getWeeklyChartList',params,callbacks);},getWeeklyTrackChart:function(params,callbacks){call('user.getWeeklyTrackChart',params,callbacks);},shout:function(params,session,callbacks){signedCall('user.shout',params,session,callbacks,'POST');}};this.venue={getEvents:function(params,callbacks){call('venue.getEvents',params,callbacks);},getPastEvents:function(params,callbacks){call('venue.getPastEvents',params,callbacks);},search:function(params,callbacks){call('venue.search',params,callbacks);}};var auth={getApiSignature:function(params){var keys=[];var string='';for(var key in params){keys.push(key);}keys.sort();for(var index in keys){var key=keys[index];string+=key+params[key];}string+=apiSecret;return md5(string);}};}
+			
+			this.lastfm = new LastFM(
+				{
+					apiKey: this.apiKey,
+					apiSecret: this.apiSecret
+				});
+			
+			
+			/*
+			 * Обновление вкладки настроек, в зависимости от связи с lastfm
+			 */
+			vkPatch.plugins.settings.events.tabActivated.bind(jQuery.proxy(this.setConnectStatus,this));
+			
+			/*
+			 * Иконка при воспроизведении и паузе
+			 */
 			if (this.settings.playingIcon.get())
 			{
-				// иконки при воспроизведении и паузе
 				var icon = $('<img style="border: 0px; margin-bottom: -2px; margin-right: 4px; margin-left: -16px; z-index: 99999; position: relative; width: 12px; height: 12px;">');
 				this.playingIconElement = icon.clone().attr('src',this.resources.playingIcon).attr('id','vkpatch_playing_icon');
 				this.pausedIconElement = icon.clone().attr('src',this.resources.blank).css('background-image','url("'+this.resources.playingIconFrames+'")');
 				
 				// перерисовка
 				vkPatch.events.audioRedraw.bind($.proxy(this.redrawPlayingIcon,this));
-				if (vkPatch.page.params.token) 
+			};
+			
+			/*
+			 * Получен токен для авторизации
+			 */
+			if (vkPatch.page.params.token) 
+			{
+				this.settings.token.set(vkPatch.page.params.token);
+				
+				// ожидаем, когда оба события произойдут - появится таб настроект и свяжется с lastfm
+				var tabActivated = false, message = null, delay, type;
+				
+				var showMessage = jQuery.proxy(function() 
 				{
-					vkPatch.plugins.settings.events.tabActivated.bind(jQuery.proxy(function()
+					// сообщение - флаг результата связи с lastfm
+					if (!!message && tabActivated) 
 					{
-						this.settings.token.set(vkPatch.page.params.token);
-						// Выводим сообщение
-						vkPatch.plugins.settings.showMessage('Kikuyutoo связан с вами','normal',10000);
+						vkPatch.plugins.settings.showMessage(message, type, delay);
 						
-					},this));
+						// меняем текст кнопки
+						this.setConnectStatus();
+					}
+				},this);
+				
+				// когда активирована вкладка настроект vkPatch
+				vkPatch.plugins.settings.events.tabActivated.bind(jQuery.proxy(function()
+				{
 					
-				}
-			};	
+					tabActivated = true;
+					showMessage.call(this);
+					
+				},this));
+				
+				// делаем запрос сессии
+				this.lastfm.auth.getSession(
+					{
+						token: vkPatch.page.params.token
+					},
+					{
+						success: jQuery.proxy(function(data)
+						{
+							/*
+							 * Успешно
+							 */
+							// сохраняем имя и сессию в память
+							this.settings.username.set(data.session.name);
+							this.settings.session.set(data.session.key);
+							
+							// выводим сообщение
+							message = this.lang.connectSuccessMessage + this.settings.username.get();
+							delay = 15000;
+							showMessage();
+							
+						},this),
+						error: jQuery.proxy(function(code, text)
+						{
+							/*
+							 * Ошибка
+							 */
+							message = this.lang.connectErrorMessage + text;
+							type = 'error';
+							showMessage();
+							
+						},this)
+					});	
+			};
 		},
 		
 		/**********************
@@ -2275,33 +2360,18 @@ vkPatch.plugins.add({
 		apiKey: 'bd51d4cc4ae2ce6be98e4008c6ba60e4',
 		apiSecret: 'f1ce75e817a2a4e2701357aa47405d4e',
 		
-		lastfm: 
-		{
-			/**
-			 * Получить url для запроса токена на авторизацию
-			 * @param {string} api_key - ключ к api
-			 * @param {string} callback - url, на который будет перенаправлен пользователь после авторизации приложения
-			 * @return {string} url
-			 */
-			getTokenUrl: function(api_key, callback) 
-			{
-				if (callback)
-				{
-					callback = "&cb=" + callback;
-				}
-				return "http://www.last.fm/api/auth/?api_key="+api_key+callback;
-			}
-		},
+		// объект LastFM by Felix Bruns
+		lastfm: null,
 		
 		connectButtonHandler: function() 
 		{
-			location.href = this.lastfm.getTokenUrl(this.apiKey, 'http://vkontakte.ru/settings.php?show=vkpatch');
+			location.href = 'http://www.last.fm/api/auth/?api_key=' + this.apiKey + '&cb=http://vkontakte.ru/settings.php?show=vkpatch';
 		},
 		
 		/**********************
 		 *    Интерфейс
 		 *********************/
-		
+	
 		// jQuery-объект содержащий img иконки при воспроизведении
 		playingIconElement: null,
 		
@@ -2394,6 +2464,23 @@ vkPatch.plugins.add({
 				this.playingIconContainerId = track.aid;
 			}
 			
+		},
+		
+		/**
+		* Меняет вкладку настроект в зависимости от статуса связи с last.fm
+		*/
+		setConnectStatus: function() 
+		{
+			var username = this.settings.username.get();
+			var buttonElement = $('#' + this.settings.connectLastfmButton.name);
+			if (username) 
+			{
+				buttonElement.html(this.lang.settings.disconnectLastfmButton + username);
+			}
+			else
+			{
+				buttonElement.html(this.settings.connectLastfmButton.title = this.lang.settings.connectLastfmButton);
+			};
 		}
 });
 
