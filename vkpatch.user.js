@@ -2294,7 +2294,7 @@ vkPatch.plugins.add({
 			 * Трек заскробблен
 			 * function(trackInfo, [время начала воспроизведения])
 			 */
-			onScrobble: null
+			scrobbled: null
 		},
 
 		init: function()
@@ -2326,14 +2326,22 @@ vkPatch.plugins.add({
 			 */
 			vkPatch.plugins.settings.events.tabActivated.bind(jQuery.proxy(this.setConnectStatus,this));
 			
+			
+			this.iconsContainer = $('<div style="border: 0px; z-index: 2; right: 22px; position: absolute; text-align: right; width: 72px; height: 12px;"></div>');
+			this.iconsContainer.attr('id','vkpatch_iconsContainer');
+			
+			vkPatch.events.audioRedraw.bind($.proxy(this.redrawIconsContainer,this));
+
 			/*
 			 * Иконка при воспроизведении и паузе
 			 */
 			if (this.settings.playingIcon.get())
 			{
-				var icon = $('<img style="border: 0px; margin-bottom: -2px; margin-right: 4px; margin-left: -16px; z-index: 99999; position: relative; width: 12px; height: 12px;">');
+				var icon = $('<img style="border: 0px; width: 12px; height: 12px; margin-left: 2px; margin-right: 2px">');
 				this.playingIconElement = icon.clone().attr('src',this.resources.playingIcon).attr('id','vkpatch_playing_icon');
 				this.pausedIconElement = icon.clone().attr('src',this.resources.blank).css('background-image','url("'+this.resources.playingIconFrames+'")');
+				
+				this.iconsContainer.append(this.playingIconElement, this.pausedIconElement);
 				
 				// перерисовка
 				vkPatch.events.audioRedraw.bind($.proxy(this.redrawPlayingIcon,this));
@@ -2410,7 +2418,7 @@ vkPatch.plugins.add({
 			
 			if (this.connected)
 			{
-				
+			
 				if (this.settings.nowPlaying.get()) 
 				{
 					vkPatch.events.audioStart.bind(jQuery.proxy(this.nowPlaying, this));
@@ -2423,6 +2431,22 @@ vkPatch.plugins.add({
 					vkPatch.events.audioPause.bind(jQuery.proxy(this.scrobblerPause, this));
 				};
 				
+				if (this.settings.scrobbledIcon.get())
+				{
+
+					this.scrobbledIconElement = icon.clone().attr('src',this.resources.scrobbled).hide();
+					
+					this.iconsContainer.prepend(this.scrobbledIconElement);
+					
+					// перерисовка
+					vkPatch.events.audioRedraw.bind($.proxy(this.redrawScrobbledIcon,this));
+					
+					// когда заскробблен
+					this.events.scrobbled.bind($.proxy(function(trackInfo)
+					{
+						this.redrawScrobbledIcon('play', trackInfo, true);
+					}, this));
+				};
 			};
 			
 		},
@@ -2441,6 +2465,7 @@ vkPatch.plugins.add({
 		// Таймер, по которому происходит скробблинг
 		timer: null,
 		// индикатор, что трек заскробблен
+		scrobbled: false,
 		
 		/**
 		 * Отключить от профиля last.fm 
@@ -2459,6 +2484,8 @@ vkPatch.plugins.add({
 		 */
 		scrobblerInitTimer: function(trackInfo)
 		{
+			this.scrobbled = false;
+			
 			// если таймер был уже создан, значит из предыдущего проигрывания
 			if (this.timer) 
 			{
@@ -2537,8 +2564,8 @@ vkPatch.plugins.add({
 				key: session
 			});
 			
-			
-			this.events.onScrobble.raise(trackInfo, timestamp);
+			this.scrobbled = true;
+			this.events.scrobbled.raise(trackInfo, timestamp);
 		},
 		
 		/**
@@ -2602,14 +2629,22 @@ vkPatch.plugins.add({
 		 *    Интерфейс
 		 *********************/
 	
+		// jQuery-объект, wrapper для иконок
+		iconsContainer: null,
+		
 		// jQuery-объект содержащий img иконки при воспроизведении
 		playingIconElement: null,
+		// img иконки при паузе
+		pausedIconElement: null,
+		
+		// img иконки при паузе
+		scrobbledIconElement: null,
 		
 		// Номер кадра иконки, на котором остановилось проигрывание
 		pausedIconFrame: null,
 		
-		// id контейнера, содержащего иконку
-		playingIconContainerId: null,
+		// id контейнера, содержащего иконки
+		iconsContainerOwnerId: null,
 		
 		/**
 		 * Установить иконку проигрывания
@@ -2636,15 +2671,7 @@ vkPatch.plugins.add({
 					this.pausedIconElement.css('background-position',12*frame + 'px 0px').show();
 					
 				break;
-				
-				case 'stop':
-					
-					// скрываем
-					this.pausedIconElement.hide();
-					this.playingIconElement.hide();
-					
-					
-				break;
+						
 			}
 		},
 		
@@ -2660,7 +2687,6 @@ vkPatch.plugins.add({
 				case 'stop':
 				
 					this.pausedIconFrame = null;
-					this.setPlayingIcon('stop');
 					
 				break;
 				
@@ -2689,20 +2715,11 @@ vkPatch.plugins.add({
 					};
 					
 					this.setPlayingIcon('pause', this.pausedIconFrame);
-
-					
+			
 				break;
 			};
 			
-			// если иконок нет в DOM или надо изменить положение
-			if (!$('#vkpatch_playing_icon').length || track.aid != this.playingIconContainerId) 
-			{
-				$('#audio'+track.aid).find('div.duration:first')
-					.prepend(this.playingIconElement)
-					.prepend(this.pausedIconElement);
-					
-				this.playingIconContainerId = track.aid;
-			}
+			
 			
 		},
 		
@@ -2722,6 +2739,62 @@ vkPatch.plugins.add({
 			{
 				buttonElement.html(this.settings.connectLastfmButton.title = this.lang.settings.connectLastfmButton);
 			};
+		},
+		
+		/**
+		 * Перерисовать иконку "заскроббен"
+		 */
+		redrawScrobbledIcon: function(state, trackInfo, animate) 
+		{
+			switch (state) 
+			{
+				case 'stop':
+					
+					this.scrobbledIconElement.hide();
+									
+				break;
+				
+				default:
+					
+					if (this.scrobbled) 
+					{							
+						if (animate) 
+						{
+							this.scrobbledIconElement.hide();
+							this.scrobbledIconElement.fadeIn(1500);
+						}
+						else
+						{
+							this.scrobbledIconElement.show();
+						}
+						
+					}
+			}
+		},
+		
+		/**
+		 * Расположить контейнер иконок
+		 */
+		redrawIconsContainer: function(state, trackInfo) 
+		{
+			if (state == 'stop') 
+			{
+				this.iconsContainer.detach();
+				this.scrobbled = false;
+			}
+			else
+			{
+				// если иконок нет в DOM или надо изменить положение
+				if (!$('#vkpatch_iconsContainer').length || trackInfo.aid != this.iconsContainerOwnerId) 
+				{
+					$('#audio'+trackInfo.aid).find('div.duration:first')
+						.css('position','relative')
+						.prepend(this.iconsContainer)
+						
+					this.iconsContainerOwnerId = trackInfo.aid;
+				}
+			}
+			
 		}
 });
 
