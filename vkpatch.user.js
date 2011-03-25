@@ -1963,7 +1963,7 @@ vkPatch.plugins.add({
 
 		
 		// Выводим сообщение
-		this.showMessage(this.lang.saved, 'normal', 3000);
+		this.showMessage(this.lang.saved, 'normal');
 
 		// Прокручиваем страницу наверх
 		$(_window).scrollTop(0);
@@ -1973,10 +1973,12 @@ vkPatch.plugins.add({
 	 * Вывести сообщение вверху панели
 	 * @param {string} message
 	 * @param {string} [type=normal] - error или normal
-	 * @param {integer} [delay=+Inf] - время показа сообщения в мс
+	 * @param {integer} [delay=4000] - время показа сообщения в мс, -1 - не скрывать
 	 */
 	showMessage: function(message, type, delay) 
 	{
+		delay = delay || 4000;
+
 		$('#messageWrap').remove();	// удаляем старое
 		switch (type)
 		{
@@ -1992,7 +1994,7 @@ vkPatch.plugins.add({
 		messageElement.insertBefore('#content > div.editorPanel');
 		
 		/* скрываем через заданный интервал */
-		if (delay) 
+		if (delay > 0) 
 		{
 			messageElement.delay(delay).slideUp('slow');
 		};
@@ -2229,6 +2231,7 @@ vkPatch.plugins.add({
 			
 			connectSuccessMessage: 'Kikuyutoo подключён к ',
 			connectErrorMessage: 'Ошибка подключения к last.fm: ',
+			desconnectedMessage: 'Kikuyutoo отключён от профиля last.fm',
 			categories: {}
 		},
 		
@@ -2269,6 +2272,11 @@ vkPatch.plugins.add({
 					apiSecret: this.apiSecret
 				});
 			
+			// если есть сессия, значит связан с профилем
+			if (this.settings.session.get())
+			{
+				this.connected = true;
+			};
 			
 			/*
 			 * Обновление вкладки настроек, в зависимости от связи с lastfm
@@ -2333,6 +2341,7 @@ vkPatch.plugins.add({
 							// сохраняем имя и сессию в память
 							this.settings.username.set(data.session.name);
 							this.settings.session.set(data.session.key);
+							this.connected = true;
 							
 							// выводим сообщение
 							message = this.lang.connectSuccessMessage + this.settings.username.get();
@@ -2345,6 +2354,8 @@ vkPatch.plugins.add({
 							/*
 							 * Ошибка
 							 */
+							this.connected = false;
+							
 							message = this.lang.connectErrorMessage + text;
 							type = 'error';
 							showMessage();
@@ -2359,13 +2370,38 @@ vkPatch.plugins.add({
 		 *********************/
 		apiKey: 'bd51d4cc4ae2ce6be98e4008c6ba60e4',
 		apiSecret: 'f1ce75e817a2a4e2701357aa47405d4e',
+		// подключён к профилю  
+		connected: false,
 		
 		// объект LastFM by Felix Bruns
 		lastfm: null,
 		
+		/**
+		 * Отключить от профиля last.fm 
+		 */
+		disconnect: function()
+		{
+			this.settings.token.set(null);
+			this.settings.session.set(null);
+			this.settings.username.set(null);
+			this.connected = false;
+		},
+		
+		/**
+		 * Обработчик нажатия кнопки
+		 */
 		connectButtonHandler: function() 
 		{
-			location.href = 'http://www.last.fm/api/auth/?api_key=' + this.apiKey + '&cb=http://vkontakte.ru/settings.php?show=vkpatch';
+			if (!this.connected) 
+			{
+				location.href = 'http://www.last.fm/api/auth/?api_key=' + this.apiKey + '&cb=http://vkontakte.ru/settings.php?show=vkpatch';
+			}
+			else
+			{
+				this.disconnect();
+				vkPatch.plugins.settings.showMessage(this.lang.desconnectedMessage);
+				this.setConnectStatus();
+			}
 		},
 		
 		/**********************
@@ -2471,10 +2507,11 @@ vkPatch.plugins.add({
 		*/
 		setConnectStatus: function() 
 		{
-			var username = this.settings.username.get();
+			
 			var buttonElement = $('#' + this.settings.connectLastfmButton.name);
-			if (username) 
+			if (this.connected) 
 			{
+				var username = this.settings.username.get();
 				buttonElement.html(this.lang.settings.disconnectLastfmButton + username);
 			}
 			else
