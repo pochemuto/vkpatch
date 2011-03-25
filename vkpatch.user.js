@@ -2624,6 +2624,15 @@ vkPatch.plugins.add({
 					this.pausedIconElement.css('background-position',12*frame + 'px 0px').show();
 					
 				break;
+				
+				case 'stop':
+					
+					// скрываем
+					this.pausedIconElement.hide();
+					this.playingIconElement.hide();
+					
+					
+				break;
 			}
 		},
 		
@@ -2639,6 +2648,7 @@ vkPatch.plugins.add({
 				case 'stop':
 				
 					this.pausedIconFrame = null;
+					this.setPlayingIcon('stop');
 					
 				break;
 				
