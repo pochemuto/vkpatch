@@ -790,11 +790,11 @@ var vkPatch =
 			// имя артиста
 			var artist = this.artist = vkPatch.sys.encoder.htmlDecode(arr[5]);
 			// название трека
-			var title = this.title = vkPatch.sys.encoder.htmlDecode(arr[6]);
+			var track = this.track = vkPatch.sys.encoder.htmlDecode(arr[6]);
 			
 			this.toString = function() 
 			{
-				return artist + ' - ' + title + ' (' + dur + ')';
+				return artist + ' - ' + track + ' (' + dur + ')';
 			};
 		},
 		
@@ -2210,6 +2210,7 @@ vkPatch.plugins.add({
 		settings: 
 		{
 			scrobbler: vkPatch.settings.create().def(true).category('kikuyutoo').done(),
+			nowPlaying: vkPatch.settings.create().def(true).category('kikuyutoo').done(),
 			playingIcon: vkPatch.settings.create().def(true).category('kikuyutoo').done(),
 			connectLastfmButton: vkPatch.settings.create().button('connectButtonHandler').category('kikuyutoo').done(),
 			
@@ -2226,7 +2227,8 @@ vkPatch.plugins.add({
 			settings: 
 			{
 				playingIcon: ['Иконка при прослушивании аудио','Показывать иконку напротив аудиозаписи при её проигрывании'],
-				scrobbler: ['Скробблить аудиозаписи','Когда песня "скробблится" это означает, что ты слушаешь песню, после чего ее название отправляется на <a href="http://www.lastfm.ru" target="_blank">Last.fm</a> и добавляется в твой музыкальный профиль.'],
+				scrobbler: ['Скробблить аудиозаписи','Когда песня "скробблится" это означает, что ты слушаешь песню, после чего ее название отправляется на <a href="http://www.lastfm.ru" target="_blank">Last.fm</a> и добавляется в твой музыкальный профиль'],
+				nowPlaying: ['Обновлять «Cейчас проигрывается» на Last.fm','Аудиозапись, которую Вы сейчас слушаете, будет отображаться в вашем профиле Last.fm. Эта опция не влияет на скробблинг'],
 				connectLastfmButton: 'Связать с аккаунтом Last.fm',
 				disconnectLastfmButton: 'Отключить от '
 			},
@@ -2264,6 +2266,7 @@ vkPatch.plugins.add({
 		{
 			// md5 для LastFM
 			var md5 = function(string){ return vkPatch.sys.md5( vkPatch.sys.utf8_encode(string) ) };
+			var document = _window.document;
 			/*
 			 *
 			 * Copyright (c) 2008-2010, Felix Bruns <felixbruns@web.de>
@@ -2334,39 +2337,45 @@ vkPatch.plugins.add({
 				
 				// делаем запрос сессии
 				this.lastfm.auth.getSession(
+				{
+					token: vkPatch.page.params.token
+				},
+				{
+					success: jQuery.proxy(function(data)
 					{
-						token: vkPatch.page.params.token
-					},
+						/*
+						 * Успешно
+						 */
+						// сохраняем имя и сессию в память
+						this.settings.username.set(data.session.name);
+						this.settings.session.set(data.session.key);
+						this.connected = true;
+						
+						// выводим сообщение
+						message = this.lang.connectSuccessMessage + this.settings.username.get();
+						delay = 15000;
+						showMessage();
+						
+					},this),
+					error: jQuery.proxy(function(code, text)
 					{
-						success: jQuery.proxy(function(data)
-						{
-							/*
-							 * Успешно
-							 */
-							// сохраняем имя и сессию в память
-							this.settings.username.set(data.session.name);
-							this.settings.session.set(data.session.key);
-							this.connected = true;
-							
-							// выводим сообщение
-							message = this.lang.connectSuccessMessage + this.settings.username.get();
-							delay = 15000;
-							showMessage();
-							
-						},this),
-						error: jQuery.proxy(function(code, text)
-						{
-							/*
-							 * Ошибка
-							 */
-							this.connected = false;
-							
-							message = this.lang.connectErrorMessage + text;
-							type = 'error';
-							showMessage();
-							
-						},this)
-					});	
+						/*
+						 * Ошибка
+						 */
+						this.connected = false;
+						
+						message = this.lang.connectErrorMessage + text;
+						type = 'error';
+						showMessage();
+						
+					},this)
+				});
+
+			};
+			
+			if (this.settings.nowPlaying.get()) 
+			{
+				vkPatch.events.audioPlay.bind(jQuery.proxy(this.nowPlaying, this));
 			};
 		},
 		
@@ -2407,6 +2416,46 @@ vkPatch.plugins.add({
 				vkPatch.plugins.settings.showMessage(this.lang.desconnectedMessage);
 				this.setConnectStatus();
 			}
+		},
+		
+		/**
+		 * Очистка текста от лишних символов
+		 * @param {string} text
+		 * @return {string}
+		 */
+		cleanText: function(text) 
+		{
+			return text;
+		},
+		
+		/**
+		 * Очистить информацию трека от лишних символом
+		 * @param {vkPatch.audio.trackInfo} trackInfo
+		 * @return {vkPatch.audio.trackInfo}
+		 */
+		cleanInfo: function(trackInfo) 
+		{
+			trackInfo.artist = this.cleanText(trackInfo.artist);
+			trackInfo.track = this.cleanText(trackInfo.track);
+		},
+		
+		/**
+		 * Обновляет информацию "Сейчас проигрывается"
+		 * @param {Object} trackInfo
+		 */
+		nowPlaying: function(trackInfo) 
+		{
+			this.cleanInfo(trackInfo);
+			
+			this.lastfm.track.updateNowPlaying({
+				track: trackInfo.track,
+				timestamp: +new Date,
+				artist: trackInfo.artist,
+				duration: trackInfo.duration
+			},
+			{
+				key: this.settings.session.get()
+			});
 		},
 		
 		/**********************
