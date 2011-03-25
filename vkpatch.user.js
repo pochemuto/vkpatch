@@ -711,6 +711,11 @@ var vkPatch =
 		audioRedraw: null,
 		
 		/*
+		 * Начало воспроизведения трека (только при первом запуске, не из паузы)
+		 */
+		audioStart: null,
+		
+		/*
 		 * Начало проигрывания или продолжение из паузы
 		 * function(trackInfo)
 		 */
@@ -751,6 +756,13 @@ var vkPatch =
 				}
 				else
 				{
+					if (trackInfo.id != vkPatch.audio.lastPlayedId)
+					{
+						// первый запуск трека
+						vkPatch.events.audioStart.raise(trackInfo);
+					};
+					vkPatch.audio.lastPlayedId = trackInfo.id;
+					
 					vkPatch.events.audioPlay.raise(trackInfo);
 				}
 			});
@@ -767,6 +779,11 @@ var vkPatch =
 				vkPatch.events.audioRedraw.raise(state, trackInfo);
 			});
 		},
+		
+		/**
+		 * ID последнего проигрываемого трека. Чтобы отличить проигрывание с паузы от начала проигрывания трека
+		 */
+		lastPlayedId: null,
 		
 		/**
 		 * Конструктор информации о треке
@@ -2375,7 +2392,7 @@ vkPatch.plugins.add({
 			
 			if (this.settings.nowPlaying.get()) 
 			{
-				vkPatch.events.audioPlay.bind(jQuery.proxy(this.nowPlaying, this));
+				vkPatch.events.audioStart.bind(jQuery.proxy(this.nowPlaying, this));
 			};
 		},
 		
