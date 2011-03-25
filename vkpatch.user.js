@@ -2493,7 +2493,7 @@ vkPatch.plugins.add({
 				
 					this.playingIconElement.hide();
 					
-					this.pausedIconElement.css('background-position-x',12*frame).show();
+					this.pausedIconElement.css('background-position',12*frame + 'px 0px').show();
 					
 				break;
 			}
