@@ -902,7 +902,7 @@ var vkPatch =
 				vkPatch.events.audioStop.raise( vkPatch.audio.currentTrackInfo() );
 			});
 			
-			vkPatch.sys.handleLazy('new_player.js/audioPlayer.setGraphics', function(state) 	// смена страницы
+			vkPatch.sys.handleLazy('new_player.js/audioPlayer.setGraphics', null, function(state) 	// смена страницы
 			{
 				var trackInfo = vkPatch.audio.currentTrackInfo();
 
@@ -2790,24 +2790,30 @@ vkPatch.plugins.add({
 		 */
 		redrawIconsContainer: function(state, trackInfo) 
 		{
-			if (state == 'stop') 
+			if (state == 'stop' || state == 'load') 
 			{
-				this.iconsContainer.detach();
 				this.scrobbled = false;
-			}
-			else
-			{
-				// если иконок нет в DOM или надо изменить положение
-				if (!$('#vkpatch_iconsContainer').length || trackInfo.aid != this.iconsContainerOwnerId) 
-				{
-					$('#audio'+trackInfo.aid).find('div.duration:first')
-						.css('position','relative')
-						.prepend(this.iconsContainer)
-						
-					this.iconsContainerOwnerId = trackInfo.aid;
-				}
-			}
+			};
 			
+			switch (state) 
+			{
+				case 'stop':
+					this.iconsContainer.detach();
+					this.scrobbled = false;
+				break;
+				
+				default:
+				
+					// если иконок нет в DOM или надо изменить положение
+					if (!$('#vkpatch_iconsContainer').length || trackInfo.aid != this.iconsContainerOwnerId) 
+					{
+						$('#audio'+trackInfo.aid).find('div.duration:first')
+							.css('position','relative')
+							.prepend(this.iconsContainer)
+							
+						this.iconsContainerOwnerId = trackInfo.aid;
+					};
+			};			
 		}
 });
 
