@@ -1820,7 +1820,7 @@ vkPatch.plugins.add({
 	tabClickHandler: function(e,data)
 	{
 		// временный фикс для вкладки Приватность - сильное отличие в подключённых скриптах/стилях и самой страницы от других вкладок
-		if (vkPatch.page.params.act == 'privacy')
+		if (vkPatch.page.params.act == 'privacy' || vkPatch.page.params.act == 'blacklist')
 		{
 			location.href = 'http://vkontakte.ru/settings.php'+this.settingsHash;
 			return false;
