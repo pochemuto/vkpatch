@@ -2330,6 +2330,9 @@ vkPatch.plugins.add({
 			this.iconsContainer = $('<div style="border: 0px; z-index: 2; right: 22px; position: absolute; text-align: right; width: 72px; height: 12px;"></div>');
 			this.iconsContainer.attr('id','vkpatch_iconsContainer');
 			
+			// иконка напротив трека
+			var icon = $('<img style="border: 0px; width: 12px; height: 12px; margin-left: 2px; margin-right: 2px">');
+			
 			vkPatch.events.audioRedraw.bind($.proxy(this.redrawIconsContainer,this));
 
 			/*
@@ -2337,7 +2340,6 @@ vkPatch.plugins.add({
 			 */
 			if (this.settings.playingIcon.get())
 			{
-				var icon = $('<img style="border: 0px; width: 12px; height: 12px; margin-left: 2px; margin-right: 2px">');
 				this.playingIconElement = icon.clone().attr('src',this.resources.playingIcon).attr('id','vkpatch_playing_icon');
 				this.pausedIconElement = icon.clone().attr('src',this.resources.blank).css('background-image','url("'+this.resources.playingIconFrames+'")');
 				
@@ -2750,7 +2752,7 @@ vkPatch.plugins.add({
 			{
 				case 'stop':
 					
-					this.scrobbledIconElement.hide();
+					this.scrobbledIconElement.stop().hide();
 									
 				break;
 				
@@ -2761,7 +2763,9 @@ vkPatch.plugins.add({
 						if (animate) 
 						{
 							this.scrobbledIconElement.hide();
-							this.scrobbledIconElement.fadeIn(1500);
+							// пауза в три секунды чтобы успел отправиться запрос на lastfm
+							// иначе анимация идёт рывками
+							this.scrobbledIconElement.delay(3000).fadeIn(1500);
 						}
 						else
 						{
