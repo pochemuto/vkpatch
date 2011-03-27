@@ -2,3 +2,9 @@ syntax: regexp
 ^chrome extension/vkpatch\.user\.js$
 ^opera extension/vkpatch\.user\.js$
 ^chrome extension/resources$
+^opera extension/icons/icon_[0-9]+\.png$
+^chrome extension/icons/icon_[0-9]+\.png$
+^7za\.exe$
+\.oex$
+\.pem$
+\.crx$
