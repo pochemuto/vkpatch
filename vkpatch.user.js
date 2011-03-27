@@ -2586,7 +2586,7 @@ vkPatch.plugins.add({
 		{
 			if (!this.connected) 
 			{
-				location.href = 'http://www.last.fm/api/auth/?api_key=' + this.apiKey + '&cb=http://vkontakte.ru/settings.php?show=vkpatch';
+				location.href = 'http://www.last.fm/api/auth/?api_key=' + this.apiKey + '&cb=http://' + location.host + '/settings.php?show=vkpatch';
 			}
 			else
 			{
