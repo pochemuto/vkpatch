@@ -560,10 +560,13 @@ var vkPatch =
 					{
 						args = arguments;
 					};
-
-					original.apply(this, args);
 					
+					// выполняем обёрнутую функцию и запоминаем результат
+					var result = original.apply(this, args);
+					// выполняем ф-ию после оригинальной
 					after.apply(context, args);
+					// возвращаем результат обёрнутой функции
+					return result;
 				};
 			});
 			
