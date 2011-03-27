@@ -33,6 +33,7 @@ rem mklink /j 		"chrome extension/resources" 				resources
 
 echo.
 echo ====   Packaging   ====
+rem 7-Zip Command Line Version - http://www.7-zip.org/download.html
 del make\vkpatch-opera.oex
 7za a -tzip make\vkpatch-opera.oex ".\opera extension\*"
 echo Opera extension - done
