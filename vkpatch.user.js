@@ -2183,7 +2183,7 @@ vkPatch.plugins.add({
 	
 	aboutPanel: function() 
 	{
-		return '<div class="settingsPanel" style="color: #555"><img src="'+this.resources.rabbit+'" style="float: left; margin-bottom: 10px; margin-right: 30px;"><h2 style="color: #555; margin-bottom: 8px; padding-top: 6px;">vkPatch</h2>Версия: 6.1<br>Домашняя страница: <a href="http://klinifini.livejournal.com/tag/vkpatch">http://klinifini.livejournal.com/</a><br>Автор: <a href="http://vkontakte.ru/pochemuto">Сергей Третьяк</a></div>';
+		return '<div class="settingsPanel" style="color: #555"><img src="'+this.resources.rabbit+'" style="float: left; margin-bottom: 10px; margin-right: 30px;"><h2 style="color: #555; margin-bottom: 8px; padding-top: 6px;">vkPatch</h2>Версия: 6.1<br>Домашняя страница: <a href="http://klinifini.livejournal.com/">http://klinifini.livejournal.com/</a><br>Автор: <a href="http://vkontakte.ru/pochemuto">Сергей Третьяк</a></div>';
 	}
 		
 });
