@@ -4,7 +4,7 @@ syntax: regexp
 ^chrome extension/resources$
 ^opera extension/icons/icon_[0-9]+\.png$
 ^chrome extension/icons/icon_[0-9]+\.png$
-^7za\.exe$
+^make/7za\.exe$
 \.oex$
 \.pem$
 \.crx$
