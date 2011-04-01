@@ -1,7 +1,7 @@
 // ==UserScript==
 // @include http://vkontakte.ru/*
 // @include http://*.vkontakte.ru/*
-// @include http://*.vk.com/*
+// @include http://vk.com/*
 // @include http://*.vk.com/*
 // ==/UserScript==
 
