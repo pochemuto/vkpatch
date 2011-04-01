@@ -1828,7 +1828,8 @@ vkPatch.plugins.add({
 		// в старых вкладках есть .php в конце, в новых - нет
 		if (! /\.php$/.test(location.pathname) )
 		{
-			location.href = 'http://vkontakte.ru/settings.php'+this.settingsHash;
+			location.href = 'http://'+location.host+'/settings.php'+this.settingsHash;
+			e.preventDefault();
 			return false;
 		};
 		
