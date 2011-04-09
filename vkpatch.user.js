@@ -549,11 +549,13 @@ var vkPatch =
 			context = context || this;
 			var before = before || jQuery.noop;
 			var after = after || jQuery.noop;
-
+			var propName = property;
+			
 			return vkPatch.sys.extend(property, function(original) 
 			{
 				return function() 
 				{
+					//vkPatch.log(propName + ' handling');
 					var args = before.apply(context, arguments);
 					// если ф-ия не вернула новые аргументы, то используем оригинальные
 					if (!args) 
@@ -562,7 +564,7 @@ var vkPatch =
 					};
 					
 					// выполняем обёрнутую функцию и запоминаем результат
-					var result = original.apply(this, args);
+					var result = original.apply(null, args);
 					// выполняем ф-ию после оригинальной
 					after.apply(context, args);
 					// возвращаем результат обёрнутой функции
