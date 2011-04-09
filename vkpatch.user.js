@@ -2348,8 +2348,8 @@ vkPatch.plugins.add({
 			this.iconsContainer.attr('id','vkpatch_iconsContainer');
 			
 			// иконка напротив трека
-			var icon = $('<img style="border: 0px; width: 12px; height: 12px; margin-left: 2px; margin-right: 2px">');
-			
+			var icon = $('<img style="border: 0px; width: 12px; height: 12px; margin-left: 2px; margin-right: 2px; display: inline-block">');
+
 			vkPatch.events.audioRedraw.bind($.proxy(this.redrawIconsContainer,this));
 
 			/*
@@ -2453,9 +2453,11 @@ vkPatch.plugins.add({
 				if (this.settings.scrobbledIcon.get())
 				{
 
-					this.scrobbledIconElement = icon.clone().attr('src',this.resources.scrobbled).hide();
+					this.scrobbledIconElement = icon.clone().attr('id','scrobbled_icon').attr('src',this.resources.scrobbled);
 					
 					this.iconsContainer.prepend(this.scrobbledIconElement);
+					
+					this.scrobbledIconElement.hide();
 					
 					// перерисовка
 					vkPatch.events.audioRedraw.bind($.proxy(this.redrawScrobbledIcon,this));
