@@ -46,7 +46,7 @@ function LastFM(options){
 			iframe.style.border = 'none';
 			iframe.onload       = function(){
 				/* Remove iframe element. */
-				//html.removeChild(iframe);
+				html.removeChild(iframe);
 
 				/* Call user callback. */
 				if(typeof(callbacks.success) != 'undefined'){
