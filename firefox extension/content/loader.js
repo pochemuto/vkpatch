@@ -109,58 +109,65 @@ function getContents(aURL, callback, context)
  */
 var uniq = 'script'+Math.random();
 
-window.addEventListener(
-	'load',
-	function() 	
-	{
-  		// TODO: вешать событие на DOMContentLoaded и читать файл через getContents одновременно
-		
-		gBrowser.addEventListener(
-			'DOMContentLoaded',
-			function (){
-				var url = window.content.location.href;
-				var matched = false;
-				// сравниваем url с шаблонами
-				for (var i = 0; i < urlPatterns.length; i++) 
-				{
-					if (urlPatterns[i].test(url))
-					{
-						matched = true;
-						break;
-					}
-				};
-				// ни один из шаблонов url не подошёл
-				if (!matched) return;
-				// если скрипт этот код уже выполнялся - то выходим
-				if (window.content[uniq]) return;
-				window.content[uniq] = true;
-				
-				Application.console.log('loaded');
-				
-				// инъекция скрипта
-				function inject(data) 
-				{
-					/*
-					* Конвертируем
-					*/
-					var utf8Converter = Components.classes["@mozilla.org/intl/utf8converterservice;1"].
-						getService(Components.interfaces.nsIUTF8ConverterService);
-					data = utf8Converter.convertURISpecToUTF8(data, "UTF-8");
-					
-					var script = top.window.content.document.createElement('script');
-					script.type = 'text/javascript';
-					script.innerHTML = data;
-					
-					top.window.content.document.getElementsByTagName('head')[0].appendChild(script);
-				};
-				
-				// читаем из файла
-				var listener = new StreamListener(inject);
-				getContents(scriptPath, listener, null);				
+// инъекция скрипта
+function inject(data) 
+{
+	/*
+	* Конвертируем
+	*/
+	var utf8Converter = Components.classes["@mozilla.org/intl/utf8converterservice;1"].
+		getService(Components.interfaces.nsIUTF8ConverterService);
+	data = utf8Converter.convertURISpecToUTF8(data, "UTF-8");
 	
-			},
-			false
-		);
-	},
-	false
-);
+	var script = top.window.content.document.createElement('script');
+	script.type = 'text/javascript';
+	script.innerHTML = data;
+	
+	top.window.content.document.getElementsByTagName('head')[0].appendChild(script);
+};
+					
+function readComplete(data) 
+{
+	/*
+	 * Скрипт прочитан в память, теперь можем подождать окно
+	 */
+	window.addEventListener(
+		'load',
+		function() 	
+		{
+	  		// TODO: вешать событие на DOMContentLoaded и читать файл через getContents одновременно
+			
+			gBrowser.addEventListener(
+				'DOMContentLoaded',
+				function (){
+					var url = window.content.location.href;
+					var matched = false;
+					// сравниваем url с шаблонами
+					for (var i = 0; i < urlPatterns.length; i++) 
+					{
+						if (urlPatterns[i].test(url))
+						{
+							matched = true;
+							break;
+						}
+					};
+					// ни один из шаблонов url не подошёл
+					if (!matched) return;
+					// если скрипт этот код уже выполнялся - то выходим
+					if (window.content[uniq]) return;
+					window.content[uniq] = true;
+					
+					
+					inject(data);
+		
+				},
+				false
+			);
+		},
+		false
+	);
+};
+
+// читаем из файла
+var listener = new StreamListener(readComplete);
+getContents(scriptPath, listener, null);	
