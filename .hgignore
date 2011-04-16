@@ -8,5 +8,6 @@ syntax: regexp
 \.oex$
 \.pem$
 \.crx$
-syntax: regexp
+\.xpi$
 ^firefox extension/content/vkpatch\.user\.js$
+^firefox extension/content/icons/icon_[0-9]+\.png$

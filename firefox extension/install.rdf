@@ -23,5 +23,7 @@
     <em:description>Скробблер для сайта Вконтакте.ру</em:description>
     <em:creator>Сергей Третьяк</em:creator>
     <em:homepageURL>http://code.google.com/p/vkpatch/</em:homepageURL>
+	 <em:icon64URL>chrome://vkpatch/content/icons/icon_64.png</em:icon64URL>
+	 <em:iconURL>chrome://vkpatch/content/icons/icon_48.png</em:iconURL>
   </Description>      
 </RDF>
