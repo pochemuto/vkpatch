@@ -8,3 +8,5 @@ syntax: regexp
 \.oex$
 \.pem$
 \.crx$
+syntax: regexp
+^firefox extension/content/vkpatch\.user\.js$

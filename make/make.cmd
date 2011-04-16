@@ -31,6 +31,12 @@ mklink /h 		"chrome extension\icons\icon_128.png" 		"resources\icon_128.png"
 
 rem mklink /j 		"chrome extension/resources" 				resources
 
+rem ==================
+rem       Firefox
+rem ==================
+del /f /q "firefox extension\content\vkpatch.user.js"
+mklink /h "firefox extension\content\vkpatch.user.js"		vkpatch.user.js
+
 echo.
 echo ====   Packaging   ====
 rem 7-Zip Command Line Version - http://www.7-zip.org/download.html

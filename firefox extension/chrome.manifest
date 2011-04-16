@@ -1,0 +1,3 @@
+content     vkpatch    content/
+resource    vkpatch    content/	
+overlay chrome://browser/content/browser.xul chrome://vkpatch/content/loader.xul
