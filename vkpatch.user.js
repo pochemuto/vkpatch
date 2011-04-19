@@ -5,7 +5,7 @@
 // @include        http://vkontakte.ru/*
 // ==/UserScript==
 // Author: Сергей Третьяк
-// Version: 6
+// Version: 6.1.1
 // Site: klinifini.livejournal.com
 
 /**
@@ -2191,7 +2191,7 @@ vkPatch.plugins.add({
 	
 	aboutPanel: function() 
 	{
-		return '<div class="settingsPanel" style="color: #555"><img src="'+this.resources.rabbit+'" style="float: left; margin-bottom: 10px; margin-right: 30px;"><h2 style="color: #555; margin-bottom: 8px; padding-top: 6px;">vkPatch</h2>Версия: 6.1<br>Домашняя страница: <a href="http://klinifini.livejournal.com/">http://klinifini.livejournal.com/</a><br>Автор: <a href="http://vkontakte.ru/pochemuto">Сергей Третьяк</a></div>';
+		return '<div class="settingsPanel" style="color: #555"><img src="'+this.resources.rabbit+'" style="float: left; margin-bottom: 10px; margin-right: 30px;"><h2 style="color: #555; margin-bottom: 8px; padding-top: 6px;">vkPatch</h2>Версия: 6.1.1<br>Домашняя страница: <a href="http://klinifini.livejournal.com/">http://klinifini.livejournal.com/</a><br>Автор: <a href="http://vkontakte.ru/pochemuto">Сергей Третьяк</a></div>';
 	}
 		
 });
@@ -2596,7 +2596,7 @@ vkPatch.plugins.add({
 		{
 			if (!this.connected) 
 			{
-				location.href = 'http://www.last.fm/api/auth/?api_key=' + this.apiKey + '&cb=http://' + location.host + '/settings.php?show=vkpatch';
+				location.href = 'http://www.last.fm/api/auth/?api_key=' + this.apiKey + '&cb=' + encodeURIComponent('http://' + location.host + '/settings.php?show=vkpatch');
 			}
 			else
 			{
