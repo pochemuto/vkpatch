@@ -40,14 +40,21 @@ function LastFM(options){
 			var iframe = document.createElement('iframe');
 			var doc;
 
+			// состояние формы с данными для отправки
+			var formState = 'init';
+			
 			/* Set iframe attributes. */
 			iframe.width        = 1;
 			iframe.height       = 1;
 			iframe.style.border = 'none';
 			iframe.onload       = function(){
 				/* Remove iframe element. */
-				html.removeChild(iframe);
-
+				if (formState == 'sent')
+				{
+					html.removeChild(iframe);
+				};
+				
+				formState = 'done';
 				/* Call user callback. */
 				if(typeof(callbacks.success) != 'undefined'){
 					callbacks.success();
@@ -80,12 +87,14 @@ function LastFM(options){
 
 			/* Write automatic form submission code. */
 			doc.write('</form>');
+			formState = 'created';
 			doc.write('<script type="application/x-javascript">');
 			doc.write('document.getElementById("form").submit();');
 			doc.write('</script>');
-
+			
 			/* Close iframe document. */
 			doc.close();
+			formState = 'sumbited';
 		}
 		/* Cross-domain GET request (JSONP). */
 		else{
