@@ -1,52 +1,55 @@
 @echo off
+if /I "%~1"=="debug" (
+	rem Передан в качестве параметр debug
+	set DEBUG=
+) else (
+	rem иначе выводы выбрасываем в NUL
+	set DEBUG=^> NUL
+)
 
+goto begin
+
+rem создание ссылки на файл, с удалением существующей
+:link
+	call :delete "%~1"
+	mklink /h "%~1" "%~2"
+goto :eof
+
+rem удаление если файл существует
+:delete
+	if exist "%~1" del "%~1"
+goto :eof
+
+:begin
 rem ======================
 rem ======================
 rem       Hardlinks
 rem ======================
 rem ======================
 echo ====   Hardlinks   ====
-
 cd ..
 rem ==================
 rem       Opera
 rem ==================
 
-del "opera extension\vkpatch.user.js"
-mklink /h 		"opera extension\vkpatch.user.js" 			vkpatch.user.js
-
-del "opera extension\icons\icon_64.png"
-mklink /h 		"opera extension\icons\icon_64.png" 		"resources\icon_64.png"
+call :link "opera extension\vkpatch.user.js"		vkpatch.user.js
+call :link "opera extension\icons\icon_64.png" 		"resources\icon_64.png"
 
 rem ==================
 rem       Chrome
 rem ==================
 
-del /f /q "chrome extension\vkpatch.user.js"
-mklink /h 		"chrome extension\vkpatch.user.js" 			vkpatch.user.js
-
-del "chrome extension\icons\icon_16.png"
-mklink /h 		"chrome extension\icons\icon_16.png" 		"resources\icon_16.png"
-
-del "chrome extension\icons\icon_48.png"
-mklink /h 		"chrome extension\icons\icon_48.png" 		"resources\icon_48.png"
-
-del "chrome extension\icons\icon_128.png"
-mklink /h 		"chrome extension\icons\icon_128.png" 		"resources\icon_128.png"
-
-rem mklink /j 		"chrome extension/resources" 				resources
+call :link "chrome extension\vkpatch.user.js" 			vkpatch.user.js
+call :link "chrome extension\icons\icon_16.png" 		"resources\icon_16.png"
+call :link "chrome extension\icons\icon_48.png" 		"resources\icon_48.png"
+call :link "chrome extension\icons\icon_128.png" 		"resources\icon_128.png"
 
 rem ==================
 rem       Firefox
 rem ==================
-del /f /q "firefox extension\content\vkpatch.user.js"
-mklink /h "firefox extension\content\vkpatch.user.js"		vkpatch.user.js
-
-del /f /q "firefox extension\content\icons\icon_48.png"
-mklink /h "firefox extension\content\icons\icon_48.png"		"resources\icon_48.png"
-
-del /f /q "firefox extension\content\icons\icon_64.png"
-mklink /h "firefox extension\content\icons\icon_64.png"		"resources\icon_64.png"
+call :link "firefox extension\content\vkpatch.user.js"		vkpatch.user.js
+call :link "firefox extension\content\icons\icon_48.png"		"resources\icon_48.png"
+call :link "firefox extension\content\icons\icon_64.png"		"resources\icon_64.png"
 
 rem ======================
 rem ======================
@@ -54,41 +57,61 @@ rem       Packaging
 rem ======================
 rem ======================
 
+
+rem Извлечение номера версии из файла vkpatch.user.js
+rem извлекается из строки вида 
+rem vkPatch.version = '11.11.11'
+FOR /F "usebackq tokens=2 delims='" %%s IN (`findstr /R /I /C:"^[ 	]*vkPatch.version[ ]*=[ ]*'[0-9.]*'" vkpatch.user.js`) do (
+	set version=%%s
+)
+
 echo.
 echo ====   Packaging   ====
 rem 7-Zip Command Line Version - http://www.7-zip.org/download.html
+echo Версия vkPatch:		%version%
+echo.
 
 rem ==================
 rem       Opera
 rem ==================
-del make\vkpatch-opera.oex
-7za a -tzip make\vkpatch-opera.oex ".\opera extension\*"
-echo Opera extension - done
+call :delete "make\vkpatch-%version%-opera.oex"
+7za a -tzip make\vkpatch-%version%-opera.oex ".\opera extension\*" %DEBUG%
+if ERRORLEVEL 0 (
+	echo Opera extension		done
+) else (
+	echo Opera extension		failed !
+)
 
 rem ==================
 rem       Chrome
 rem ==================
 rem %chrome% - путь к chrome.exe
-del make\vkpatch-chrome.crx
+call :delete "make\vkpatch-%version%-chrome.crx"
 if exist "make\vkpatch-chrome-key.pem" (
 	rem Есть ключ расширения хром
-	%chrome% --pack-extension="%cd%\chrome extension" --pack-extension-key="%cd%\make\vkpatch-chrome-key.pem" --no-message-box
+	set chrome_key=--pack-extension-key="%cd%\make\vkpatch-chrome-key.pem"
+)
+%chrome% --pack-extension="%cd%\chrome extension" %chrome_key% --no-message-box
+if ERRORLEVEL 0 (
+	echo Chrome extension	done
 ) else (
-	rem Ключа нет - создаём новый
-	%chrome% --pack-extension="%cd%\chrome extension" --no-message-box
-	move "chrome extension.pem" make\vkpatch-chrome-key.pem
+	echo Chrome extension	failed !
 )
 
-move "chrome extension.crx" make\vkpatch-chrome.crx
-echo Chrome extension - done
+move "chrome extension.crx" make\vkpatch-%version%-chrome.crx %DEBUG%
 
 rem ==================
 rem       Firefox
 rem ==================
-del make\vkpatch-firefox.xpi
-7za a -tzip make\vkpatch-firefox.xpi ".\firefox extension\*"
-echo Firefox extension - done
+call :delete "make\vkpatch-%version%-firefox.xpi"
+7za a -tzip make\vkpatch-%version%-firefox.xpi ".\firefox extension\*" %DEBUG%
+if ERRORLEVEL 0 (
+	echo Firefox extension	done
+) else (
+	echo Firefox extension	failed !
+)
 
-echo Done 
+echo.
+echo Complete 
 cd make
 pause
