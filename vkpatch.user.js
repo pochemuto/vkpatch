@@ -293,6 +293,24 @@ var vkPatch =
 			{
 				vkPatch.page.parseGet();
 			});
+			
+			/*
+			 * Подменяем функцию для предотвращения перехвата контактом смены хеша
+			 * Используется для корректной работы vkPatch.page.hash
+			 */
+			window.hab.setOptions({onLocChange: function(loc) 
+				{
+					// не обрабатываем действие, если vkPatch инициировал смену хеша
+					if (vkPatch.page.hashChanging)
+					{
+						vkPatch.page.hashChanging = false;
+						return;
+					};
+					
+					nav.go('/' + loc, undefined, {back: true});
+				}
+			}); 
+			
 			vkPatch.page.parseGet();
 		},
 		
@@ -308,6 +326,16 @@ var vkPatch =
 			page = page.replace('.php','').replace(/[0-9]+$/,'');
 
 			vkPatch.page.string = page;
+		},
+		
+		/**
+		 * Установить хеш адреса, без обработки события hashchange контактом
+		 * @param {string} hash
+		 */
+		hash: function(hash)
+		{
+			vkPatch.page.hashChanging = true;
+			location.hash = hash;
 		},
 		
 		/*
