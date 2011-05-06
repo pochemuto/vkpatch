@@ -9,7 +9,7 @@ var urlPatterns = [new RegExp(  '^http://vkontakte\\.ru'  ,'i'),
 						 new RegExp(  '^http://vk\\.com'  ,'i'),
 						 new RegExp(  '^http://.*\\.vk\\.com'  ,'i')];
 
-Application.console.log('loader.js');
+Application.console.log('vkpatch loader.js executed');
 
 
 /*********
