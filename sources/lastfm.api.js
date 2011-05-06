@@ -10,7 +10,8 @@ function LastFM(options){
 	var apiSecret = options.apiSecret || '';
 	var apiUrl    = options.apiUrl    || 'http://ws.audioscrobbler.com/2.0/';
 	var cache     = options.cache     || undefined;
-
+	var debug     = typeof(options.debug) == 'undefined' ? false : options.debug;
+	
 	/* Set API key. */
 	this.setApiKey = function(_apiKey){
 		apiKey = _apiKey;
@@ -34,12 +35,13 @@ function LastFM(options){
 	/* Internal call (POST, GET). */
 	var internalCall = function(params, callbacks, requestMethod){
 		/* Cross-domain POST request (doesn't return any data, always successful). */
+		alert(arguments);
 		if(requestMethod == 'POST'){
 			/* Create iframe element to post data. */
 			var html   = document.getElementsByTagName('html')[0];
 			var iframe = document.createElement('iframe');
 			var doc;
-
+			
 			// состояние формы с данными для отправки
 			var formState = 'init';
 			
@@ -49,7 +51,7 @@ function LastFM(options){
 			iframe.style.border = 'none';
 			iframe.onload       = function(){
 				/* Remove iframe element. */
-				if (formState == 'sent')
+				if (formState == 'sent' && !debug)
 				{
 					html.removeChild(iframe);
 				};
@@ -63,7 +65,7 @@ function LastFM(options){
 
 			/* Append iframe. */
 			html.appendChild(iframe);
-
+			
 			/* Get iframe document. */
 			if(typeof(iframe.contentWindow) != 'undefined'){
 				doc = iframe.contentWindow.document;
@@ -89,12 +91,13 @@ function LastFM(options){
 			doc.write('</form>');
 			formState = 'created';
 			doc.write('<script type="application/x-javascript">');
+			formState = 'sent';
 			doc.write('document.getElementById("form").submit();');
 			doc.write('</script>');
 			
 			/* Close iframe document. */
 			doc.close();
-			formState = 'sumbited';
+			
 		}
 		/* Cross-domain GET request (JSONP). */
 		else{
