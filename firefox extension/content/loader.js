@@ -9,7 +9,33 @@ var urlPatterns = [new RegExp(  '^http://vkontakte\\.ru'  ,'i'),
 						 new RegExp(  '^http://vk\\.com'  ,'i'),
 						 new RegExp(  '^http://.*\\.vk\\.com'  ,'i')];
 
-Application.console.log('vkpatch loader.js executed');
+/*
+ * Логирование в firebug
+ * http://thefallenapples.blogspot.com/2009/10/debugging-firefox-extensions-consolelog.html
+ */
+function debug(aMessage) {
+	try {
+		    var objects = [];
+		    objects.push.apply(objects, arguments);
+		    Firebug.Console.logFormatted(objects,
+				TabWatcher.getContextByWindow
+					(content.document.defaultView.wrappedJSObject)
+			);
+	}
+	catch (e) {
+	}
+
+	var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService
+										(Components.interfaces.nsIConsoleService);
+	if (aMessage === "") consoleService.logStringMessage("(empty string)");
+	else if (aMessage != null) consoleService.logStringMessage(aMessage.toString());
+	else consoleService.logStringMessage("null");
+};
+
+var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.vkpatch.");
+var debugMode = pref.getBoolPref("DebugMode");
+var log = debugMode ? debug : function(){};
+log('vkpatch :: loader.js executed');
 
 
 /*********
@@ -97,50 +123,81 @@ function getContents(aURL, callback, context)
 {
 	var ioService = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
 	var scriptableStream = Components.classes["@mozilla.org/scriptableinputstream;1"].getService(Components.interfaces.nsIScriptableInputStream);
-  
+	var listener = new StreamListener(callback);
 	var channel = ioService.newChannel(aURL, 'utf-8', null);
 	
-	var input = channel.asyncOpen(callback, context);
+	var input = channel.asyncOpen(listener, context);
+
 };
 
 /*
  * Имя переменной, которая устанавливается на странице как флаг выполнения скрипта
  * для предотвращения многократной инъекции
  */
-var uniq = 'script'+Math.random();
+var uniq = 'script'+ Math.floor(Math.random()*1000000);
+log(uniq);
+var stack = [];
+var readed = false;
+var scriptContent = null;
+
+
+/**
+ * Конвертировать строку в utf8
+ * @param {string} string - строка
+ */
+function toUTF8(string) 
+{
+	var utf8Converter = Components.classes["@mozilla.org/intl/utf8converterservice;1"].
+	    getService(Components.interfaces.nsIUTF8ConverterService);
+	return utf8Converter.convertURISpecToUTF8(string, "UTF-8");
+};
 
 // инъекция скрипта
-function inject(data) 
+function inject(document, url) 
 {
-	/*
-	* Конвертируем
-	*/
-	var utf8Converter = Components.classes["@mozilla.org/intl/utf8converterservice;1"].
-		getService(Components.interfaces.nsIUTF8ConverterService);
-	data = utf8Converter.convertURISpecToUTF8(data, "UTF-8");
 	
-	var script = top.window.content.document.createElement('script');
-	script.type = 'text/javascript';
-	script.innerHTML = data;
-	
-	top.window.content.document.getElementsByTagName('head')[0].appendChild(script);
+	log('vkpatch :: injection');
+	if (readed)
+	{
+		createScript(document, url);
+	}
+	else
+	{
+		stack.push({
+			document: document,
+			url: url
+		});
+	};
 };
-					
-function readComplete(data) 
+
+function createScript(document, url)
 {
-	/*
-	 * Скрипт прочитан в память, теперь можем подождать окно
-	 */
-	window.addEventListener(
-		'load',
-		function() 	
-		{
-	  		// TODO: вешать событие на DOMContentLoaded и читать файл через getContents одновременно
-			
-			gBrowser.addEventListener(
+	
+	var script = document.createElement('script');
+	script.type = 'text/javascript';
+	script.innerHTML = scriptContent;
+	script.id = 'vkpatch';
+	
+	document.getElementsByTagName('head')[0].appendChild(script);
+	log('vkpatch :: injection done : ' + url);
+};
+
+window.addEventListener(
+	'load',
+	function() 	
+	{
+  		var currentWindow = window;
+		gBrowser.addEventListener(
 				'DOMContentLoaded',
-				function (){
-					var url = window.content.location.href;
+				
+				function (aEvent){
+					var content = aEvent.originalTarget.defaultView;
+					//var content = currentWindow.content;
+					
+					var url = content.location.href;
+					
+					log('vkpatch :: DOMContentLoaded raised : ' + url);
+					
 					var matched = false;
 					// сравниваем url с шаблонами
 					for (var i = 0; i < urlPatterns.length; i++) 
@@ -148,26 +205,40 @@ function readComplete(data)
 						if (urlPatterns[i].test(url))
 						{
 							matched = true;
+							log('vkpatch :: matched with ' + urlPatterns[i].toString());
 							break;
 						}
 					};
-					// ни один из шаблонов url не подошёл
-					if (!matched) return;
-					// если скрипт этот код уже выполнялся - то выходим
-					if (window.content[uniq]) return;
-					window.content[uniq] = true;
 					
-					
-					inject(data);
+					// подошёл шаблон и не было инъекции
+					if (matched && !content[uniq])
+					{
+						content[uniq] = true; 
+						inject(content.document, url);
+					};
 		
 				},
-				false
+				true
 			);
-		},
-		false
-	);
+			
+		
+	},
+	false
+);
+
+					
+function readComplete(data) 
+{
+	scriptContent = toUTF8(data);
+	readed = true;
+	log('vkpatch :: readed');
+	
+	for (var i=0; i<stack.length; i++)
+	{
+		var s = stack[i];
+		createScript(s.document, s.url);
+	};
 };
 
 // читаем из файла
-var listener = new StreamListener(readComplete);
-getContents(scriptPath, listener, null);	
+getContents(scriptPath, readComplete);	
