@@ -1644,7 +1644,7 @@ var vkPatch =
 							 ).append( 
 							 	$('<b>').addClass('tl2')
 							 ).append(
-							 	$('<b>').addClass('tab_word').html(text)
+							 	$('<b>').addClass('tab_word').css('overflow','visible').html(text)
 							 ).attr({href:href});
 			
 			var li = $('<li>').append(link).appendTo(target);
