@@ -982,6 +982,7 @@ var vkPatch =
 
 			vkPatch.sys.handleLazy('new_player.js/audioPlayer.stop', function()
 			{
+				vkPatch.audio.lastPlayedId = null;
 				vkPatch.events.audioStop.raise( vkPatch.audio.currentTrackInfo() );
 			});
 			
