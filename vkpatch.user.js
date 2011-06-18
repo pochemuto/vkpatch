@@ -1866,7 +1866,8 @@ vkPatch.plugins.add({
 		version:				'Версия',
 		homePage:			'Домашняя страница',
 		author:				'Автор',
-		debugMode:			'режим отладки'
+		debugMode:			'режим отладки',
+		donate:				'Яндекс.Деньги'
 	},
 	
 	events: 
@@ -2150,18 +2151,34 @@ vkPatch.plugins.add({
 	{
 		
 		// Добавляем строку параметра
-		var wrapperId = option.name + '_wrapper';
-		this.categoryContainer.append('<div id="'+wrapperId+'"><input type="hidden" id="'+option.name+'" name="'+option.name+'" /></div>');
+		var checked = option.get() ? 1 : 0;
+		var wrapper = $('<div id="'+option.name+'_wrapper" class="settings_service_row clear_fix">');
+		var hidden = $('<input type="hidden" id="'+option.name+'" name="'+option.name+'" />').val( checked );
+		wrapper.append(hidden);
 		
+		var checkbox = $('<div class="checkbox fl_l" onclick="checkbox(this);" name="checkbox_'+option.name+'"><div></div>'+option.title+'</div>');
+		if (checked)
+		{
+			checkbox.addClass('on');
+		};
+		
+		var optionName = option.name;
+		wrapper.append(checkbox);
+		
+		this.categoryContainer.append(wrapper);
+		checkbox.click(function()
+		{
+			$('#'+optionName).val(_window.isChecked(this));
+		});
 		
 		var input = _window.ge(option.name);
 		
 		// Функцией ВКонтакте, преобразуем флажок
-		new _window.Checkbox(input, {checked: option.get(), label: option.title,  onChange: function() { }});
+		//new _window.Checkbox(input, {checked: option.get(), label: option.title,  onChange: function() { }});
 		
 		if (option.desc)
 		{
-			vkPatch.iface.tooltip( $('#' + wrapperId + ' > *:first'), option.desc, -25);
+			vkPatch.iface.tooltip( checkbox, option.desc, -25);
 		}
 	},
 	
@@ -2281,7 +2298,7 @@ vkPatch.plugins.add({
 	aboutPanel: function() 
 	{
 		var debug = vkPatch.debug ? ' <small>[' + this.lang.debugMode + ']</small>' : '';
-		return $.nano('<div class="settings_section" style="color: #555"><img src="'+this.resources.rabbit+'" style="float: left; margin-bottom: 10px; margin-right: 30px;"><h4 style="color: #555; margin-bottom: 8px; padding-top: 6px;">vkPatch'+debug+'</h4>{version}: '+vkPatch.version+'<br>{homePage}: <a href="http://klinifini.livejournal.com/">http://klinifini.livejournal.com/</a><br>{author}: <a href="http://vkontakte.ru/pochemuto">Сергей Третьяк</a></div>', this.lang);
+		return $.nano('<div class="settings_section" style="color: #555"><img src="'+this.resources.rabbit+'" style="float: left; margin-bottom: 10px; margin-right: 30px;"><h4 style="color: #555; margin-bottom: 8px; padding-top: 6px;">vkPatch'+debug+'</h4>{version}: '+vkPatch.version+'<br>{homePage}: <a href="http://klinifini.livejournal.com/">http://klinifini.livejournal.com/</a><br>{author}: <a href="http://vkontakte.ru/pochemuto">Сергей Третьяк</a><br>{donate}: <b>41001936638703</b></div>', this.lang);
 	}
 		
 });
