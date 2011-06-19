@@ -1727,7 +1727,7 @@ var vkPatch =
 		 */
 		inlineMessage: function(message)
 		{
-			return $('<div id="messageWrap"><div style="margin: 0px;" class="msg">'+message+'</div></div>');
+			return $('<div id="messageWrap"><div style="margin: 0px;" class="msg"><b>'+message+'</b></div></div>');
 		},
 		
 		/*
@@ -1736,7 +1736,7 @@ var vkPatch =
 		 */
 		inlineError: function(message)
 		{
-			return $('<div id="messageWrap"><div style="margin: 0px;" id="error">'+message+'</div></div>');
+			return $('<div id="messageWrap"><div style="margin: 0px;" id="error"><b>'+message+'</b></div></div>');
 		},
 		
 		/**
@@ -2711,7 +2711,7 @@ vkPatch.plugins.add({
 		{
 			if (!this.connected) 
 			{
-				location.href = 'http://www.last.fm/api/auth/?api_key=' + this.apiKey + '&cb=' + encodeURIComponent('http://' + location.host + '/settings.php?show=vkpatch');
+				location.href = 'http://www.last.fm/api/auth/?api_key=' + this.apiKey + '&cb=' + encodeURIComponent('http://' + location.host + '/settings?show=vkpatch');
 			}
 			else
 			{
