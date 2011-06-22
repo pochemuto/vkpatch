@@ -35,7 +35,6 @@ function LastFM(options){
 	/* Internal call (POST, GET). */
 	var internalCall = function(params, callbacks, requestMethod){
 		/* Cross-domain POST request (doesn't return any data, always successful). */
-		alert(arguments);
 		if(requestMethod == 'POST'){
 			/* Create iframe element to post data. */
 			var html   = document.getElementsByTagName('html')[0];
@@ -51,9 +50,15 @@ function LastFM(options){
 			iframe.style.border = 'none';
 			iframe.onload       = function(){
 				/* Remove iframe element. */
-				if (formState == 'sent' && !debug)
+				if (formState == 'sent')
 				{
-					html.removeChild(iframe);
+					doc.location = 'javascript:""';
+					
+					if (!debug)
+					{
+						// удаляем фрейм с задержкой, чтобы не было индикатора загрузки
+						setTimeout(function(){html.removeChild(iframe);},1500);
+					};
 				};
 				
 				formState = 'done';
