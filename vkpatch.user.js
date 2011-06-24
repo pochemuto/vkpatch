@@ -1741,25 +1741,42 @@ var vkPatch =
 		
 		/**
 		 * Привязать подсказку к элементу
+		 * @param {string} type - тип подсказки (simple, balloon)
 		 * @param {object} element - элемент DOM
 		 * @param {string} message - текст подсказки
 		 * @param {integer} shift - отступ подсказки слева 
 		 */
-		tooltip: function(element, message, shift) 
+		tooltip: function(type, element, message, shift) 
 		{
 			element = $(element).get(0);
 			shift = shift || 0;
-			// вешаем тултип
-			$(element).mouseover( jQuery.proxy(_window, function() 
+			
+			// выбираем тип
+			switch (type)
 			{
-				showTooltip(element, {
-     				shift: [shift, 3, 3],
-					text: message,
-    				slide: 15,
-					className: 'settings_about_tt',
-					hasover: 1
-        		})
-			}));
+				case 'balloon':
+					var func = function() 
+					{
+						showTooltip(element, {
+		     				shift: [shift, 3, 3],
+							text: message,
+		    				slide: 15,
+							className: 'settings_about_tt',
+							hasover: 1
+		        		})
+					};
+					break;
+				
+				case 'simple':
+				default:
+					func = function() 
+					{
+						showTooltip(this, {text: message, showdt: 200})
+					};
+					break;
+			}
+			// вешаем тултип
+			$(element).mouseover( jQuery.proxy(_window, func));
 			
 		}
 	},
@@ -2139,7 +2156,7 @@ vkPatch.plugins.add({
 		// вешаем подсказку
 		if (option.desc) 
 		{
-			vkPatch.iface.tooltip(label, option.desc);
+			vkPatch.iface.tooltip('balloon', label, option.desc);
 		};
 		
 	},
@@ -2178,7 +2195,7 @@ vkPatch.plugins.add({
 		
 		if (option.desc)
 		{
-			vkPatch.iface.tooltip( checkbox, option.desc, -25);
+			vkPatch.iface.tooltip('balloon', checkbox, option.desc, -25);
 		}
 	},
 	
@@ -2263,7 +2280,7 @@ vkPatch.plugins.add({
 		// посказка
 		if (desc) 
 		{
-			vkPatch.iface.tooltip(button, desc);
+			vkPatch.iface.tooltip('balloon', button, desc);
 		};
 		
 		this.categoryContainer.append( 
@@ -2384,6 +2401,7 @@ vkPatch.plugins.add({
 			connectSuccessMessage: 'Kikuyutoo подключён к ',
 			connectErrorMessage: 'Ошибка подключения к last.fm: ',
 			desconnectedMessage: 'Kikuyutoo отключён от профиля last.fm',
+			scrobbledIconTooltip: 'Трек заскробблен',
 			categories: 
 			{
 				kikuyutoo: 'Kikuyutoo'
@@ -2565,6 +2583,7 @@ vkPatch.plugins.add({
 				{
 
 					this.scrobbledIconElement = icon.clone().attr('id','scrobbled_icon').attr('src',this.resources.scrobbled);
+					vkPatch.iface.tooltip('simple', this.scrobbledIconElement, this.lang.scrobbledIconTooltip);
 					
 					this.iconsContainer.prepend(this.scrobbledIconElement);
 					
