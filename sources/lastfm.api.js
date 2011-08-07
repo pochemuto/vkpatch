@@ -38,7 +38,14 @@ function LastFM(options){
 		if(requestMethod == 'POST'){
 			/* Create iframe element to post data. */
 			var html   = document.getElementsByTagName('html')[0];
+			
+			var frameName = 'lastfmFrame_' + new Date().getTime(); 
+			
 			var iframe = document.createElement('iframe');
+			html.appendChild(iframe);
+			iframe.contentWindow.name = frameName;
+			iframe.style.display = "none";
+			
 			var doc;
 			
 			// состояние формы с данными для отправки
@@ -52,12 +59,15 @@ function LastFM(options){
 				/* Remove iframe element. */
 				if (formState == 'sent')
 				{
-					doc.location = 'javascript:""';
-					
+			
 					if (!debug)
 					{
 						// удаляем фрейм с задержкой, чтобы не было индикатора загрузки
-						setTimeout(function(){html.removeChild(iframe);},1500);
+						setTimeout(function()
+						{
+							html.removeChild(iframe);
+							html.removeChild(form);
+						},1500);
 					};
 				};
 				
@@ -68,41 +78,29 @@ function LastFM(options){
 				}
 			};
 
+			var form = document.createElement('form');
+			form.target = frameName;
+			form.action = apiUrl;
+			form.method = "POST";
+			form.acceptCharset = "UTF-8";
+			
 			/* Append iframe. */
-			html.appendChild(iframe);
-			
-			/* Get iframe document. */
-			if(typeof(iframe.contentWindow) != 'undefined'){
-				doc = iframe.contentWindow.document;
-			}
-			else if(typeof(iframe.contentDocument.document) != 'undefined'){
-				doc = iframe.contentDocument.document.document;
-			}
-			else{
-				doc = iframe.contentDocument.document;
-			}
-
-			/* Open iframe document and write a form. */
-			doc.open();
-			doc.clear();
-			doc.write('<form method="post" action="' + apiUrl + '" id="form" accept-charset="UTF-8">');
-
+			html.appendChild(form);
+						
 			/* Write POST parameters as input fields. */
-			for(var param in params){
-				doc.write('<input type="text" name="' + param + '" value="' + params[param] + '">');
-			}
-
+			for(var param in params)
+			{
+				var input = document.createElement("input");
+				input.type = "hidden";
+				input.name = param;
+				input.value = params[param];
+				form.appendChild(input);
+			};
+			
 			/* Write automatic form submission code. */
-			doc.write('</form>');
-			formState = 'created';
-			doc.write('<script type="application/x-javascript">');
 			formState = 'sent';
-			doc.write('document.getElementById("form").submit();');
-			doc.write('</script>');
 			
-			/* Close iframe document. */
-			doc.close();
-			
+			form.submit();
 		}
 		/* Cross-domain GET request (JSONP). */
 		else{
