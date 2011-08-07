@@ -2490,9 +2490,7 @@ vkPatch.plugins.add({
 			{
 				this.playingIconElement = icon.clone().attr('src',this.resources.playingIcon).attr('id','vkpatch_playing_icon');
 				this.pausedIconElement = icon.clone().attr('src',this.resources.blank).css('background-image','url("'+this.resources.playingIconFrames+'")');
-				
-				this.iconsContainer.append(this.playingIconElement, this.pausedIconElement);
-				
+								
 				// перерисовка
 				vkPatch.events.audioRedraw.bind($.proxy(this.redrawPlayingIcon,this));
 			};
@@ -2589,9 +2587,7 @@ vkPatch.plugins.add({
 
 					this.scrobbledIconElement = icon.clone().attr('id','scrobbled_icon').attr('src',this.resources.scrobbled);
 					vkPatch.iface.tooltip('simple', this.scrobbledIconElement, this.lang.scrobbledIconTooltip);
-					
-					this.iconsContainer.prepend(this.scrobbledIconElement);
-					
+										
 					this.scrobbledIconElement.hide();
 					
 					// перерисовка
@@ -2841,6 +2837,12 @@ vkPatch.plugins.add({
 		 */
 		redrawPlayingIcon: function(state, track) 
 		{
+			if (!$('#vkpatch_playing_icon').length)
+			{
+				this.iconsContainer.prepend(this.playingIconElement);
+				this.iconsContainer.prepend(this.pausedIconElement);
+			};
+			
 			switch (state)
 			{
 				case 'stop':
@@ -2905,6 +2907,11 @@ vkPatch.plugins.add({
 		 */
 		redrawScrobbledIcon: function(state, trackInfo, animate) 
 		{
+			if (!$('#scrobbled_icon').length)
+			{
+				this.iconsContainer.prepend(this.scrobbledIconElement);
+			};
+			
 			switch (state) 
 			{
 				case 'stop':
