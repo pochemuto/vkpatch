@@ -5,9 +5,9 @@
 var scriptPath = "chrome://vkpatch/content/vkpatch.user.js";
 // шаблоны страниц, на которых выполняется инъекция
 var urlPatterns = [new RegExp(  '^http://vkontakte\\.ru'  ,'i'),
-						 new RegExp(  '^http://.*\\.vkontakte\\.ru'  ,'i'),
+						 new RegExp(  '^http://[^#?]*\\.vkontakte\\.ru'  ,'i'),
 						 new RegExp(  '^http://vk\\.com'  ,'i'),
-						 new RegExp(  '^http://.*\\.vk\\.com'  ,'i')];
+						 new RegExp(  '^http://[^#?]*\\.vk\\.com'  ,'i')];
 
 /*
  * Логирование в firebug
