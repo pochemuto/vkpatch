@@ -51,6 +51,11 @@ call :link "firefox extension\content\vkpatch.user.js"		vkpatch.user.js
 call :link "firefox extension\content\icons\icon_48.png"		"resources\icon_48.png"
 call :link "firefox extension\content\icons\icon_64.png"		"resources\icon_64.png"
 
+rem ==================
+rem         IE
+rem ==================
+call :link "ie extension\vkpatch.user.js"		vkpatch.user.js
+
 rem ======================
 rem ======================
 rem       Packaging
@@ -81,6 +86,10 @@ if ERRORLEVEL 0 (
 ) else (
 	echo Opera extension		failed !
 )
+rem Упаковываем в архив
+cd make
+7za a -tzip -w vkpatch-%version%-opera.zip vkpatch-%version%-opera.oex %DEBUG%
+cd ..
 
 rem ==================
 rem       Chrome
@@ -91,14 +100,15 @@ if exist "make\vkpatch-chrome-key.pem" (
 	rem Есть ключ расширения хром
 	set chrome_key=--pack-extension-key="%cd%\make\vkpatch-chrome-key.pem"
 )
-%chrome% --pack-extension="%cd%\chrome extension" %chrome_key% --no-message-box
-if ERRORLEVEL 0 (
+"%chrome%" --pack-extension="%cd%\chrome extension" %chrome_key% --no-message-box
+if EXIST "chrome extension.crx" (
+	move "chrome extension.crx" make\vkpatch-%version%-chrome.crx %DEBUG%
 	echo Chrome extension	done
 ) else (
 	echo Chrome extension	failed !
 )
 
-move "chrome extension.crx" make\vkpatch-%version%-chrome.crx %DEBUG%
+
 
 rem ==================
 rem       Firefox
