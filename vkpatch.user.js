@@ -336,6 +336,7 @@ var vkPatch =
 			// подменяем обработчик клика по странице для предотвращения обработки ссылок Контактом
 			vkPatch.sys.handle('window.checkEvent', null, function(e) 
 			{
+				if (!e) return;
 				var target = $( e.target || e.srcElement );
 				var dataKey = vkPatch.sys.ignoreEventDataKey;
 				var ignore = false;
