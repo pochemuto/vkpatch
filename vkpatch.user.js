@@ -2182,7 +2182,7 @@ vkPatch.plugins.add({
 		var desc = option.desc || '';
 		
 		var label = $('<div style="display: inline-block; width: 200px;">'+title+':</div>');
-		var input = $('<div style="display: inline-block;"><input type="text" class="inputText" id="'+option.name+'" name="'+option.name+'" value="'+option.get()+'" /></div>');
+		var input = $('<div style="display: inline-block;"><input type="text" class="text" id="'+option.name+'" name="'+option.name+'" value="'+option.get()+'" /></div>');
 		
 		var container = $('<div style="margin: 4px 0px"></div>').append(label).append(input);
 		this.categoryContainer.append(container);
