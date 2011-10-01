@@ -1,4 +1,4 @@
-﻿// ==UserScript==
+﻿﻿// ==UserScript==
 // @name           vkPatch
 // @namespace      
 // @description    Расширение функционала ВКонтакте.ру
@@ -20,7 +20,7 @@ var vkPatch =
 		 * Эта строка используется для имён файлов при сборке, необходимо соблюдать формат
 		 * Только одинарные кавычки! 
 		 */
-		vkPatch.version = '6.1.3';
+		vkPatch.version = '6.1.4';
 		vkPatch.load.step0();
 	},
 	
@@ -333,6 +333,25 @@ var vkPatch =
 				vkPatch.events.pageChanged.raise(loc.split('?')[0]);
 			});
 			
+			// подменяем обработчик клика по странице для предотвращения обработки ссылок Контактом
+			vkPatch.sys.handle('window.checkEvent', null, function(e) 
+			{
+				var target = $( e.target || e.srcElement );
+				var dataKey = vkPatch.sys.ignoreEventDataKey;
+				var ignore = false;
+				while (target.length)
+				{
+					ignore = target.data(dataKey);
+					if (ignore) break;
+					target = target.parent();
+				};
+				
+				if (ignore)
+				{
+					return true;
+				};
+			});
+			
 			vkPatch.events.pageChanged.bind(function()
 			{
 				vkPatch.page.parseGet();
@@ -573,6 +592,12 @@ var vkPatch =
 	sys: 
 	{
 		/**
+		 * Имя ключа параметра DOM-объекта, указывающего, что нужно игнорировать обработку события нажатия контактом
+		 * @return string
+		 */
+		ignoreEventDataKey: 'vkp-ignore-event',
+		
+		/**
 		 * Преобразование свойства объекта
 		 * @param {string} property - путь к свойству, например "audio.play"
 		 * @param {function} func - функция, преобразующая свойство function(элемент, имя_свойства, родительский контейнер)
@@ -613,7 +638,7 @@ var vkPatch =
 		 * Привязывание функций к другой функции. Будет выполнена сначала before, потом оригинальная ф-ия, потом after
 		 * @param {string} property - имя свойства-метода
 		 * @param {Object} before - функция, выполняемая перед оригинальной. Агрументы, которые возвращает, будут переданы оригинальной ф-ии
-		 * @param {Object} after - функция выполняемая после оригинальной
+		 * @param {Object} after - функция выполняемая после оригинальной. Если возвращает результат, то он будет передан.
 		 * @param {object} context - контекст дополнительных ф-ий
 		 * @return {bool} true - в случае удачи, и false - если обхект не существует
 		 * @example
@@ -649,8 +674,12 @@ var vkPatch =
 					// выполняем обёрнутую функцию и запоминаем результат
 					var result = original.apply(null, args);
 					// выполняем ф-ию после оригинальной
-					after.apply(context, args);
-					// возвращаем результат обёрнутой функции
+					var resultAfter = after.apply(context, args);
+					if (resultAfter !== undefined)
+					{
+						result = resultAfter;
+					};
+					// возвращаем результат
 					return result;
 				};
 			});
@@ -1665,7 +1694,7 @@ var vkPatch =
 							 	$('<b>').addClass('tl2')
 							 ).append(
 							 	$('<b>').addClass('tab_word').css('overflow','visible').html(text)
-							 ).attr({href:href});
+							 ).attr({href:href}).data(vkPatch.sys.ignoreEventDataKey, true);
 			
 			var li = $('<li>').append(link).appendTo(target);
 			
