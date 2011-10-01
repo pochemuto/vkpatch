@@ -8,14 +8,17 @@ using mshtml;
 using System.IO;
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
+using System.Reflection;
 
 
 namespace vkpatch
 {
     [
     ComVisible(true),
-    Guid("40AEF60B-A6F8-4389-9003-A683DD75B85E"),
-    ClassInterface(ClassInterfaceType.None)]
+    ProgId("vkPatch 6"),
+    Guid("40AEF60B-A6F8-4389-9003-A683DD75B850"),
+    ClassInterface(ClassInterfaceType.None)
+    ]
 
     public class BHO : IObjectWithSite
     {
@@ -130,7 +133,6 @@ namespace vkpatch
             if (ourKey == null)
                 ourKey = registryKey.CreateSubKey(guid);
 
-            ourKey.SetValue("Alright", 1);
             registryKey.Close();
             ourKey.Close();
         }
