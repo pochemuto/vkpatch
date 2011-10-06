@@ -20,7 +20,7 @@ var vkPatch =
 		 * Эта строка используется для имён файлов при сборке, необходимо соблюдать формат
 		 * Только одинарные кавычки! 
 		 */
-		vkPatch.version = '6.1.4';
+		vkPatch.version = '6.1.4.1';
 		vkPatch.load.step0();
 	},
 	
@@ -90,7 +90,7 @@ var vkPatch =
 			/*
 			 * Подключение jQuery
 			 */
-			vkPatch.page.requireScript('http://code.jquery.com/jquery-1.5.1.min.js',vkPatch.load.step1);
+			vkPatch.page.requireScript('http://code.jquery.com/jquery-1.6.4.min.js',vkPatch.load.step1);
 		},
 		
 		/**
@@ -2509,8 +2509,7 @@ vkPatch.plugins.add({
 			this.iconsContainer.attr('id','vkpatch_iconsContainer');
 			
 			// иконка напротив трека
-			var icon = $('<img style="border: 0px; width: 12px; height: 12px; margin-left: 2px; margin-right: 2px; display: inline-block">');
-
+			var icon = $('<img style="border: 0px; width: 12px; height: 12px; margin-left: 2px; margin-right: 2px;">').css('display', 'inline-block');
 			vkPatch.events.audioRedraw.bind($.proxy(this.redrawIconsContainer,this));
 
 			/*
@@ -2617,9 +2616,7 @@ vkPatch.plugins.add({
 
 					this.scrobbledIconElement = icon.clone().attr('id','scrobbled_icon').attr('src',this.resources.scrobbled);
 					vkPatch.iface.tooltip('simple', this.scrobbledIconElement, this.lang.scrobbledIconTooltip);
-										
-					this.scrobbledIconElement.hide();
-					
+
 					// перерисовка
 					vkPatch.events.audioRedraw.bind($.proxy(this.redrawScrobbledIcon,this));
 					
@@ -2942,31 +2939,27 @@ vkPatch.plugins.add({
 				this.iconsContainer.prepend(this.scrobbledIconElement);
 			};
 			
-			switch (state) 
+			if (state == 'stop')
 			{
-				case 'stop':
-					
-					this.scrobbledIconElement.stop().hide();
-									
-				break;
-				
-				default:
-					
-					if (this.scrobbled) 
-					{							
-						if (animate) 
-						{
-							this.scrobbledIconElement.hide();
-							// пауза в три секунды чтобы успел отправиться запрос на lastfm
-							// иначе анимация идёт рывками
-							this.scrobbledIconElement.delay(3000).fadeIn(1500);
-						}
-						else
-						{
-							this.scrobbledIconElement.show();
-						}
+				this.scrobbled = false;
+			};
 						
-					}
+			if (this.scrobbled) 
+			{							
+				if (animate) 
+				{
+					// пауза в три секунды чтобы успел отправиться запрос на lastfm
+					// иначе анимация идёт рывками
+					this.scrobbledIconElement.delay(3000).fadeIn(1500);
+				}
+				else
+				{
+					this.scrobbledIconElement.show();
+				}
+			}
+			else
+			{
+				this.scrobbledIconElement.stop().hide();
 			}
 		},
 		
@@ -2975,16 +2968,11 @@ vkPatch.plugins.add({
 		 */
 		redrawIconsContainer: function(state, trackInfo) 
 		{
-			if (state == 'stop' || state == 'load') 
-			{
-				this.scrobbled = false;
-			};
-			
+		
 			switch (state) 
 			{
 				case 'stop':
 					this.iconsContainer.detach();
-					this.scrobbled = false;
 				break;
 				
 				default:
