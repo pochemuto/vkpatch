@@ -885,6 +885,39 @@ var vkPatch =
 			}
 		},
 	
+		/**
+		 * Делает объект вызываемым как функцию (копирует поля)
+		 * @param {Object} obj - объект
+		 * @param {string} propName - имя метода объекта, который будет вызываться
+		 * @example
+		 * var container = {
+		 * 	fname: 'Mike',
+		 * 	say: function(sname)
+		 * 	{
+		 * 		alert('Hello, ' + this.fname + ' and ' + sname);
+		 * 	}
+		 * };
+		 * var callable =  callableObject(container, 'say');
+		 * 
+		 * callable('Liza');	// выведет Hello, Mike and Liza;
+		 */
+		callableObject: function(obj, propName) 
+		{
+			var func = function()
+			{
+				var self = arguments.callee;
+				return self[propName].apply(self, arguments);	// вызываем функцию в контексте себя же
+			};
+			
+			// копируем поля из объекта в функцию
+			for (var i in obj) 
+			{
+				func[i] = obj[i];
+			};
+			
+			return func;
+		},
+		
 		md5: function(){},
 		encoder: {},
 		utf8_encode: function(){}
