@@ -186,6 +186,9 @@ var vkPatch =
 			{
 				return new vkPatch.event(name, 'core');
 			});
+			
+			// прототип настроек
+			vkPatch.settings.option.prototype = vkPatch.settings.optionPrototype;
 
 			// Определение страницы
 			vkPatch.page.get();
@@ -1126,11 +1129,199 @@ var vkPatch =
 	 * 										.set(value);
 	 * или для параметров плагина: vkPatch./имя плагина/.settings./имя параметра/.get()  | set()
 	 * 
-	 * 	С помощью конструктора описаний можно задавать параметры цепочками вызовов. В конце объект описания получают функцией done():
-	 * 		vkPatch.settings.create('floatVal').def(4.75).min(0).max(10).isFloat().done();
+	 * Создание нового описания: new vkPatch.settings.option(/параметры/);
 	 */
 	settings:
 	{
+		/**
+		 * Создание нового описания настройки 
+		 * @param {Object} options - свойства настройки
+		 */
+		option: function(options)
+		{
+			if (this instanceof vkPatch.settings.option) 
+			{
+				jQuery.extend(this, options);
+			}
+			else
+			{
+				return new new vkPatch.settings.option(options);
+			};
+		},
+		
+		/**
+		 * Прототип описания настройки
+		 */
+		optionPrototype:
+		{
+			// имя, без пробелов. По этому адресу хранится в памяти само значение
+			// имя содержит имя плагина, пример updater.timeout
+			name: null,
+			// категория. По-умолчанию hidden - скрытые.
+			category: 'hidden',
+			// значение по-умолчанию. тип параметра определяется по типа этого значения. 
+			def: true,
+			
+			min: null,
+			max: null,
+			// число с плавающей точкой. в противном случае округляется до целого 
+			isFloat: false,
+			
+			// набор: массив возможных значений
+			list: null,
+			
+			// обработчик для параметра-кнопки
+			buttonHandler: null,
+			
+			// HTML или функция его возвращающая, который будет выведен в табе настроек
+			panel: null,
+			
+			// название и описание
+			title: null,
+			desc: null,
+			
+			/*
+			 * Чтение параметра из памяти
+			 */
+			get: function()
+			{
+				var value = vkPatch.storage.get(this.name);
+				
+				if (value === null)
+				{
+					return this.def;
+				};
+				
+				var result_value = this.def;
+				/*
+				 * Требуемый тип значения узнаём по типу значения по-умолчанию
+				 */
+				var type = this.getType();
+				
+				switch(type)
+				{
+					case vkPatch.settings.TYPE_BOOL:
+						
+						result_value = (value == true);
+						
+						break;
+					
+					case vkPatch.settings.TYPE_INT:
+					case vkPatch.settings.TYPE_FLOAT:
+						
+						var temp_value;
+						/*
+						 * Пытаемся получить число, в зависимости от типа
+						 */
+						if (type == vkPatch.settings.TYPE_FLOAT)
+						{
+							temp_value = parseFloat(value);
+						}
+						else
+						{
+							temp_value = parseInt(value);
+						};
+	
+						/*
+						 * Обработка крайних случаев
+						 */
+						if (isNaN(temp_value) || temp_value == Infinity)
+						{
+							temp_value = this.def;
+						}
+						else if (this.min !== null && temp_value < this.min)
+						{
+							temp_value = this.min;
+						}
+						else if (this.max !== null && temp_value > this.max)
+						{
+							temp_value = this.max;
+						}
+						
+						result_value = temp_value;
+						
+						break;
+						
+					case vkPatch.settings.TYPE_LIST:
+	
+						if (_.exists(this.list,value))
+						{
+							result_value = value;
+						}
+						else
+						{
+							result_value = this.list[0] || null;
+						};
+						
+						break;
+						
+					case vkPatch.settings.TYPE_STRING:
+						
+						result_value = '' + value;
+						
+						break;
+						
+					default:
+						
+						result_value = value;
+				}
+				
+				return result_value;
+			},
+			
+			/*
+			 * Сохранине параметра в памяти
+			 */
+			set: function(value)
+			{
+				// сохраниние
+				vkPatch.storage.set(this.name, value);				
+			},
+			
+			/*
+			 * Определение типа
+			 */
+			getType: function()
+			{
+				if (this.panel !== null)	/* панель. Просто выводится в табе настроек */
+				{
+					return vkPatch.settings.TYPE_PANEL;	
+				}
+				else if (this.buttonHandler !== null) /* этот параметр - кнопка */ 
+				{
+					return vkPatch.settings.TYPE_BUTTON;
+				}
+				else if (_.isBoolean(this.def))				 /* булево */
+				{
+					return vkPatch.settings.TYPE_BOOL;
+				}				
+				else if (_.isNumber(this.def))		/* число */
+				{
+					
+					if (this.isFloat)
+					{
+						return vkPatch.settings.TYPE_FLOAT;			/* с плавающей точкой */
+					}
+					else
+					{
+						return vkPatch.settings.TYPE_INT;			/* целое */
+					};
+	
+				}
+				else if(this.list !== null) /* набор */
+				{
+					return vkPatch.settings.TYPE_LIST;	/* набор */
+				}
+				else if(_.isString(this.def))
+				{
+					return vkPatch.settings.TYPE_STRING;	/* строка */
+				}
+				else		/* объект */
+				{
+					return vkPatch.settings.TYPE_OBJECT;
+				}
+			}
+		},
 		
 		/*
 		 * Типы параметров
@@ -1158,265 +1349,6 @@ var vkPatch =
 		 * Контейнер всех параметров 
 		 */
 		container: {},
-		
-		/*
-		 * Конструктор описания параметра
-		 * Пример создания: vkPatch.settings.create().def(4).min(1).max(10).isFloat().inSett().done();
-		 */
-		option: function()
-		{
-			
-			/*
-			 * Описание параметра
-			 */
-			var node =
-			{
-				// имя, без пробелов. По этому адресу хранится в памяти само значение
-				// имя содержит имя плагина, пример updater.timeout
-				name: null,
-				// категория. По-умолчанию hidden - скрытые.
-				category: 'hidden',
-				// значение по-умолчанию. тип параметра определяется по типа этого значения. 
-				def: true,
-				
-				min: null,
-				max: null,
-				// число с плавающей точкой. в противном случае округляется до целого 
-				isFloat: false,
-				
-				// набор: массив возможных значений
-				list: null,
-				
-				// обработчик для параметра-кнопки
-				buttonHandler: null,
-				
-				// HTML или функция его возвращающая, который будет выведен в табе настроек
-				panel: null,
-				
-				// название и описание
-				title: null,
-				desc: null,
-				
-				/*
-				 * Чтение параметра из памяти
-				 */
-				get: function()
-				{
-					var value = vkPatch.storage.get(this.name);
-					
-					if (value === null)
-					{
-						return this.def;
-					};
-					
-					var result_value = this.def;
-					/*
-					 * Требуемый тип значения узнаём по типу значения по-умолчанию
-					 */
-					var type = this.getType();
-					
-					switch(type)
-					{
-						case vkPatch.settings.TYPE_BOOL:
-							
-							result_value = (value == true);
-							
-							break;
-						
-						case vkPatch.settings.TYPE_INT:
-						case vkPatch.settings.TYPE_FLOAT:
-							
-							var temp_value;
-							/*
-							 * Пытаемся получить число, в зависимости от типа
-							 */
-							if (type == vkPatch.settings.TYPE_FLOAT)
-							{
-								temp_value = parseFloat(value);
-							}
-							else
-							{
-								temp_value = parseInt(value);
-							};
-
-							/*
-							 * Обработка крайних случаев
-							 */
-							if (isNaN(temp_value) || temp_value == Infinity)
-							{
-								temp_value = this.def;
-							}
-							else if (this.min !== null && temp_value < this.min)
-							{
-								temp_value = this.min;
-							}
-							else if (this.max !== null && temp_value > this.max)
-							{
-								temp_value = this.max;
-							}
-							
-							result_value = temp_value;
-							
-							break;
-							
-						case vkPatch.settings.TYPE_LIST:
-
-							if (_.exists(this.list,value))
-							{
-								result_value = value;
-							}
-							else
-							{
-								result_value = this.def;
-							};
-							
-							break;
-							
-						case vkPatch.settings.TYPE_STRING:
-							
-							result_value = '' + value;
-							
-							break;
-							
-						default:
-							
-							result_value = value;
-					}
-					
-					return result_value;
-				},
-				
-				/*
-				 * Сохранине параметра в памяти
-				 */
-				set: function(value)
-				{
-					// сохраниние
-					vkPatch.storage.set(this.name, value);				
-				},
-				
-				/*
-				 * Определение типа
-				 */
-				getType: function()
-				{
-					if (this.panel !== null)	/* панель. Просто выводится в табе настроек */
-					{
-						return vkPatch.settings.TYPE_PANEL;	
-					}
-					else if (this.buttonHandler !== null) /* этот параметр - кнопка */ 
-					{
-						return vkPatch.settings.TYPE_BUTTON;
-					}
-					else if (_.isBoolean(this.def))				 /* булево */
-					{
-						return vkPatch.settings.TYPE_BOOL;
-					}				
-					else if (_.isNumber(this.def))		/* число */
-					{
-						
-						if (this.isFloat)
-						{
-							return vkPatch.settings.TYPE_FLOAT;			/* с плавающей точкой */
-						}
-						else
-						{
-							return vkPatch.settings.TYPE_INT;			/* целое */
-						};
-
-					}
-					else if(this.list !== null) /* набор */
-					{
-						return vkPatch.settings.TYPE_LIST;	/* набор */
-					}
-					else if(_.isString(this.def))
-					{
-						return vkPatch.settings.TYPE_STRING;	/* строка */
-					}
-					else		/* объект */
-					{
-						return vkPatch.settings.TYPE_OBJECT;
-					}
-				}
-			};
-			
-			this.def = function(value)
-			{
-				node.def = value;
-				return this;
-			};
-			
-			this.min = function(min)
-			{
-				node.min = min;
-				return this;
-			};
-			
-			this.max = function(max)
-			{
-				node.max = max;
-				return this;
-			};
-			
-			this.isFloat = function()
-			{
-				node.isFloat = true;
-				return this;
-			};
-			
-			this.category = function(category)
-			{
-				node.category = category;
-				return this;
-			};
-			
-			this.list = function(list)
-			{
-				node.list = list;
-				node.def = list[0];
-				return this;
-			};
-			
-			/**
-			 * Тип параметра - кнопка
-			 * @param {function, string} handler - действие, которое будет выполнено при нажатии, может задано как имя метода в plugin
-			 */
-			this.button = function(handler)
-			{
-				node.buttonHandler = handler;
-				return this;
-			};
-			
-			/**
-			 * Тип параметра - панель. Просто выводится на настройках
-			 * @param {string, function} html - код или функция, котора его возвращает
-			 */
-			this.panel = function(html) 
-			{
-				node.panel = html;
-				return this;
-			};
-			
-			/*
-			 * Завершаем описание параметра и получаем объект описания
-			 */
-			this.done = function()
-			{
-				return node;
-			};
-			
-		},
-		
-		
-		/*
-		 * Создание описания настройки
-		 */
-		create: function()
-		{
-			var option = new vkPatch.settings.option();
-	
-			return option;
-		},
 		
 		/*
 		 * Добавляем параметры к спискам
@@ -1607,7 +1539,7 @@ var vkPatch =
 						
 						if (_.isString(option.buttonHandler)) 
 						{
-							option.buttonHandler = jQuery.proxy(plugin, option.buttonHandler);
+							option.buttonHandler = jQuery.proxy(plugin, plugin[option.buttonHandler]);
 						};
 						
 						// добавляем к списку в vkPatch
@@ -1917,11 +1849,11 @@ vkPatch.plugins.add({
 	desc: 'Конфигуратор vkPatch',
 	
 	settings: {
-		bool: vkPatch.settings.create().def(true).category('settings_test').done(),
-		num: vkPatch.settings.create().def(200).min(1).max(500).category('settings_test').done(),
-		floatNum: vkPatch.settings.create().def(200).min(1).max(500).isFloat(true).category('settings_test').done(),
-		str: vkPatch.settings.create().def('Test string').category('settings_test').done(),
-		list: vkPatch.settings.create().list(['one','two','three','withoutTranslation']).def('two').category('settings_test').done()
+		bool:      new vkPatch.settings.option({category:'settings_test', def:true}),
+		num:       new vkPatch.settings.option({category:'settings_test', def:200, min:1, max:500}),
+		floatNum:  new vkPatch.settings.option({category:'settings_test', def:200, min:1, max:500, isFloat:true}),
+		str:       new vkPatch.settings.option({category:'settings_test', def:'Test string'}),
+		list:      new vkPatch.settings.option({category:'settings_test', def: 'two', list:['one','two','three','withoutTranslation']})
 	},
 	
 	resources: 
@@ -2430,6 +2362,7 @@ vkPatch.plugins.add({
 		}
 });
 
+
 vkPatch.plugins.add({
 		/**
 		 * Kikuyutoo
@@ -2440,18 +2373,18 @@ vkPatch.plugins.add({
 		
 		settings: 
 		{
-			scrobbler: vkPatch.settings.create().def(true).category('kikuyutoo').done(),
-			nowPlaying: vkPatch.settings.create().def(true).category('kikuyutoo').done(),
-			playingIcon: vkPatch.settings.create().def(true).category('kikuyutoo').done(),
-			scrobbledIcon: vkPatch.settings.create().def(true).category('kikuyutoo').done(),
-			connectLastfmButton: vkPatch.settings.create().button('connectButtonHandler').category('kikuyutoo').done(),
+			scrobbler:           new vkPatch.settings.option({def:true, category:'kikuyutoo'}),
+			nowPlaying:          new vkPatch.settings.option({def:true, category:'kikuyutoo'}),
+			playingIcon:         new vkPatch.settings.option({def:true, category:'kikuyutoo'}),
+			scrobbledIcon:       new vkPatch.settings.option({def:true, category:'kikuyutoo'}),
+			connectLastfmButton: new vkPatch.settings.option({buttonHandler: 'connectButtonHandler', category:'kikuyutoo'}),
 			
 			/*
 			 * Скрытые
 			 */
-			token: vkPatch.settings.create().def(null).done(),
-			session: vkPatch.settings.create().def(null).done(),
-			username: vkPatch.settings.create().def(null).done()
+			token:      new vkPatch.settings.option({def:null}),
+			session:    new vkPatch.settings.option({def:null}),
+			username:   new vkPatch.settings.option({def:null})
 		},
 		
 		lang:
