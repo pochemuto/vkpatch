@@ -1,4 +1,4 @@
-﻿﻿// ==UserScript==
+﻿// ==UserScript==
 // @name           vkPatch
 // @namespace      
 // @description    Расширение функционала ВКонтакте.ру
