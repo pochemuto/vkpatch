@@ -1215,7 +1215,7 @@ var vkPatch =
 					{
 						case vkPatch.settings.TYPE_BOOL:
 							
-							result_value = (value == true);
+							result_value = (value === true || value === 1 || value === 'true' || value === '1');
 							
 							break;
 						
@@ -1297,9 +1297,9 @@ var vkPatch =
 			 */
 			set: function(value)
 			{
-				// сохраниние
+				// сохранение
+				value = this.checkValue(value);
 				vkPatch.storage.set(this.name, value);
-				this.checkValue(value);
 			},
 			
 			/*
