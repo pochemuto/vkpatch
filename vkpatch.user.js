@@ -1141,6 +1141,7 @@ var vkPatch =
 		{
 			if (this instanceof vkPatch.settings.option) 
 			{
+				
 				jQuery.extend(this, options);
 			}
 			else
@@ -1180,6 +1181,9 @@ var vkPatch =
 			title: null,
 			desc: null,
 			
+			// событие при изменении значения
+			changeEvent: null,
+			
 			/*
 			 * Чтение параметра из памяти
 			 */
@@ -1187,84 +1191,103 @@ var vkPatch =
 			{
 				var value = vkPatch.storage.get(this.name);
 				
+				return this.checkValue(value);
+			},
+			
+			/**
+			 * Обработка значения с учётом ограничений
+			 * @param {mixed} value
+			 * @return {mixed} исправленное значение
+			 */
+			checkValue: function(value)
+			{
 				if (value === null)
 				{
-					return this.def;
+					var result_value = this.def;
+				}
+				else
+				{
+					/*
+					 * Требуемый тип значения узнаём по типу значения по-умолчанию
+					 */
+					var type = this.getType();
+					switch(type)
+					{
+						case vkPatch.settings.TYPE_BOOL:
+							
+							result_value = (value == true);
+							
+							break;
+						
+						case vkPatch.settings.TYPE_INT:
+						case vkPatch.settings.TYPE_FLOAT:
+							
+							var temp_value;
+							/*
+							 * Пытаемся получить число, в зависимости от типа
+							 */
+							if (type == vkPatch.settings.TYPE_FLOAT)
+							{
+								temp_value = parseFloat(value);
+							}
+							else
+							{
+								temp_value = parseInt(value);
+							};
+		
+							/*
+							 * Обработка крайних случаев
+							 */
+							if (isNaN(temp_value) || temp_value == Infinity)
+							{
+								temp_value = this.def;
+							}
+							else if (this.min !== null && temp_value < this.min)
+							{
+								temp_value = this.min;
+							}
+							else if (this.max !== null && temp_value > this.max)
+							{
+								temp_value = this.max;
+							}
+							
+							result_value = temp_value;
+							
+							break;
+							
+						case vkPatch.settings.TYPE_LIST:
+		
+							if (_.exists(this.list,value))
+							{
+								result_value = value;
+							}
+							else
+							{
+								result_value = this.list[0] || null;
+							};
+							
+							break;
+							
+						case vkPatch.settings.TYPE_STRING:
+							
+							result_value = '' + value;
+							
+							break;
+							
+						default:
+							
+							result_value = value;
+							
+					};
 				};
 				
-				var result_value = this.def;
-				/*
-				 * Требуемый тип значения узнаём по типу значения по-умолчанию
-				 */
-				var type = this.getType();
-				
-				switch(type)
+				if (result_value !== this.oldValue)
 				{
-					case vkPatch.settings.TYPE_BOOL:
-						
-						result_value = (value == true);
-						
-						break;
-					
-					case vkPatch.settings.TYPE_INT:
-					case vkPatch.settings.TYPE_FLOAT:
-						
-						var temp_value;
-						/*
-						 * Пытаемся получить число, в зависимости от типа
-						 */
-						if (type == vkPatch.settings.TYPE_FLOAT)
-						{
-							temp_value = parseFloat(value);
-						}
-						else
-						{
-							temp_value = parseInt(value);
-						};
-	
-						/*
-						 * Обработка крайних случаев
-						 */
-						if (isNaN(temp_value) || temp_value == Infinity)
-						{
-							temp_value = this.def;
-						}
-						else if (this.min !== null && temp_value < this.min)
-						{
-							temp_value = this.min;
-						}
-						else if (this.max !== null && temp_value > this.max)
-						{
-							temp_value = this.max;
-						}
-						
-						result_value = temp_value;
-						
-						break;
-						
-					case vkPatch.settings.TYPE_LIST:
-	
-						if (_.exists(this.list,value))
-						{
-							result_value = value;
-						}
-						else
-						{
-							result_value = this.list[0] || null;
-						};
-						
-						break;
-						
-					case vkPatch.settings.TYPE_STRING:
-						
-						result_value = '' + value;
-						
-						break;
-						
-					default:
-						
-						result_value = value;
-				}
+					var old = this.oldValue;
+					this.oldValue = result_value;
+					// вызываем событие
+					this.changeEvent.raise(result_value, old, this);
+				};
 				
 				return result_value;
 			},
@@ -1275,7 +1298,8 @@ var vkPatch =
 			set: function(value)
 			{
 				// сохраниние
-				vkPatch.storage.set(this.name, value);				
+				vkPatch.storage.set(this.name, value);
+				this.checkValue(value);
 			},
 			
 			/*
@@ -1527,6 +1551,9 @@ var vkPatch =
 					{
 						var option = new vkPatch.settings.option( plugin.settings[optionName] );
 						plugin.settings[optionName] = option;
+						
+						// создаем событие при изменении
+						option.changeEvent = new vkPatch.event(optionName + '-changed', plugin.name);
 						
 						option.name = plugin.name + '-' + optionName;
 						
