@@ -188,6 +188,7 @@ var vkPatch =
 			});
 			
 			// прототип настроек
+			vkPatch.settings.optionPrototype.oldValue = vkPatch.settings.initValue;
 			vkPatch.settings.option.prototype = vkPatch.settings.optionPrototype;
 
 			// Определение страницы
@@ -943,19 +944,27 @@ var vkPatch =
 		/**
 		 * Повесить обработчик на событие
 		 * @param {function} handler - обработчик
+		 * @param {object} context - контекст обработчика
 		 */
-		this.bind = function(handler) 
+		this.bind = function(handler, context) 
 		{
-			handlers.push(handler);
+			handlers.push(
+			{
+				func: handler,
+				context: context
+			});
 		};
 		
 		/**
 		 * Отвязать обработчик от события
 		 * @param {function} handler - обработчик
 		 */
-		this.unbind = function(handler) 
+		this.unbind = function(handler, context) 
 		{
-			handlers = _.remove(handlers, handler);
+			handlers = _.remove(handlers, function(item)
+			{
+				return item.func === handler && item.context === context;
+			});
 		};
 		
 		/**
@@ -966,9 +975,18 @@ var vkPatch =
 			vkPatch.log(pluginName + name + ' raised: '+[].join.call(arguments,', '));
 			for (var i=0; i < handlers.length; i++)
 			{
-				handlers[i].apply(this, arguments);
+				var handler = handlers[i];
+				handler.func.apply(handler.context, arguments);
 			};
 		};
+		
+		/**
+		 * Количество подписчиков на событие
+		 */
+		this.count = function()
+		{
+			return handlers.length;
+		}
 	},
 	
 	/**
@@ -1141,14 +1159,16 @@ var vkPatch =
 		{
 			if (this instanceof vkPatch.settings.option) 
 			{
-				
 				jQuery.extend(this, options);
 			}
 			else
 			{
-				return new new vkPatch.settings.option(options);
+				return new vkPatch.settings.option(options);
 			};
 		},
+		
+		// значение, указывающее что параметр ещё не был прочитан
+		initValue: {toString: function(){return 'vkPatch-init-value';}},
 		
 		/**
 		 * Прототип описания настройки
@@ -1184,14 +1204,31 @@ var vkPatch =
 			// событие при изменении значения
 			changeEvent: null,
 			
+			// старое значение. vkPatch.settings.initValue - значение, указывающее что параметр ещё не был прочитан
+			oldValue: null,
+			
 			/*
 			 * Чтение параметра из памяти
 			 */
 			get: function()
 			{
+				var type = this.getType();
+				if (type == vkPatch.settings.TYPE_BUTTON || type == vkPatch.settings.TYPE_PANEL)
+				{
+					return;
+				};
+				
 				var value = vkPatch.storage.get(this.name);
 				
 				return this.checkValue(value);
+			},
+			
+			/**
+			 * Обновление параметра из памяти
+			 */
+			update: function()
+			{
+				this.get();
 			},
 			
 			/**
@@ -1344,6 +1381,24 @@ var vkPatch =
 				{
 					return vkPatch.settings.TYPE_OBJECT;
 				}
+			},
+			
+			/**
+			 * Подписка на изменение
+			 * @see vkPatch.event.bind
+			 */
+			onchange: function() 
+			{
+				this.changeEvent.bind.apply(this.changeEvent, arguments);
+			},
+			
+			/**
+			 * Удаление обработчика 
+			 * @see vkPatch.event.unbind
+			 */
+			onchangeUnbind: function()
+			{
+				this.changeEvent.unbind.apply(this.changeEvent, arguments);
 			}
 		},
 		
@@ -1600,6 +1655,17 @@ var vkPatch =
 				}
 				
 			};
+			
+			// чтение настроек
+			for (var optionName in vkPatch.settings.container)
+			{
+				var option = vkPatch.settings.container[optionName];
+				// читаем только те настройки, у которых есть подписчики
+				if (option.changeEvent.count() > 0)
+				{
+					option.update();
+				}
+			}
 		},
 		
 		/**
@@ -2276,7 +2342,7 @@ vkPatch.plugins.add({
 		}
 	
 
-		this.categoryContainer.append('<div style="margin: 4px 0px"><div style="display: inline-block; width: 200px">'+option.title+':</div><div class="settings_privacy_control" style="display: inline-block;padding: 4px;"><a id="privacy_edit_'+option.name+'" style="cursor: pointer;" onclick="return Privacy.show(this, event, \''+option.name+'\');">'+selected_title+'</a><span></span></div><input type="hidden" id="'+option.name+'" name="'+option.name+'" /></div>');
+		this.categoryContainer.append('<div style="margin: 4px 0px"><div style="display: inline-block; width: 200px">'+option.title+':</div><div class="settings_privacy_control" style="display: inline-block;padding: 4px;"><a id="privacy_edit_'+option.name+'" style="cursor: pointer;" onclick="return Privacy.show(this, event, \''+option.name+'\');">'+selected_title+'</a><span></span></div><input type="hidden" id="'+option.name+'" name="'+option.name+'" value="'+selected+'"/></div>');
 		if (!_window.cur.privacy)
 		{
 			_window.cur.privacy = {};
@@ -2496,7 +2562,7 @@ vkPatch.plugins.add({
 			/*
 			 * Обновление вкладки настроек, в зависимости от связи с lastfm
 			 */
-			vkPatch.plugins.settings.events.tabActivated.bind(jQuery.proxy(this.setConnectStatus,this));
+			vkPatch.plugins.settings.events.tabActivated.bind(this.setConnectStatus, this);
 			
 			
 			this.iconsContainer = $('<div style="border: 0px; z-index: 2; right: 22px; position: absolute; text-align: right; width: 72px; height: 12px;"></div>');
@@ -2504,7 +2570,7 @@ vkPatch.plugins.add({
 			
 			// иконка напротив трека
 			var icon = $('<img style="border: 0px; width: 12px; height: 12px; margin-left: 2px; margin-right: 2px;">').css('display', 'inline-block');
-			vkPatch.events.audioRedraw.bind($.proxy(this.redrawIconsContainer,this));
+			vkPatch.events.audioRedraw.bind(this.redrawIconsContainer, this);
 
 			/*
 			 * Иконка при воспроизведении и паузе
@@ -2515,7 +2581,7 @@ vkPatch.plugins.add({
 				this.pausedIconElement = icon.clone().attr('src',this.resources.blank).css('background-image','url("'+this.resources.playingIconFrames+'")');
 								
 				// перерисовка
-				vkPatch.events.audioRedraw.bind($.proxy(this.redrawPlayingIcon,this));
+				vkPatch.events.audioRedraw.bind(this.redrawPlayingIcon, this);
 			};
 			
 			/*
@@ -2542,13 +2608,13 @@ vkPatch.plugins.add({
 				},this);
 				
 				// когда активирована вкладка настроект vkPatch
-				vkPatch.plugins.settings.events.tabActivated.bind(jQuery.proxy(function()
+				vkPatch.plugins.settings.events.tabActivated.bind(function()
 				{
 					
 					tabActivated = true;
 					showMessage.call(this);
 					
-				},this));
+				}, this);
 				
 				// делаем запрос сессии
 				this.lastfm.auth.getSession(
@@ -2595,14 +2661,14 @@ vkPatch.plugins.add({
 				this.log('соединён');
 				if (this.settings.nowPlaying.get()) 
 				{
-					vkPatch.events.audioStart.bind(jQuery.proxy(this.nowPlaying, this));
+					vkPatch.events.audioStart.bind(this.nowPlaying, this);
 				};
 				
 				if (this.settings.scrobbler.get()) 
 				{
-					vkPatch.events.audioStart.bind(jQuery.proxy(this.scrobblerInitTimer, this));
-					vkPatch.events.audioPlay.bind(jQuery.proxy(this.scrobblerPlay, this));
-					vkPatch.events.audioPause.bind(jQuery.proxy(this.scrobblerPause, this));
+					vkPatch.events.audioStart.bind(this.scrobblerInitTimer, this);
+					vkPatch.events.audioPlay.bind(this.scrobblerPlay, this);
+					vkPatch.events.audioPause.bind(this.scrobblerPause, this);
 				};
 				
 				if (this.settings.scrobbledIcon.get())
@@ -2612,13 +2678,13 @@ vkPatch.plugins.add({
 					vkPatch.iface.tooltip('simple', this.scrobbledIconElement, this.lang.scrobbledIconTooltip);
 
 					// перерисовка
-					vkPatch.events.audioRedraw.bind($.proxy(this.redrawScrobbledIcon,this));
+					vkPatch.events.audioRedraw.bind(this.redrawScrobbledIcon, this);
 					
 					// когда заскробблен
-					this.events.scrobbled.bind($.proxy(function(trackInfo)
+					this.events.scrobbled.bind(function(trackInfo)
 					{
 						this.redrawScrobbledIcon('play', trackInfo, true);
-					}, this));
+					}, this);
 				};
 			}
 			else
