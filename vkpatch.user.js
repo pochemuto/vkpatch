@@ -2490,10 +2490,10 @@ vkPatch.plugins.add({
 				nowPlaying: ['Обновлять «Cейчас проигрывается» на Last.fm','Аудиозапись, которую Вы сейчас слушаете, будет отображаться в вашем профиле Last.fm. Эта опция не влияет на скробблинг'],
 				scrobbledIcon: ['Иконка у заскроббленной аудиозаписи','Когда аудиозапись будет заскробблена, напротив неё появится иконка'],
 				connectLastfmButton: 'Связать с аккаунтом Last.fm',
-				disconnectLastfmButton: 'Отключить от '
+				disconnectLastfmButton: 'Отключить от <b>{username}</b>'
 			},
 			
-			connectSuccessMessage: 'Kikuyutoo подключён к ',
+			connectSuccessMessage: 'Kikuyutoo подключён к {username}',
 			connectErrorMessage: 'Ошибка подключения к last.fm: ',
 			desconnectedMessage: 'Kikuyutoo отключён от профиля last.fm',
 			scrobbledIconTooltip: 'Трек заскробблен',
@@ -2635,7 +2635,7 @@ vkPatch.plugins.add({
 						this.log('получена сессия');
 						
 						// выводим сообщение
-						message = this.lang.connectSuccessMessage + this.settings.username.get();
+						message = jQuery.nano(this.lang.connectSuccessMessage, {username: this.settings.username.get()});
 						delay = 15000;
 						showMessage();
 						
@@ -2981,7 +2981,7 @@ vkPatch.plugins.add({
 			if (this.connected) 
 			{
 				var username = this.settings.username.get();
-				buttonElement.html(this.lang.settings.disconnectLastfmButton + username);
+				buttonElement.html(jQuery.nano(this.lang.settings.disconnectLastfmButton, {username: username}));
 			}
 			else
 			{
