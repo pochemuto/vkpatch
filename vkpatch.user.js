@@ -924,7 +924,7 @@ var vkPatch =
 		
 		md5: function(){},
 		encoder: {},
-		utf8_encode: function(){}
+		utf8_encode: function(){},
 		
 		cp1251_to_utf8: function (str)
 		{
