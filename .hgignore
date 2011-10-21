@@ -12,9 +12,7 @@ syntax: regexp
 \.zip$
 ^firefox extension/content/vkpatch\.user\.js$
 ^firefox extension/content/icons/icon_[0-9]+\.png$
-syntax: regexp
 ^ie extension/bin$
-syntax: regexp
 ^ie extension/obj$
-syntax: regexp
 ^ie extension/vkpatch\.user\.js$
+^.settings$
