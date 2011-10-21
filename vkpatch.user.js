@@ -1,4 +1,4 @@
-﻿// ==UserScript==
+﻿﻿// ==UserScript==
 // @name           vkPatch
 // @namespace      
 // @description    Расширение функционала ВКонтакте.ру
@@ -580,7 +580,7 @@ var vkPatch =
 				var params = {}, e,
 				a = /\+/g,  // Regex for replacing addition symbol with a space
 				r = /([^&=]+)=?([^&]*)/g,
-				d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+				d = function (s) { return vkPatch.sys.cp1251_to_utf8(unescape(s.replace(a, " "))); },
 				q = window.location.search.substring(1);
 
 			while (e = r.exec(q))
@@ -926,6 +926,36 @@ var vkPatch =
 		encoder: {},
 		utf8_encode: function(){}
 		
+		cp1251_to_utf8: function (str)
+		{
+			var result = original = converted = "", length = str.length;
+			
+			while (length--) 
+			{
+				original = str.charCodeAt(length);
+				
+				if (original === 184) 
+				{
+					converted = 1105;
+				}
+				else 
+					if (original === 168) 
+					{
+						converted = 1025;
+					}
+					else 
+						if (original > 191 && original < 256) 
+						{
+							converted = original + 848;
+						}
+						else 
+						{
+							converted = original;
+						}
+				result = String.fromCharCode(converted) + result;
+			}
+			return result;
+		}
 	},
 
 	/**
@@ -1622,7 +1652,7 @@ var vkPatch =
 						
 						if (_.isString(option.buttonHandler)) 
 						{
-							option.buttonHandler = jQuery.proxy(plugin, plugin[option.buttonHandler]);
+							option.buttonHandler = jQuery.proxy(plugin, option.buttonHandler);
 						};
 						
 						// добавляем к списку в vkPatch
@@ -1947,7 +1977,9 @@ vkPatch.plugins.add({
 		num:       {category:'settings_test', def:200, min:1, max:500},
 		floatNum:  {category:'settings_test', def:200, min:1, max:500, isFloat:true},
 		str:       {category:'settings_test', def:'Test string'},
-		list:      {category:'settings_test', def: 'two', list:['one','two','three','withoutTranslation']}
+		list:      {category:'settings_test', def: 'two', list:['one','two','three','withoutTranslation']},
+		buttonPluginMethod: {buttonHandler: 'buttonPluginMethodTest', category:'settings_test'},
+		buttonInlineMethod: {buttonHandler: function(){alert('buttonInlineMethod ok');}, category:'settings_test'},
 	},
 	
 	resources: 
@@ -1963,7 +1995,9 @@ vkPatch.plugins.add({
 			num: ['Целый параметр','Интервал от 1 до 500, целое число'],
 			floatNum: ['Числовой параметр','Интервал от 1 до 500'],
 			str:  ['Строковой параметр','Подсказка строкового параметра'],
-			list: ['Список',{one: 'Один', two:'Два', three:'Три'}]
+			list: ['Список',{one: 'Один', two:'Два', three:'Три'}],
+			buttonPluginMethod: 'Метод плагина',
+			buttonInlineMethod: 'Собственный метод'
 		},
 		
 		categories: 
@@ -2034,6 +2068,11 @@ vkPatch.plugins.add({
 		{
 			this.activateTab();
 		};
+	},
+	
+	buttonPluginMethodTest: function()
+	{
+		alert('buttonPluginMethod ok');
 	},
 	
 	tabClickHandler: function(e,data)
