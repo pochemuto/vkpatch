@@ -967,6 +967,9 @@ var vkPatch =
 	{
 		// обработчики
 		var handlers = [];
+		// сохраняем последние параметры, чтобы при добавлениее обработчика
+		// можно было немедленно его вызвать с последними параметрами
+		var lastArgs = null;
 		
 		var name = name;
 		var pluginName = pluginName+'.' || '';
@@ -975,14 +978,20 @@ var vkPatch =
 		 * Повесить обработчик на событие
 		 * @param {function} handler - обработчик
 		 * @param {object} context - контекст обработчика
+		 * @param {bool} raiseLast - если событие уже было вызвано, выполняем обработчик немедленно
 		 */
-		this.bind = function(handler, context) 
+		this.bind = function(handler, context, raiseLast) 
 		{
 			handlers.push(
 			{
 				func: handler,
 				context: context
 			});
+			
+			if (raiseLast || lastArgs !== null) 
+			{
+				handler.apply(context, lastArgs);
+			};
 		};
 		
 		/**
@@ -1008,6 +1017,7 @@ var vkPatch =
 				var handler = handlers[i];
 				handler.func.apply(handler.context, arguments);
 			};
+			lastArgs = arguments;
 		};
 		
 		/**
@@ -1365,8 +1375,8 @@ var vkPatch =
 			set: function(value)
 			{
 				// сохранение
-				value = this.checkValue(value);
 				vkPatch.storage.set(this.name, value);
+				value = this.checkValue(value);
 			},
 			
 			/*
@@ -1695,7 +1705,8 @@ var vkPatch =
 				{
 					option.update();
 				}
-			}
+			};
+			
 		},
 		
 		/**
@@ -2517,7 +2528,8 @@ vkPatch.plugins.add({
 			 */
 			token:      {def:null},
 			session:    {def:null},
-			username:   {def:null}
+			username:   {def:null},
+			connected:  {def:false}
 		},
 		
 		lang:
@@ -2592,12 +2604,6 @@ vkPatch.plugins.add({
 					debug: vkPatch.debug
 				});
 			
-			// если есть сессия, значит связан с профилем
-			if (this.settings.session.get())
-			{
-				this.connected = true;
-			};
-			
 			/*
 			 * Обновление вкладки настроек, в зависимости от связи с lastfm
 			 */
@@ -2608,20 +2614,42 @@ vkPatch.plugins.add({
 			this.iconsContainer.attr('id','vkpatch_iconsContainer');
 			
 			// иконка напротив трека
-			var icon = $('<img style="border: 0px; width: 12px; height: 12px; margin-left: 2px; margin-right: 2px;">').css('display', 'inline-block');
+			var icon = this.iconTemplate = $('<img style="border: 0px; width: 12px; height: 12px; margin-left: 2px; margin-right: 2px;">').css('display', 'inline-block');
 			vkPatch.events.audioRedraw.bind(this.redrawIconsContainer, this);
+
+			this.settings.nowPlaying.onchange(this.nowPlayingChange, this);
+			this.settings.scrobbler.onchange(this.scrobblerChange, this);
+			this.settings.scrobbledIcon.onchange(this.scrobbledIconChange, this);
+			this.settings.connected.onchange(function(value)
+			{
+				this.nowPlayingChange();
+				this.scrobblerChange();	
+				this.scrobbledIconChange();
+				this.log(value ? 'соединён' : 'не соединён с last.fm');
+			}, this);
+			
+			this.settings.session.onchange(function(value)
+			{
+				this.settings.connected.set(!!value);
+			}, this);
 
 			/*
 			 * Иконка при воспроизведении и паузе
 			 */
-			if (this.settings.playingIcon.get())
+			this.settings.playingIcon.onchange(function(value)
 			{
-				this.playingIconElement = icon.clone().attr('src',this.resources.playingIcon).attr('id','vkpatch_playing_icon');
-				this.pausedIconElement = icon.clone().attr('src',this.resources.blank).css('background-image','url("'+this.resources.playingIconFrames+'")');
-								
-				// перерисовка
-				vkPatch.events.audioRedraw.bind(this.redrawPlayingIcon, this);
-			};
+				if (value)
+				{
+					this.playingIconElement = this.playingIconElement || icon.clone().attr('src',this.resources.playingIcon).attr('id','vkpatch_playing_icon');
+					this.pausedIconElement = this.pausedIconElement || icon.clone().attr('src',this.resources.blank).css('background-image','url("'+this.resources.playingIconFrames+'")');
+					vkPatch.events.audioRedraw.bind(this.redrawPlayingIcon, this, true);
+				}
+				else
+				{
+					vkPatch.events.audioRedraw.unbind(this.redrawPlayingIcon, this);
+					this.setPlayingIcon('hide');
+				}
+			}, this);
 			
 			/*
 			 * Получен токен для авторизации
@@ -2631,7 +2659,7 @@ vkPatch.plugins.add({
 				this.log('получен токен');
 				this.settings.token.set(vkPatch.page.params.token);
 				
-				// ожидаем, когда оба события произойдут - появится таб настроект и свяжется с lastfm
+				// ожидаем, когда оба события произойдут - появится таб настроек и свяжется с lastfm
 				var tabActivated = false, message = null, delay, type;
 				
 				var showMessage = jQuery.proxy(function() 
@@ -2669,7 +2697,6 @@ vkPatch.plugins.add({
 						// сохраняем имя и сессию в память
 						this.settings.username.set(data.session.name);
 						this.settings.session.set(data.session.key);
-						this.connected = true;
 						
 						this.log('получена сессия');
 						
@@ -2683,9 +2710,7 @@ vkPatch.plugins.add({
 					{
 						/*
 						 * Ошибка
-						 */
-						this.connected = false;
-						
+						 */						
 						message = this.lang.connectErrorMessage + text;
 						type = 'error';
 						showMessage();
@@ -2695,42 +2720,6 @@ vkPatch.plugins.add({
 
 			};
 			
-			if (this.connected)
-			{
-				this.log('соединён');
-				if (this.settings.nowPlaying.get()) 
-				{
-					vkPatch.events.audioStart.bind(this.nowPlaying, this);
-				};
-				
-				if (this.settings.scrobbler.get()) 
-				{
-					vkPatch.events.audioStart.bind(this.scrobblerInitTimer, this);
-					vkPatch.events.audioPlay.bind(this.scrobblerPlay, this);
-					vkPatch.events.audioPause.bind(this.scrobblerPause, this);
-				};
-				
-				if (this.settings.scrobbledIcon.get())
-				{
-
-					this.scrobbledIconElement = icon.clone().attr('id','scrobbled_icon').attr('src',this.resources.scrobbled);
-					vkPatch.iface.tooltip('simple', this.scrobbledIconElement, this.lang.scrobbledIconTooltip);
-
-					// перерисовка
-					vkPatch.events.audioRedraw.bind(this.redrawScrobbledIcon, this);
-					
-					// когда заскробблен
-					this.events.scrobbled.bind(function(trackInfo)
-					{
-						this.redrawScrobbledIcon('play', trackInfo, true);
-					}, this);
-				};
-			}
-			else
-			{
-				this.log('не соединён с last.fm');
-			}
-			
 		},
 		
 		/**********************
@@ -2738,8 +2727,6 @@ vkPatch.plugins.add({
 		 *********************/
 		apiKey: 'bd51d4cc4ae2ce6be98e4008c6ba60e4',
 		apiSecret: 'f1ce75e817a2a4e2701357aa47405d4e',
-		// подключён к профилю  
-		connected: false,
 		
 		// объект LastFM by Felix Bruns
 		lastfm: null,
@@ -2757,7 +2744,6 @@ vkPatch.plugins.add({
 			this.settings.token.set(null);
 			this.settings.session.set(null);
 			this.settings.username.set(null);
-			this.connected = false;
 		},
 		
 		/**
@@ -2851,11 +2837,77 @@ vkPatch.plugins.add({
 		},
 		
 		/**
+		 * Обработка изменения настройки Сейчас проигрывается
+		 */
+		nowPlayingChange: function()
+		{
+			if (this.settings.nowPlaying.get() && this.settings.connected.get()) 
+			{
+				vkPatch.events.audioStart.bind(this.nowPlaying, this);
+			}
+			else
+			{
+				vkPatch.events.audioStart.unbind(this.nowPlaying, this);
+			}
+		},
+		
+		/**
+		 * Обработка изменения настроки Скробблить
+		 */
+		scrobblerChange: function()
+		{
+			if (this.settings.scrobbler.get() && this.settings.connected.get()) 
+			{
+				vkPatch.events.audioStart.bind(this.scrobblerInitTimer, this);
+				vkPatch.events.audioPlay.bind(this.scrobblerPlay, this);
+				vkPatch.events.audioPause.bind(this.scrobblerPause, this);
+			}
+			else
+			{
+				if (this.timer) 
+				{
+					this.timer.stop();
+				};
+				vkPatch.events.audioStart.unbind(this.scrobblerInitTimer, this);
+				vkPatch.events.audioPlay.unbind(this.scrobblerPlay, this);
+				vkPatch.events.audioPause.unbind(this.scrobblerPause, this);
+			}
+		},
+		
+		/**
+		 * Обработка изменения настроки Иконка после скробблинка
+		 */
+		scrobbledIconChange: function()
+		{
+			if (this.settings.scrobbledIcon.get() && this.settings.connected.get())
+			{
+
+				this.scrobbledIconElement = this.scrobbledIconElement || this.iconTemplate.clone().attr('id','scrobbled_icon').attr('src',this.resources.scrobbled);
+				vkPatch.iface.tooltip('simple', this.scrobbledIconElement, this.lang.scrobbledIconTooltip);
+
+				// перерисовка
+				vkPatch.events.audioRedraw.bind(this.redrawScrobbledIcon, this, true);
+				
+				// когда заскробблен
+				this.events.scrobbled.bind(this.scrobbledIconHandler, this);
+			}
+			else
+			{
+				if (this.scrobbledIconElement)
+				{
+					this.scrobbledIconElement.detach();
+				};
+				vkPatch.events.audioRedraw.unbind(this.redrawScrobbledIcon, this);
+				this.events.scrobbled.unbind(this.scrobbledIconHandler, this);
+			};
+		},
+		
+		/**
 		 * Обработчик нажатия кнопки
 		 */
 		connectButtonHandler: function() 
 		{
-			if (!this.connected) 
+			if (!this.settings.connected.get()) 
 			{
 				location.href = 'http://www.last.fm/api/auth/?api_key=' + this.apiKey + '&cb=' + encodeURIComponent('http://' + location.host + '/settings?show=vkpatch');
 			}
@@ -2927,6 +2979,9 @@ vkPatch.plugins.add({
 		// id контейнера, содержащего иконки
 		iconsContainerOwnerId: null,
 		
+		// иконка напротив трека
+		iconTemplate: null,
+		
 		/**
 		 * Установить иконку проигрывания
 		 * @param {state} type - состояние иконка
@@ -2953,6 +3008,10 @@ vkPatch.plugins.add({
 					
 				break;
 						
+				case 'hide':
+					this.playingIconElement ? this.playingIconElement.detach() : null;
+					this.pausedIconElement ? this.pausedIconElement.detach() : null;
+				break;
 			}
 		},
 		
@@ -3017,7 +3076,7 @@ vkPatch.plugins.add({
 		{
 			
 			var buttonElement = $('#' + this.settings.connectLastfmButton.name);
-			if (this.connected) 
+			if (this.settings.connected.get()) 
 			{
 				var username = this.settings.username.get();
 				buttonElement.html(jQuery.nano(this.lang.settings.disconnectLastfmButton, {username: username}));
@@ -3033,6 +3092,7 @@ vkPatch.plugins.add({
 		 */
 		redrawScrobbledIcon: function(state, trackInfo, animate) 
 		{
+			console.log(arguments);
 			if (!$('#scrobbled_icon').length)
 			{
 				this.iconsContainer.prepend(this.scrobbledIconElement);
@@ -3060,6 +3120,14 @@ vkPatch.plugins.add({
 			{
 				this.scrobbledIconElement.stop().hide();
 			}
+		},
+		
+		/**
+		 * Устанавливаем иконку заскробблено при событии scrobbled
+		 */
+		scrobbledIconHandler: function(trackInfo)
+		{
+			this.redrawScrobbledIcon('play', trackInfo, true);
 		},
 		
 		/**
