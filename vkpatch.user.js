@@ -2640,8 +2640,8 @@ vkPatch.plugins.add({
 			{
 				if (value)
 				{
-					this.playingIconElement = this.playingIconElement || icon.clone().attr('src',this.resources.playingIcon).attr('id','vkpatch_playing_icon');
-					this.pausedIconElement = this.pausedIconElement || icon.clone().attr('src',this.resources.blank).css('background-image','url("'+this.resources.playingIconFrames+'")');
+					this.playingIconElement = this.playingIconElement || icon.clone().data('position', 1).attr('src',this.resources.playingIcon).attr('id','vkpatch_playing_icon');
+					this.pausedIconElement = this.pausedIconElement || icon.clone().data('position', 1).attr('src',this.resources.blank).css('background-image','url("'+this.resources.playingIconFrames+'")');
 					vkPatch.events.audioRedraw.bind(this.redrawPlayingIcon, this, true);
 				}
 				else
@@ -2882,7 +2882,7 @@ vkPatch.plugins.add({
 			if (this.settings.scrobbledIcon.get() && this.settings.connected.get())
 			{
 
-				this.scrobbledIconElement = this.scrobbledIconElement || this.iconTemplate.clone().attr('id','scrobbled_icon').attr('src',this.resources.scrobbled);
+				this.scrobbledIconElement = this.scrobbledIconElement || this.iconTemplate.clone().data('position', 0).attr('id','scrobbled_icon').attr('src',this.resources.scrobbled);
 				vkPatch.iface.tooltip('simple', this.scrobbledIconElement, this.lang.scrobbledIconTooltip);
 
 				// перерисовка
@@ -3024,8 +3024,8 @@ vkPatch.plugins.add({
 		{
 			if (!$('#vkpatch_playing_icon').length)
 			{
-				this.iconsContainer.prepend(this.playingIconElement);
-				this.iconsContainer.prepend(this.pausedIconElement);
+				this.placeIcon(this.playingIconElement);
+				this.placeIcon(this.pausedIconElement);
 			};
 			
 			switch (state)
@@ -3092,10 +3092,9 @@ vkPatch.plugins.add({
 		 */
 		redrawScrobbledIcon: function(state, trackInfo, animate) 
 		{
-			console.log(arguments);
 			if (!$('#scrobbled_icon').length)
 			{
-				this.iconsContainer.prepend(this.scrobbledIconElement);
+				this.placeIcon(this.scrobbledIconElement);
 			};
 			
 			if (state == 'stop')
@@ -3154,6 +3153,36 @@ vkPatch.plugins.add({
 						this.iconsContainerOwnerId = trackInfo.aid;
 					};
 			};			
+		},
+		
+		/**
+		 * Располагает иконку в контейнере. Учитывает позицию, которая задаётся в data-параметре элемента position
+		 * @param {Object} elem
+		 */
+		placeIcon: function(elem)
+		{
+			var before = null;
+			var dataName = 'position';
+			var position = elem.data(dataName);
+			this.iconsContainer.children().each(function()
+			{
+				var childPos = $(this).data('order');
+				if (childPos > position) 
+				{
+					before = this;
+					return false;
+				}
+			});
+				
+			
+			if (before) 
+			{
+				elem.insertBefore(before);
+			}
+			else 
+			{
+				elem.appendTo(this.iconsContainer);	// не один элемент "страше" не найдет - добавляем в конец
+			};
 		}
 });
 
