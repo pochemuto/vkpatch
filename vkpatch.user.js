@@ -3166,7 +3166,7 @@ vkPatch.plugins.add({
 			var position = elem.data(dataName);
 			this.iconsContainer.children().each(function()
 			{
-				var childPos = $(this).data('order');
+				var childPos = $(this).data(dataName);
 				if (childPos > position) 
 				{
 					before = this;
