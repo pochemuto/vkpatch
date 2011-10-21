@@ -1906,13 +1906,12 @@ var vkPatch =
 				default:
 					func = function() 
 					{
-						showTooltip(this, {text: message, showdt: 200})
+						showTooltip(element, {text: message, showdt: 200})
 					};
 					break;
 			}
 			// вешаем тултип
-			$(element).mouseover( jQuery.proxy(_window, func));
-			
+			$(element).mouseover( func );
 		}
 	},
 		
