@@ -2125,7 +2125,7 @@ vkPatch.plugins.add({
 	
 	events: 
 	{
-		tabActivated: {crossWindow: true}
+		tabActivated: null
 	},
 	
 	pages: 
