@@ -187,6 +187,8 @@ var vkPatch =
 				return new vkPatch.event(name, 'core');
 			});
 			
+			$(window).bind('storage', $.proxy(vkPatch.storage.handler, this));
+			
 			// прототип настроек
 			vkPatch.settings.optionPrototype.oldValue = vkPatch.settings.initValue;
 			vkPatch.settings.option.prototype = vkPatch.settings.optionPrototype;
@@ -1522,7 +1524,21 @@ var vkPatch =
 		clear: function()
 		{
 			localStorage.clear();
-		}
+		},
+		
+		handler: function(e)
+		{
+			var event = e.originalEvent;
+			var name = event.key;
+			if (name.indexOf(vkPatch.storage.paramsPrefix) == 0)
+			{
+				name = name.substring(vkPatch.storage.paramsPrefix.length);
+				if (vkPatch.settings.container[name])
+				{
+					vkPatch.settings.container[name].update();	// обновляем
+				}
+			}
+		},
 	},
 	
 	/**
