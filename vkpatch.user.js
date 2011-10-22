@@ -2722,6 +2722,7 @@ vkPatch.plugins.add({
 				this.nowPlayingChange();
 				this.scrobblerChange();	
 				this.scrobbledIconChange();
+				this.setConnectStatus();
 				this.log(value ? 'соединён' : 'не соединён с last.fm');
 			}, this);
 			
