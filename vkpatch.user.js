@@ -182,9 +182,9 @@ var vkPatch =
 			};
 			
 			// объявление событий
-			vkPatch.events = _.map(vkPatch.events, function(item, name)
+			vkPatch.events = _.map(vkPatch.events, function(options, name)
 			{
-				return new vkPatch.event(name, 'core');
+				return new vkPatch.event(name, 'core', options);
 			});
 			
 			$(window).bind('storage', $.proxy(vkPatch.storage.handler, this));
@@ -957,6 +957,21 @@ var vkPatch =
 				result = String.fromCharCode(converted) + result;
 			}
 			return result;
+		},
+		
+		/**
+		 * Передача сообщения всем окнам. Внутренняя функция, в плагинах следует использовать глобальные события
+		 * @param {string} type - тип события, например event
+		 * @param {Object} data - данные для передачи
+		 */
+		broadcast: function(type, data)
+		{
+			vkPatch.storage.set('broadcast', 
+			{
+				type: type,
+				data: data,
+				hash: Math.random()	// чтобы срабатывало при передачи двух одинаковых сообщений
+			});
 		}
 	},
 
@@ -964,17 +979,22 @@ var vkPatch =
 	 * Конструктор события vkPatch
 	 * @param {string} name - имя события
 	 * @param {string} pluginName - имя плагина-владельца
+	 * @param {object} options
+	 * 						crossWindow - вызов события инициируется во всех открытых окнах 
 	 */
-	event: function(name, pluginName)
+	event: function(name, pluginName, options)
 	{
+		options = options || {};
 		// обработчики
 		var handlers = [];
 		// сохраняем последние параметры, чтобы при добавлениее обработчика
 		// можно было немедленно его вызвать с последними параметрами
 		var lastArgs = null;
 		
+		var crossWindow = this.crossWindow = options.crossWindow;
+		
 		var name = name;
-		var pluginName = pluginName+'.' || '';
+		var pluginName = pluginName || '';
 		 
 		/**
 		 * Повесить обработчик на событие
@@ -1009,17 +1029,45 @@ var vkPatch =
 		};
 		
 		/**
+		 * Внутренняя ф-ия вызова
+		 * @param {array} args - аргументы, которые будут переданы обработчикам
+		 * @param {bool} broadcast - инициировать вызов во всех окнах [false]
+		 */
+		var raise = function(args, broadcast)
+		{
+			vkPatch.log(pluginName + '.' + name + ' raised: '+Array.prototype.join.call(args,', '));
+			for (var i=0; i < handlers.length; i++)
+			{
+				var handler = handlers[i];
+				handler.func.apply(handler.context, args);
+			};
+			lastArgs = args;
+			if (broadcast && crossWindow)
+			{
+				vkPatch.sys.broadcast('event', 
+				{
+					eventName: name,
+					pluginName: pluginName,
+					args: Array.prototype.slice.call(args)
+				});
+			}
+		};
+		
+		/**
 		 * Вызвать событие. Аргументы будут переданы обработчикам
 		 */
 		this.raise = function() 
 		{
-			vkPatch.log(pluginName + name + ' raised: '+[].join.call(arguments,', '));
-			for (var i=0; i < handlers.length; i++)
-			{
-				var handler = handlers[i];
-				handler.func.apply(handler.context, arguments);
-			};
-			lastArgs = arguments;
+			raise(arguments, true);
+		};
+		
+		/**
+		 * Вызвать событие без передачи его в другие окна.
+		 * Используется при вызове внешнего события (из внешнего окна)
+		 */
+		this.raiseOnce = function() 
+		{
+			raise(arguments, false);
 		};
 		
 		/**
@@ -1533,8 +1581,42 @@ var vkPatch =
 			if (name.indexOf(vkPatch.storage.paramsPrefix) == 0)
 			{
 				name = name.substring(vkPatch.storage.paramsPrefix.length);
-				if (vkPatch.settings.container[name])
+				if (name == 'broadcast')
 				{
+					var message = vkPatch.storage.get(name);
+					var data = message.data;
+					
+					switch (message.type)
+					{
+						case 'event':
+							
+							var eventName = data.eventName;
+							var pluginName = data.pluginName;
+							var args = data.args;
+							var eventObject;
+														
+							if (pluginName == 'core')
+							{
+								if (vkPatch.events[eventName])
+								{
+									eventObject = vkPatch.events[eventName];
+								}
+							}
+							else if (vkPatch.plugins[pluginName] && vkPatch.plugins[pluginName].events && vkPatch.plugins[pluginName].events[eventName])
+							{
+								eventObject = vkPatch.plugins[pluginName].events[eventName];
+							};
+							if (eventObject)
+							{
+								vkPatch.log('broadcast : raise event ' + pluginName + '.' + eventName);
+								eventObject.raiseOnce.apply(null, args);
+							};
+						break;
+					}
+				}
+				else if (vkPatch.settings.container[name])
+				{
+					vkPatch.log('broadcast : update option ' +name);
 					vkPatch.settings.container[name].update();	// обновляем
 				}
 			}
@@ -1631,9 +1713,9 @@ var vkPatch =
 				 */
 				if (plugin.events) 
 				{
-					plugin.events = _.map(plugin.events, function(event, name) 
+					plugin.events = _.map(plugin.events, function(options, name) 
 					{
-						return new vkPatch.event(name, plugin.name);
+						return new vkPatch.event(name, plugin.name, options);
 					});
 				};
 				
@@ -2043,7 +2125,7 @@ vkPatch.plugins.add({
 	
 	events: 
 	{
-		tabActivated: null
+		tabActivated: {crossWindow: true}
 	},
 	
 	pages: 
@@ -2052,7 +2134,7 @@ vkPatch.plugins.add({
 		{
 			var tabImg = $('<img>').attr('src',this.resources.tabIcon).css('margin','-2px 0px -4px 0px').css('height','16px');
 			this.tab = vkPatch.iface.addTab(tabImg, $('#content > div.tBar:first > ul,#content > div.tabs:first > ul'),this.settingsHash).click(jQuery.proxy(this.tabClickHandler,this));
-			
+
 			// если в адрее указан ?show=vkpatch
 			if (vkPatch.page.params.show == 'vkpatch') 
 			{
@@ -2112,7 +2194,7 @@ vkPatch.plugins.add({
 			e.preventDefault();
 			return false;
 		};*/
-		
+
 		// отменяем обработчик события поумолчанию
 		// чтобы IE не брал страницу из кеша
 		e.preventDefault();
@@ -2231,7 +2313,6 @@ vkPatch.plugins.add({
 				
 			};
 			
-			this.events.tabActivated.raise();
 		};
 		
 		if (nothingShow) 	/* нет параметров для отображения */
@@ -2244,6 +2325,7 @@ vkPatch.plugins.add({
 			this.button('Сохранить', jQuery.proxy(this.save,this));	
 		};
 		
+		this.events.tabActivated.raise();
 	},
 	
 	/*
