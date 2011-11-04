@@ -1141,7 +1141,13 @@ var vkPatch =
 		 * Аудиозапись остановлена или закончилась
 		 * function(trackInfo)
 		 */
-		audioStop: null
+		audioStop: null,
+		
+		/*
+		 * Добавлен плагин
+		 * function(pluginName, plugin)
+		 */
+		pluginInitialized: null,
 	},
 	
 	/**
@@ -1844,7 +1850,8 @@ var vkPatch =
 				vkPatch.plugins.callFunction(plugin, plugin.init);
 			};
 			
-			vkPatch.log('plugin ' + plugin.name + ' initialized');
+			vkPatch.events.pluginInitialized.raise(plugin.name, plugin);
+			
 			for (var i=0; i<pageFunction.length; i++)
 			{
 				vkPatch.log('call ' + plugin.name + ' page functions on ' + vkPatch.page.current);
@@ -2184,7 +2191,16 @@ vkPatch.plugins.add({
 		}
 	},
 	
-	init: null,
+	init: function()
+	{
+		vkPatch.events.pluginInitialized.bind(function(pluginName, plugin)
+		{
+			if (plugin.settings && $('#vkPatchSettings').length)
+			{
+				this.showTabContent();
+			}
+		}, this);
+	},
 	
 	// тег страницы настроек
 	settingsHash: '#vkpatch',
@@ -2244,7 +2260,6 @@ vkPatch.plugins.add({
 	{
 		// активируем вкладку
 		vkPatch.iface.activateTab(this.tab);
-		
 				
 		// подключаем стили
 		vkPatch.page.requireCSS(['http://vkontakte.ru/css/ui_controls.css','http://vkontakte.ru/css/al/privacy.css']);
@@ -2253,6 +2268,7 @@ vkPatch.plugins.add({
 		vkPatch.page.requireScript(['http://vkontakte.ru/js/lib/ui_controls.js','http://vkontakte.ru/js/al/privacy.js'],jQuery.proxy(this.showTabContent,this));
 				
 	},
+	
 	/*
 	 * Содержимое вкладки
 	 */
@@ -2277,7 +2293,6 @@ vkPatch.plugins.add({
 		this.tabContainer = $('#content').children('div.tabs').nextAll().remove().end().end().append('<div id="settings_result" style="display: block; "></div><div id="settings_panel" class="clear_fix"><form mathod="get" action="#" name="vkPatchSettings" id="vkPatchSettings"></form></div>').find('form');
 		// Нечего отображать
 		var nothingShow = true;
-		
 		this.tabContainer.append(this.aboutPanel());
 		nothingShow = false;
 		
