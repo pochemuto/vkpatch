@@ -3,8 +3,13 @@ var url = chrome.extension.getURL('');
 loadScript(null,'var vkpatchUrl = "' + url+'";');
 
 // подгружаем сам скрипт
-var ver = '0.1';
-loadScript(chrome.extension.getURL('vkpatch.user.js?'+Math.random()));
+loadScript(chrome.extension.getURL('vkpatch.user.js'));
+
+var include = [];
+for (var i=0; i<include.length; i++)
+{
+	loadScript( chrome.extension.getURL( 'plugins/' + include[i] ) );
+};
 
 /**
  * Подключение кода
