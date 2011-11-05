@@ -11,8 +11,15 @@ goto begin
 
 rem создание ссылки на файл, с удалением существующей
 :link
-	call :delete "%~1"
-	mklink /h "%~1" "%~2"
+	if exist %~s2\NUL (
+		rem на каталог
+		rmdir /s /q "%~1"
+		mklink /j "%~1" "%~2"
+	) else (
+		rem на файл
+		call :delete "%~1"
+		mklink /h "%~1" "%~2"
+	)
 goto :eof
 
 rem удаление если файл существует
