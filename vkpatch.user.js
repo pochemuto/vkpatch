@@ -19,7 +19,7 @@ var vkPatch =
 		 * Эта строка используется для имён файлов при сборке, необходимо соблюдать формат
 		 * Только одинарные кавычки! 
 		 */
-		vkPatch.version = '6.1.4.1';
+		vkPatch.version = '6.1.5';
 		vkPatch.load.step0();
 	},
 	
@@ -1690,6 +1690,7 @@ var vkPatch =
 			else
 			{
 				vkPatch.log('plugin name conflict: '+plugin.name);
+				return;
 			};
 			
 			vkPatch.log('plugin ' + plugin.name + ' included');
@@ -2757,7 +2758,7 @@ vkPatch.plugins.add({
 			vkPatch.plugins.settings.events.tabActivated.bind(this.setConnectStatus, this);
 			
 			
-			this.iconsContainer = $('<div style="border: 0px; z-index: 2; right: 22px; position: absolute; text-align: right; width: 72px; height: 12px;"></div>');
+			this.iconsContainer = $('<div class="duration" style="border: 0px; z-index: 2; right: 28px; position: absolute; text-align: right; width: 72px; height: 12px;"></div>');
 			this.iconsContainer.attr('id','vkpatch_iconsContainer');
 			
 			// иконка напротив трека
@@ -3296,7 +3297,7 @@ vkPatch.plugins.add({
 					{
 						$('#audio'+trackInfo.aid).find('div.duration:first')
 							.css('position','relative')
-							.prepend(this.iconsContainer)
+							.after(this.iconsContainer)
 							
 						this.iconsContainerOwnerId = trackInfo.aid;
 					};
