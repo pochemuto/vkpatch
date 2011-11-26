@@ -16,3 +16,5 @@ syntax: regexp
 ^ie extension/obj$
 ^ie extension/vkpatch\.user\.js$
 ^.settings$
+syntax: regexp
+^chrome extension/plugins$
