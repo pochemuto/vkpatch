@@ -19,7 +19,7 @@ var vkPatch =
 		 * Эта строка используется для имён файлов при сборке, необходимо соблюдать формат
 		 * Только одинарные кавычки! 
 		 */
-		vkPatch.version = '6.1.5beta';
+		vkPatch.version = '6.1.5beta2';
 		vkPatch.load.step0();
 	},
 	
@@ -3296,8 +3296,8 @@ vkPatch.plugins.add({
 					if (!$('#vkpatch_iconsContainer').length || trackInfo.aid != this.iconsContainerOwnerId) 
 					{
 						$('#audio'+trackInfo.aid).find('div.duration:first')
-							.css('position','relative')
 							.after(this.iconsContainer)
+							.parent().css('position','relative');
 							
 						this.iconsContainerOwnerId = trackInfo.aid;
 					};
