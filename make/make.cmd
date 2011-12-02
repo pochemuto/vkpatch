@@ -73,7 +73,7 @@ rem ======================
 rem Извлечение номера версии из файла vkpatch.user.js
 rem извлекается из строки вида 
 rem vkPatch.version = '11.11.11'
-FOR /F "usebackq tokens=2 delims='" %%s IN (`findstr /R /I /C:"^[ 	]*vkPatch.version[ ]*=[ ]*'[0-9.]*'" vkpatch.user.js`) do (
+FOR /F "usebackq tokens=2 delims='" %%s IN (`findstr /R /I /C:"^[ 	]*vkPatch.version[ ]*=[ ]*'[0-9a-zA-Z. ]*'" vkpatch.user.js`) do (
 	set version=%%s
 )
 
