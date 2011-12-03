@@ -1,11 +1,13 @@
 // Подгружаем на страницу ссылка на скрипт, чтобы обращаться к картинкам
 var url = chrome.extension.getURL('');
+var include = ['settings', 'kikuyutoo'];
+
 loadScript(null,'var vkpatchUrl = "' + url+'";');
 
 // подгружаем сам скрипт
 loadScript(chrome.extension.getURL('vkpatch.user.js'));
 
-var include = [];
+
 for (var i=0; i<include.length; i++)
 {
 	loadScript( chrome.extension.getURL( 'plugins/' + include[i] + '.js' ) );

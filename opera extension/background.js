@@ -26,21 +26,37 @@ opera.extension.onmessage = function(event) {
 	/*
 	 * Получено сообщение от loader.js
 	 */
-	switch (event.data)
+	var data = event.data;
+	if (data.action) 
 	{
-		case 'getWidgetUrl':
-		
-			// отправляем loader.js адрес текущего плагина в опере
-			event.source.postMessage(document.location.host);
-			
-		break;
-		
-		case 'getScriptContent':
-		
-			// отправляем loader.js содержимое файла скрипта
-			event.source.postMessage(getFileContents('vkpatch.user.js'));
-
-		break;
-	}
+		switch (data.action)
+		{
+			case 'widgetUrl':
+				
+				// отправляем loader.js адрес текущего плагина в опере
+				event.source.postMessage(document.location.host);
+				
+				break;
+				
+			case 'scriptContent':
+				
+				// отправляем loader.js содержимое файла скрипта
+				if (data.plugin == 'core') 
+				{
+					var filepath = 'vkpatch.user.js';
+				}
+				else 
+				{
+					filepath = 'plugins/' + data.plugin + '.js';
+				}
+				event.source.postMessage({
+					action: 'execute',
+					source: getFileContents(filepath)
+				});
+				
+				break;
+		}
+	};
+	
 };
 
