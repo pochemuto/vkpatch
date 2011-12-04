@@ -40,6 +40,7 @@ rem       Opera
 rem ==================
 
 call :link "opera extension\vkpatch.user.js"		vkpatch.user.js
+call :link "opera extension\plugins" 				plugins
 call :link "opera extension\icons\icon_64.png" 		"resources\icon_64.png"
 
 rem ==================
@@ -47,6 +48,7 @@ rem       Chrome
 rem ==================
 
 call :link "chrome extension\vkpatch.user.js" 			vkpatch.user.js
+call :link "chrome extension\plugins" 					plugins
 call :link "chrome extension\icons\icon_16.png" 		"resources\icon_16.png"
 call :link "chrome extension\icons\icon_48.png" 		"resources\icon_48.png"
 call :link "chrome extension\icons\icon_128.png" 		"resources\icon_128.png"
