@@ -57,6 +57,7 @@ rem ==================
 rem       Firefox
 rem ==================
 call :link "firefox extension\content\vkpatch.user.js"		vkpatch.user.js
+call :link "firefox extension\content\plugins" 					plugins
 call :link "firefox extension\content\icons\icon_48.png"		"resources\icon_48.png"
 call :link "firefox extension\content\icons\icon_64.png"		"resources\icon_64.png"
 

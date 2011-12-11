@@ -3,7 +3,7 @@
  */
 // путь к скрипту
 var scriptPath = "chrome://vkpatch/content/";
-
+var pluginsFolder = "plugins/";
 // шаблоны страниц, на которых выполняется инъекция
 var urlPatterns = [new RegExp(  '^http://vkontakte\\.ru'  ,'i'),
 						 new RegExp(  '^http://[^#?]*\\.vkontakte\\.ru'  ,'i'),
@@ -25,7 +25,20 @@ with (Deferred)
 {
 	parallel([
 		waitPage,
-		read.bind(null, "vkpatch.user.js")
+		read.bind(null, "vkpatch.user.js"),
+		next(read.bind(null, "plugins/list.txt"))
+			.next(function(list) 
+			{
+				var pluginsNames = list.content.split(/[\n\r]+/);
+				log("plugins to load: " + pluginsNames.join(', '));
+				var parallelJobs = [];
+				for (var i=0; i<pluginsNames.length; i++) 
+				{
+					parallelJobs.push(read(pluginsFolder + pluginsNames[i] + '.js'));
+				};
+				
+				return parallel(parallelJobs);
+			})
 	])
 	.next(inject);
 }
@@ -33,7 +46,7 @@ with (Deferred)
 function inject(values) 
 {
 	var pageInfo = values[0];
-	var scriptsData = values.slice(1);
+	var scriptsData = [values[1]].concat(values[2]);
 	for (var i=0; i<scriptsData.length; i++) 
 	{
 		var scriptData = scriptsData[i];
@@ -47,9 +60,10 @@ function createScript(scriptContent, scriptUrl, pageDocument, pageUrl)
 	var script = pageDocument.createElement('script');
 	script.type = 'text/javascript';
 	script.innerHTML = scriptContent;
-	
-	pageDocument.getElementsByTagName('head')[0].appendChild(script);
 	log('injection ' + pageUrl + ' // ' + scriptUrl);
+	var head = pageDocument.getElementsByTagName('head')[0];
+	script.setAttribute("data-source", scriptUrl); 
+	head.appendChild(script);
 };
 
 /**
@@ -82,10 +96,12 @@ function read(url)
  * Логирование в firebug
  * http://thefallenapples.blogspot.com/2009/10/debugging-firefox-extensions-consolelog.html
  */
-function debug(aMessage) {
+function debug(message) 
+{
+	var messagePrefix = "vkpatch :: ";
 	try {
 		    var objects = [];
-		    objects.push.apply(objects, arguments);
+		    objects.push.call(objects, messagePrefix, message);
 		    Firebug.Console.logFormatted(objects,
 				TabWatcher.getContextByWindow
 					(content.document.defaultView.wrappedJSObject)
@@ -93,12 +109,13 @@ function debug(aMessage) {
 	}
 	catch (e) {
 	}
-
+	
+	if (message === null) message = 'null';
+	message = messagePrefix + message.toString()
 	var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService
 										(Components.interfaces.nsIConsoleService);
 	
-	if (aMessage === null) aMessage = 'null';
-	consoleService.logStringMessage("vkpatch :: " + aMessage.toString());
+	consoleService.logStringMessage(message);
 };
 
 
@@ -213,8 +230,7 @@ function waitPage()
 						// в странички, получаемые в iframe
 						var hasBody = !!content.document.getElementById('page_body');
 						log('DOMContentLoaded raised : ' + url 
-							+ (matched ? ' matched with ' + matchedPattern : ' not matched')
-							+ (hasBody ? '' : ' / iframe'));
+							+ (matched ? ' matched with ' + matchedPattern + (hasBody ? '' : ' / iframe') : ' not matched'));
 						if (matched && hasBody)
 						{
 							deferred.call({document: content.document, url: url});

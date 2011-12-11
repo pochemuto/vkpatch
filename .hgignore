@@ -18,3 +18,7 @@ syntax: regexp
 ^.settings$
 syntax: regexp
 ^chrome extension/plugins$
+syntax: regexp
+^firefox extension/content/plugins$
+syntax: regexp
+^opera extension/plugins$
