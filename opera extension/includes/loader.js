@@ -16,6 +16,7 @@ function createScript(scriptContent, scriptUrl)
 {
 	var script = window.document.createElement('script');
 	script.text = scriptContent;
+	script.setAttribute("data-source", scriptUrl); 
 	window.document.head.appendChild(script);
 };
 
@@ -46,7 +47,7 @@ opera.extension.onmessage = function(event)
 				 * Опытным путём установлено, что нужно вынести в отдельную ф-ию выполнение скрипты
 				 * Очевидно связано с контекстами
 				 */
-				createScript(data.content, data.url);
+				createScript(data.content, data.scriptUrl);
 			break;
 		}
 	}

@@ -86,7 +86,8 @@ function createScript(content, scriptUrl, target, targetUrl)
 	target.postMessage(
 	{
 		action: 'createScript',
-		content: content
+		content: content,
+		scriptUrl: scriptUrl
 	});
 };
 
