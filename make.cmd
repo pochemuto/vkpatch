@@ -6,7 +6,7 @@ if /I "%~1"=="debug" (
 	rem иначе выводы выбрасываем в NUL
 	set DEBUG=^> NUL
 )
-
+set OUTPUT=bin
 goto begin
 
 rem создание ссылки на файл, с удалением существующей
@@ -34,7 +34,7 @@ rem       Hardlinks
 rem ======================
 rem ======================
 echo ====   Hardlinks   ====
-cd ..
+mkdir "%OUTPUT%"
 rem ==================
 rem       Opera
 rem ==================
@@ -75,7 +75,6 @@ rem       Packaging
 rem ======================
 rem ======================
 
-
 rem Извлечение номера версии из файла vkpatch.user.js
 rem извлекается из строки вида 
 rem vkPatch.version = '11.11.11'
@@ -92,42 +91,44 @@ echo.
 rem ==================
 rem       Opera
 rem ==================
-call :delete "make\vkpatch-%version%-opera.oex"
-7za a -tzip make\vkpatch-%version%-opera.oex ".\opera extension\*" %DEBUG%
+echo ===  Opera  === %DEBUG%
+call :delete "%OUTPUT%\vkpatch-%version%-opera.oex"
+7za a -tzip "%OUTPUT%\vkpatch-%version%-opera.oex" ".\opera extension\*" %DEBUG%
 if ERRORLEVEL 0 (
 	echo Opera extension		done
 ) else (
 	echo Opera extension		failed !
 )
 rem Упаковываем в архив
-cd make
-7za a -tzip -w vkpatch-%version%-opera.zip vkpatch-%version%-opera.oex %DEBUG%
-cd ..
+7za a -tzip -w "%OUTPUT%\vkpatch-%version%-opera.zip" "%OUTPUT%\vkpatch-%version%-opera.oex" %DEBUG%
 
 rem ==================
 rem       Chrome
 rem ==================
 rem %chrome% - путь к chrome.exe
-call :delete "make\vkpatch-%version%-chrome.crx"
-if exist "make\vkpatch-chrome-key.pem" (
+echo ===  Chrome  === %DEBUG%
+call :delete "%OUTPUT%\vkpatch-%version%-chrome.crx"
+if exist "%cd%\vkpatch-chrome-key.pem" (
 	rem Есть ключ расширения хром
-	set chrome_key=--pack-extension-key="%cd%\make\vkpatch-chrome-key.pem"
+	echo Ключ vkpatch-chrome-key.pem найден %DEBUG%
+	set chrome_key=--pack-extension-key="%cd%\vkpatch-chrome-key.pem"
+) else (
+	echo Ключ vkpatch-chrome-key.pem не найден !!! %DEBUG%
 )
 "%chrome%" --pack-extension="%cd%\chrome extension" %chrome_key% --no-message-box
 if EXIST "chrome extension.crx" (
-	move "chrome extension.crx" make\vkpatch-%version%-chrome.crx %DEBUG%
+	move "chrome extension.crx" "%OUTPUT%\vkpatch-%version%-chrome.crx" %DEBUG%
 	echo Chrome extension	done
 ) else (
 	echo Chrome extension	failed !
 )
 
-
-
 rem ==================
 rem       Firefox
 rem ==================
-call :delete "make\vkpatch-%version%-firefox.xpi"
-7za a -tzip make\vkpatch-%version%-firefox.xpi ".\firefox extension\*" %DEBUG%
+echo ===  Firefox  === %DEBUG%
+call :delete "%OUTPUT%\vkpatch-%version%-firefox.xpi"
+7za a -tzip "%OUTPUT%\vkpatch-%version%-firefox.xpi" ".\firefox extension\*" %DEBUG%
 if ERRORLEVEL 0 (
 	echo Firefox extension	done
 ) else (
@@ -136,5 +137,4 @@ if ERRORLEVEL 0 (
 
 echo.
 echo Complete 
-cd make
 pause

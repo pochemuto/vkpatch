@@ -4,27 +4,22 @@ syntax: regexp
 ^chrome extension/resources$
 ^opera extension/icons/icon_[0-9]+\.png$
 ^chrome extension/icons/icon_[0-9]+\.png$
-^make/7za\.exe$
+\.exe$
 \.oex$
 \.pem$
 \.crx$
 \.xpi$
 \.zip$
+^bin$
 ^firefox extension/content/vkpatch\.user\.js$
 ^firefox extension/content/icons/icon_[0-9]+\.png$
 ^ie extension/bin$
 ^ie extension/obj$
 ^ie extension/vkpatch\.user\.js$
 ^.settings$
-syntax: regexp
 ^chrome extension/plugins$
-syntax: regexp
 ^firefox extension/content/plugins$
-syntax: regexp
 ^opera extension/plugins$
-syntax: regexp
 ^chrome extension/components$
-syntax: regexp
 ^firefox extension/content/components$
-syntax: regexp
 ^opera extension/components$
