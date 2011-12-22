@@ -26,7 +26,7 @@ with (Deferred)
 	parallel([
 		waitPage,
 		read.bind(null, "vkpatch.user.js"),
-		next(read.bind(null, "plugins/list.txt"))
+		next(read.bind(null, pluginsFolder + "list.txt"))
 			.next(function(list) 
 			{
 				var pluginsNames = list.content.split(/[\n\r]+/);
