@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="options.css">
+  <title id="widget-title"></title>
+</head>
+<body>
+  <header>
+    <img src="icons/icon_64.png">
+    <h1 id="widget-name"></h1>
+	 <h2>Версия: <span id="widget-version"></span></h2>
+    <h2>Разработчик <span id="widget-author"></h2>
+  </header>
+
+  <section>
+    <p>Если вы ищите настройки vkPatch, они находятся на самом сайте ВКонтакте, по адресу: <br><a href="http://vkontakte.ru/settings#vkpatch">http://vkontakte.ru/settings#vkpatch</a></p>
+
+    <h3>Разработка</h3>
+    <fieldset>
+      <p>
+        <input name="debugMode" id="debugMode" type="checkbox"></input>
+        <label for="debugMode">Режим отладки загрузчика</label>
+      </p>
+    </fieldset>
+
+  </section>
+
+  <footer>
+    <p>Разработано Александром Крамаревым</p>
+  </footer>
+
+<script>
+
+
+addEventListener('DOMContentLoaded', function()
+{
+	// storage
+	var storage = widget.preferences;
+	
+	var debugMode = document.getElementById('debugMode');
+	
+	if (storage['debugMode']) 
+	{
+		debugMode.checked = !!storage['debugMode'];
+	};
+	
+	debugMode.addEventListener('change', function()
+	{
+		storage.setItem('debugMode', debugMode.checked ? 'on' : '');
+	}, true);
+	
+	// set the textContent of an element
+	function setText(id, txt)
+	{
+		var e = document.getElementById(id);
+		if (e) 
+		{
+			e.textContent = txt;
+		}
+	}
+	
+	// populate the title, name, author, ...
+	setText('widget-title', widget.name);
+	setText('widget-name', widget.name);
+	setText('widget-author', widget.author);
+	setText('widget-version', widget.version);
+});
+
+
+</script>
+</body>
+</html>

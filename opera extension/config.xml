@@ -4,4 +4,6 @@
 	<description>Скрипты для Вконтакте vkPatch</description>
 	<author href="http://klinifini.livejournal.com" email="pochemuto@gmail.com">Сергей Третьяк</author>
 	<icon src="icons/icon_64.png"/>
+	
+	<preference name="debugMode" value="" />
 </widget>
