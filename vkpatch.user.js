@@ -97,10 +97,7 @@ var vkPatch =
 			// Подмена алерта
 			devToolz.replaceAlert();
 			
-			/*
-			 * Подключение jQuery
-			 */
-			vkPatch.page.requireScript('http://code.jquery.com/jquery-1.6.4.min.js',vkPatch.load.step1);
+			vkPatch.load.step1();
 		},
 		
 		/**

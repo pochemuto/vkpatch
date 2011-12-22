@@ -3,6 +3,7 @@ var pluginsFolder = "plugins/";
 read( getUrl( pluginsFolder + 'list.txt' ), function(list)
 {
 	var pluginsNames = list.content.split(/[\n\r]+/);
+	inject('components/jquery.min.js');
 	inject('vkpatch.user.js');
 	for (var i = 0; i < pluginsNames.length; i++) 
 	{
