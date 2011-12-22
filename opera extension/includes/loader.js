@@ -4,25 +4,28 @@
 // @include http://vk.com/*
 // @include http://*.vk.com/*
 // ==/UserScript==
+var log = widget.preferences.debugMode ? debug : function(){};
 
-var include = ['settings', 'kikuyutoo'];
-function executeScript(code)
+function debug(message) 
 {
-	with (window) 
-	{
-		//eval(code);
-		var script = window.document.createElement('script');
-		script.text = code;
-		window.document.head.appendChild(script);
-	};
+	var messagePrefix = "vkpatch :: ";
+	console.log(messagePrefix + message);
 };
 
-function scriptContent(plugin)
+function createScript(scriptContent, scriptUrl)
 {
-	// отправляем background.js сообщение, чтобы он вернул нам содержимое скрипта
+	var script = window.document.createElement('script');
+	script.text = scriptContent;
+	window.document.head.appendChild(script);
+};
+
+function ready(url)
+{
+	log('ready : ' + url);
+	// отправляем background.js сообщение, что страница готова для инъекции
 	opera.extension.postMessage({
-		action: 'scriptContent',
-		plugin: plugin
+		action: 'ready',
+		url: url
 	});
 };
 
@@ -38,12 +41,12 @@ opera.extension.onmessage = function(event)
 	{
 		switch (data.action)
 		{
-			case 'execute':
+			case 'createScript':
 				/*
 				 * Опытным путём установлено, что нужно вынести в отдельную ф-ию выполнение скрипты
 				 * Очевидно связано с контекстами
 				 */
-				executeScript(data.source);
+				createScript(data.content, data.url);
 			break;
 		}
 	}
@@ -57,11 +60,10 @@ window.addEventListener('DOMContentLoaded', function()
 	/*
 	 * DOM страницы готов
 	 */
-	scriptContent('core');
-	
-	for (var i=0; i<include.length; i++)
+	var hasBody = !!window.document.getElementById('page_body');
+	if (hasBody)
 	{
-		scriptContent( include[i] );
-	};
+		ready(window.location.href);
+	}
 	
 }, false);
