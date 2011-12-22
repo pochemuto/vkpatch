@@ -149,13 +149,7 @@ vkPatch.plugins.add({
 		// активируем вкладку
 		vkPatch.iface.activateTab(this.tab);
 				
-		// подключаем стили
-		vkPatch.page.requireCSS(['http://vkontakte.ru/css/ui_controls.css','http://vkontakte.ru/css/al/privacy.css']);
-		// и скрипты интерфейса
-		// после подключения всех скриптов выполнится колбек - this.showTabContent
-		//vkPatch.page.requireScript(['http://vkontakte.ru/js/lib/ui_controls.js','http://vkontakte.ru/js/al/privacy.js'],jQuery.proxy(this.showTabContent,this));
-		this.showTabContent();
-				
+		vkPatch.page.add(['ui_controls.css','privacy.css', 'ui_controls.js','privacy.js'],jQuery.proxy(this.showTabContent,this));
 	},
 	
 	/*

@@ -401,158 +401,16 @@ var vkPatch =
 			};
 		},
 		
-		/*
-		 * Подключить внешний скрипт
-		 * url - адрес внешнего скрипта, или массив адресов
-		 * callback - функция, выполяющаяся после загрузки и выполнения скриптов
+		/**
+		 * Подключение стилей контакта
+		 * @param {string|array} urls
+		 * @param {function} callback
 		 */
-		// список подключённых скриптов, чтобы не загружать дважды
-		connectedScripts: [],
-		
-		requireScript: function(url,callback)
+		add: function(urls, callback) 
 		{
-			callback = callback || function(){};
-			
-			/*
-			 * в колбек не вызываем событие resourceLoad, потомоу что во всех файлх js
-			 * вконтакте вконце есть событие stManager.done, которое отлавливается 
-			 */
-			
-			// если первым параметром передан массив, то последовательно подключаем все скрипты
-			if (_.isArray(url))
-			{
-				// запоминаем колбек
-				var _callback = callback;
-				
-				var _urls = url;
-				// подключаем первый из списка
-				url = _urls.shift();
-
-				// Если ещё остался неподключённый, то меняем колбек для продолжения цепочки
-				if (_urls.length > 0)
-				{
-					callback = function() {vkPatch.page.requireScript(_urls,_callback)};
-				};
-				
-			};
-
-			// если скрипт уже подключён вручную
-			if (_.exists(vkPatch.page.connectedScripts, url))
-			{
-				callback()
-			}
-			else		// иначе ищем его в head
-			{
-				
-				// Просматриваем подключённые скрипты
-				var scripts = document.getElementsByTagName('script');
-				// Паттерн для проверки аттрибута src
-				var pattern = new RegExp('^'+url);
-				
-				var found = false;
-				for(var i=0; i<scripts.length; i++)
-				{
-					if (pattern.test(scripts[i].src))
-					{
-						var found = true;
-						break;
-					}
-				}
-				
-				// если он был изначально подключён в head
-				if (found)
-				{
-					callback();
-				}
-				else	// если не был, то подключаем и ждём
-				{
-					vkPatch.log('load script: ' + url);
-
-					//jQuery.getScript(url,callback);
-					
-					/*
-					 * Копипаст с jQuery
-					 * Если использовать jQuery.getScript или jQuery.ajax, то возникает проблема:
-					 * если скрипт находится на vkontakte.ru, то он считается не удалённым (remote = false) и его подключение
-					 * jQuery делает по схеме: скачать, создать тег <script>, записать в тело script содержимое скрипта
-					 * но скрипт получен в битой кодировке, и поэтому может выполняться с ошибками
-					 * Это копипаст метода подключения удалённых скриптов, в этом случае браузеры корректно понимают кодировку
-					 */
-					var head = document.getElementsByTagName("head")[0] || document.documentElement;
-					var script = document.createElement("script");
-					
-					script.src = url;
-					
-					var done = false;
-
-					// Attach handlers for all browsers
-					script.onload = script.onreadystatechange = function() {
-						if ( !done && (!this.readyState ||
-								this.readyState === "loaded" || this.readyState === "complete") ) {
-							done = true;
-
-							callback();
-							
-							// Handle memory leak in IE
-							script.onload = script.onreadystatechange = null;
-							if ( head && script.parentNode ) {
-								head.removeChild( script );
-							}
-						}
-					}
-					
-					head.insertBefore( script, head.firstChild );
-
-				}
-				vkPatch.page.connectedScripts.push(url);
-			}
+			stManager.add(urls, callback);
 		},
-
-		
-		/*
-		 * Подключение внешних css
-		 * url - адрес стилевого файла или массив адресов
-		 */
-		connectedCSS: [],
-		requireCSS: function(url)
-		{
-			// Если массив, то перебираем его
-			if (_.isArray(url))
-			{
-				for(var i=0; i<url.length; i++)
-				{
-					vkPatch.page.requireCSS(url[i]);
-				};
-				return;	// и выходим
-			};
-			if (!_.exists(vkPatch.page.connectedCSS, url))
-			{
-				var styles = $("head link[type='text/css']");
 				
-				// Паттерн для проверки аттрибута src
-				var pattern = new RegExp('^'+url);
-				
-				var found = false;
-				for(var i=0; i<styles.length; i++)
-				{
-					if (pattern.test(styles.get(i).href))
-					{
-						var found = true;
-						break;
-					}
-				}
-				
-				// подключаем стиль
-				if (!found)
-				{
-					$('<link type="text/css" href="'+url+'" rel="stylesheet">').appendTo('head');
-				}
-				
-				vkPatch.page.connectedCSS.push(url);
-			};
-			
-		},
-		
 		hashchangeHandler: function()
 		{
 			
