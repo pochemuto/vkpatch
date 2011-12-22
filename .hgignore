@@ -22,3 +22,9 @@ syntax: regexp
 ^firefox extension/content/plugins$
 syntax: regexp
 ^opera extension/plugins$
+syntax: regexp
+^chrome extension/components$
+syntax: regexp
+^firefox extension/content/components$
+syntax: regexp
+^opera extension/components$

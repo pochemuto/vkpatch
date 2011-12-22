@@ -18,7 +18,10 @@ with (Deferred)
 {
 	parallel([
 		waitPage,
-		read.bind(null, "vkpatch.user.js"),
+		chain([
+			read.bind(null, "components/jquery.min.js"),
+			read.bind(null, "vkpatch.user.js"),
+		]),
 		next(read.bind(null, pluginsFolder + "list.txt"))
 			.next(function(list) 
 			{
@@ -55,7 +58,7 @@ function inject(values)
 {
 	log('injections count: ' + injectBuffer.length);
 	var pageInfo;
-	var scriptsData = [values[1]].concat(values[2]);
+	var scriptsData = values[1].concat(values[2]);
 	while (pageInfo = injectBuffer.shift()) 
 	{
 		log('injection to ' + pageInfo.url + ' starts... (' + scriptsData.length +' scripts)');
