@@ -1,4 +1,9 @@
 # jQuery
+# http://jquery.com/
 jquery.min
+
+# Underscore.js
+# http://documentcloud.github.com/underscore/
+underscore-min
 
 # jQuery plugins
