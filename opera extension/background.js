@@ -94,6 +94,7 @@ function read(url)
 		} 
 		catch (e) 
 		{
+			log('reading ' + url + '... error! ' + e);
 			deferred.fail();
 		}
 	};
@@ -258,7 +259,7 @@ opera.extension.onmessage = function(event) {
 				}
 				else
 				{
-					log('read by list:', list);
+					log('read by list: ' + list);
 					return Deferred.parallel(parallelJobs);
 				}
 			});

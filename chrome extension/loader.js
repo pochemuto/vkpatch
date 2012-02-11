@@ -232,7 +232,7 @@ var log = debug ? function (message){console.log(message);} : function(){};
 				}
 				else
 				{
-					log('read by list:', list);
+					log('read by list: ' + list);
 					return Deferred.parallel(parallelJobs);
 				}
 			});
