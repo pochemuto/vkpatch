@@ -80,7 +80,7 @@ vkPatch.plugins.add({
 		{
 			// md5 для LastFM
 			var md5 = function(string){ return vkPatch.sys.md5( vkPatch.sys.utf8_encode(string) ) };
-			var document = _window.document;
+			var document = window.document;
 			/*
 			 *
 			 * Copyright (c) 2008-2010, Felix Bruns <felixbruns@web.de>
