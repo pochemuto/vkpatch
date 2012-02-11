@@ -644,7 +644,7 @@ vkPatch.plugins.add({
 							.parent();
 							
 							
-						if (parent.get(0).tagName.toLowerCase() == 'td') 
+						if (parent.size() && parent.get(0).tagName.toLowerCase() == 'td') 
 						{
 							/*
 							 * Оборачивание содержимого <td> в новый слой с position:relative
