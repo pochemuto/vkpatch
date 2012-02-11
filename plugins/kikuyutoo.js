@@ -638,10 +638,27 @@ vkPatch.plugins.add({
 					// если иконок нет в DOM или надо изменить положение
 					if (!$('#vkpatch_iconsContainer').length || trackInfo.aid != this.iconsContainerOwnerId) 
 					{
-						$('#audio'+trackInfo.aid).find('div.duration:first')
+						
+						var parent = $('#audio'+trackInfo.aid).find('div.duration:first')
 							.after(this.iconsContainer)
-							.parent().css('position','relative');
+							.parent();
 							
+							
+						if (parent.get(0).tagName.toLowerCase() == 'td') 
+						{
+							/*
+							 * Оборачивание содержимого <td> в новый слой с position:relative
+							 * необходимо для FF, т.к. position:relative не влияет на td
+							 */
+							var div = $('<div>').css('position', 'relative');;
+							parent.children().wrapAll(div);
+						}
+						else
+						{
+							parent.css('position', 'relative');
+						};
+						
+						
 						this.iconsContainerOwnerId = trackInfo.aid;
 					};
 			};			
