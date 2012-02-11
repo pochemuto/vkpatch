@@ -62,7 +62,7 @@ vkPatch.plugins.add({
 	{
 		'settings': function()
 		{
-			var tabImg = $('<img>').attr('src',this.resources.tabIcon).css('margin','-2px 0px -4px 0px').css('height','16px');
+			var tabImg = $('<img>').attr('src', this.resources.tabIcon).css('margin','-2px 0px -4px 0px').css('height','16px');
 			this.tab = vkPatch.iface.addTab(tabImg, $('#content > div.tBar:first > ul,#content > div.tabs:first > ul'),this.settingsHash).click(jQuery.proxy(this.tabClickHandler,this));
 
 			// если в адрее указан ?show=vkpatch
@@ -162,7 +162,7 @@ vkPatch.plugins.add({
 		 */
 		cur.onPrivacyChanged = function(key)
 		{
-			var value = _window.Privacy.getValue(key);
+			var value = window.Privacy.getValue(key);
 			// значение выпадающего списка представляет собой величину вида: -1_1_[значение выбранного элемента]_
 			// извлечём
 			value = value.substring(5, value.length-1)
@@ -279,7 +279,7 @@ vkPatch.plugins.add({
 		this.showMessage(this.lang.saved, 'normal');
 
 		// Прокручиваем страницу наверх
-		$(_window).scrollTop(0);
+		$(window).scrollTop(0);
 	},
 	
 	/**
@@ -359,13 +359,13 @@ vkPatch.plugins.add({
 		this.categoryContainer.append(wrapper);
 		checkbox.click(function()
 		{
-			$('#'+optionName).val(_window.isChecked(this));
+			$('#'+optionName).val(window.isChecked(this));
 		});
 		
-		var input = _window.ge(option.name);
+		var input = window.ge(option.name);
 		
 		// Функцией ВКонтакте, преобразуем флажок
-		//new _window.Checkbox(input, {checked: option.get(), label: option.title,  onChange: function() { }});
+		//new window.Checkbox(input, {checked: option.get(), label: option.title,  onChange: function() { }});
 		
 		if (option.desc)
 		{
@@ -423,13 +423,13 @@ vkPatch.plugins.add({
 	
 
 		this.categoryContainer.append('<div style="margin: 4px 0px"><div style="display: inline-block; width: 200px">'+option.title+':</div><div class="settings_privacy_control" style="display: inline-block;padding: 4px;"><a id="privacy_edit_'+option.name+'" style="cursor: pointer;" onclick="return Privacy.show(this, event, \''+option.name+'\');">'+selected_title+'</a><span></span></div><input type="hidden" id="'+option.name+'" name="'+option.name+'" value="'+selected+'"/></div>');
-		if (!_window.cur.privacy)
+		if (!window.cur.privacy)
 		{
-			_window.cur.privacy = {};
+			window.cur.privacy = {};
 		};
 				
-		_window.cur.privacy[option.name + '_types'] = desc;
-		_window.cur.privacy[option.name] = [selected];
+		window.cur.privacy[option.name + '_types'] = desc;
+		window.cur.privacy[option.name] = [selected];
 	},
 	
 	/**

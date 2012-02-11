@@ -38,14 +38,6 @@ var vkPatch =
 		step0: function()
 		{
 			
-			_window = window;
-			if (typeof(unsafeWindow) != 'undefined')
-			{
-				_window = unsafeWindow;
-				window = _window;
-				document = _window.document;
-			};	
-			
 			/*
 			 * Если установлена кука vkpatch_debug - в режиме отладки
 			 */
@@ -86,17 +78,8 @@ var vkPatch =
 //			};
 			
 			// абсолютный URL плагина
-			vkPatch.extensionUrl = _window.vkpatchUrl;
-			
-			/*
-			 * devToolz 0.2.1
-			 * расширение объектов
-			 */
-			var devToolz=_=new(function(){var maxAlerts=5,alertTimeOut=1000,lastAlertTime=0,alertCount=0,alertFreeze=false,alertFunc=alert,self=this;var getNormalizeKeysFunc=function(obj){return self.isArray(obj)?function(value){return Number(value)}:function(value){return value};};this.replaceAlert=function(){window.alert=self.alert;return this;};this.repeat=function(str,n){var s='';while(n>0){s+=str;n--}return s};this.isEqual=function(a,b){if(a===b)return true;if(self.isNumber(a)&&self.isNumber(b)){return a.toString()==b.toString();};if(self.isString(a)&&self.isString(b)){return a==b;};if(self.isBoolean(a)&&self.isBoolean(b)){return a.valueOf()==b.valueOf();};if(self.isFunction(a)&&self.isFunction(b)){return a.toString()==b.toString();};if(typeof(a)!=typeof(b))return false;if(a==b)return true;if((!a&&b)||(a&&!b))return false;if(typeof(a.length)!=='undefined'&&(a.length!==b.length))return false;if(self.keys(a).length!=self.keys(b).length)return false;for(var key in a){if(!(key in b)||!self.isEqual(a[key],b[key])){return false;}}return true;};this.exists=function(obj,needle){for(var i in obj){if(self.isEqual(obj[i],needle))return true};return false};this.indexOf=this.keyOf=function(obj,needle,context){var decorateValueFunc=getNormalizeKeysFunc(obj);var findVal=needle;var testFunc=self.isFunction(needle)?needle:function(value,key,obj){return self.isEqual(value,findVal)};for(var i in obj){if(testFunc.call(context,obj[i],i,obj)){return decorateValueFunc(i);}};return null;};this.indexesOf=this.keysOf=function(obj,needle,context){var result=[];var normalizeKeyFunc=getNormalizeKeysFunc(obj);var findVal=needle;var testFunc=self.isFunction(needle)?needle:function(value,key,obj){return self.isEqual(value,findVal)};for(var i in obj){if(testFunc.call(context,obj[i],i,obj)){result.push(normalizeKeyFunc(i));}};return result};this.subtract=function(obj,subtr){var result;if(typeof(obj)=='string'&&typeof(subtr)=='string')return obj.replace(new RegExp(subtr,'g'),'');if(typeof(obj)=='number'&&typeof(subtr)=='number')return obj-subtr;if(self.isArray(obj)&&self.isArray(subtr)){result=[];for(var i=0;i<obj.length;i++){if(!self.exists(subtr,obj[i])){result.push(obj[i])}};return result}result=self.clone(obj);for(var i in obj){if(typeof(subtr[i])!='undefined'&&self.isEqual(obj[i],subtr[i]))delete(result[i])};return result};this.filter=function(obj,element,funcResult){var result,func,addItemFunc;funcResult=typeof(funcResult)=='undefined'?true:funcResult;if(typeof(obj)=='string'&&typeof(element)=='string')return obj.replace(new RegExp(element,'g'),'');if(typeof(obj)=='number'&&typeof(element)=='number')return obj-element;if(self.isFunction(element)){func=element;}else{var el=element;func=function(item){return self.isEqual(el,item);}};result=self.newLike(obj);if(self.isArray(obj)){addItemFunc=function(item){result.push(item)};}else{addItemFunc=function(item,key){result[key]=item};};self.each(obj,function(item,key){if(func(item,key,obj)==funcResult){addItemFunc(item,key);}});return result;};this.remove=function(obj,element){return self.filter(obj,element,false);};this.removeAt=this.removeWith=function(obj,keys){if(self.isString(keys)||self.isNumber(keys)){keys=[keys];};if(self.isArray(obj)){keys.sort(function(left,right){return left==right?0:left<right?1:-1;});};var deleteFunc=self.isArray(obj)?function(obj,index){obj.splice(index,1);}:function(obj,key){delete obj[key];};var result=self.clone(obj);self.each(keys,function(key){deleteFunc(result,key);});return result;};this.dump=function(obj,maxdepth,level){maxdepth=typeof(maxdepth)=='undefined'?Number.POSITIVE_INFINITY:maxdepth;var level=level||0;if(level>=maxdepth){return obj.toString();};var result='';var space=self.repeat("    ",level);var node;if(typeof(obj)=='string'||typeof(obj)=='number'||typeof(obj)=='boolean')return obj;function formatNode(node){switch(typeof(node)){case'string':node="\u201C"+node+"\u201D";break;case'function':if(typeof(node.toSource)=='undefined'){node=node.toString()}else{node=node.toSource()};break;case'object':node=self.dump(node,maxdepth,level+1);break;default:node=node}return node}if(typeof(obj)=='object'&&obj instanceof Array){for(var i=0;i<obj.length;i++)result+="\n"+space+i+': '+formatNode(obj[i])}else{for(var i in obj){if(!obj.hasOwnProperty(i)){continue};result+="\n"+space+'['+i+']: '+formatNode(obj[i])}};if(level==0){result=result.substr(1)};return result};this.clone=function(obj){if(typeof(obj)=='number'||typeof(obj)=='string'||typeof(obj)=='function'||typeof(obj)=='boolean')return obj;if(self.isArray(obj))return obj.slice();var result=self.newLike(obj);for(var i in obj){if(!obj.hasOwnProperty(i))continue;result[i]=obj[i];};return result};this.newLike=function(obj){if(self.isArray(obj)){return[];}else{var constr=function(){};constr.prototype=obj.constructor.prototype;result=new constr();return result;}};this.breaker={};this.each=function(obj,iterator,context){var args=Array.prototype.slice.call(arguments,3);args.unshift(null,null,obj);var normalizeKeyFunc=getNormalizeKeysFunc(obj);for(var i in obj){if(!obj.hasOwnProperty(i)){continue};args[0]=obj[i];args[1]=normalizeKeyFunc(i);var result=iterator.apply(context,args);if(result===self.breaker){break;}};};this.map=function(obj,iterator,context){var args=Array.prototype.slice.call(arguments,3);args.unshift(null,null,obj);var normalizeKeyFunc=getNormalizeKeysFunc(obj);var result=self.newLike(obj);self.each(obj,function(item,key,obj){args[0]=item;args[1]=normalizeKeyFunc(key);result[key]=iterator.apply(context,args);},context);return result;};this.withKey=function(arr,key){var result=[];self.each(arr,function(item){result.push(item[key]);});return result;};this.values=function(obj){var result=[];self.each(obj,function(item){result.push(item);});return result;};this.keys=function(obj){var result=[];var normalizeKeyFunc=getNormalizeKeysFunc(obj);self.each(obj,function(item,key){result.push(normalizeKeyFunc(key));});return result;};this.sortBy=function(arr,criteria,context){var result=self.clone(arr);var reverseFlag='!';if(self.isString(criteria)){criteria=[criteria];};if(self.isArray(criteria)){var props=criteria;result.sort(function(left,right){for(var i=0;i<props.length;i++){var propName=props[i];var direction=1;if(propName.charAt(0)==reverseFlag){propName=propName.substr(1);direction=-1;};if(left[propName]>right[propName])return 1*direction;if(left[propName]<right[propName])return -1*direction;};return 0;});return result;}else{var iterator=criteria;var objects=self.map(result,function(item,key){return{criteria:iterator.call(context,item,key,arr),value:item};}).sort(function(left,right){var a=left.criteria,b=right.criteria;return a<b?-1:a>b?1:0;});return _.withKey(objects,'value');}};this.date={now:function(){return(new Date().getTime())},elapsedTime:function(old,now){now=now||self.date.now();return(now-old)}};this.isArray=function(obj){return(typeof(obj)=='object'&&obj instanceof Array)};this.isString=function(obj){return(typeof(obj)=='string'||(typeof(obj)=='object'&&obj instanceof String))};this.isNumber=function(obj){return(typeof(obj)=='number'||(typeof(obj)=='object'&&obj instanceof Number))};this.isBoolean=function(obj){return(typeof(obj)=='boolean'||(typeof(obj)=='object'&&obj instanceof Boolean))};this.isFunction=function(obj){return(typeof(obj)=='function')};this.isRegExp=function(obj){return(typeof(obj)=='object'&&obj instanceof RegExp)};this.alert=function(message,maxdepth){message=self.dump(message,maxdepth);if(self.date.elapsedTime(lastAlertTime)<alertTimeOut)alertCount++;else{alertCount=0;alertFreeze=false};if(alertFreeze){lastAlertTime=self.date.now();return};if(alertCount>=maxAlerts){if(!confirm('Продолжить показ всплывающих окон?')){alertFreeze=true}else alertCount=0};if(alertCount<maxAlerts){alertFunc.call(window,message)};lastAlertTime=self.date.now()};})();
-		
-			// Подмена алерта
-			devToolz.replaceAlert();
-			
+			vkPatch.extensionUrl = window.vkpatchUrl;
+					
 			vkPatch.load.step1();
 		},
 		
@@ -105,12 +88,6 @@ var vkPatch =
 		 */
 		step1: function()
 		{
-			/*
-			 * Определяем jQuery
-			 */
-		
-			jQuery = _window.jQuery;
-			$ = jQuery;
 			/*
 			 * Подключаем необходимые плагины jQuery
 			 */
@@ -172,10 +149,10 @@ var vkPatch =
 		step2: function()
 		{
 			// объявление событий
-			vkPatch.events = _.map(vkPatch.events, function(options, name)
+			for (var eventName in vkPatch.events)
 			{
-				return new vkPatch.event(name, 'core', options);
-			});
+				vkPatch.events[eventName] = new vkPatch.event(eventName, 'core', vkPatch.events[eventName]);
+			}
 			
 			$(window).bind('storage', $.proxy(vkPatch.storage.handler, this));
 			
@@ -183,7 +160,7 @@ var vkPatch =
 			vkPatch.settings.optionPrototype.oldValue = vkPatch.settings.initValue;
 			vkPatch.settings.option.prototype = vkPatch.settings.optionPrototype;
 			
-			_window.onhashchange = vkPatch.page.hashchangeHandler;
+			window.onhashchange = vkPatch.page.hashchangeHandler;
 			
 			/**
 			 * Инициализация внутренних объектов vkPatch
@@ -478,7 +455,7 @@ var vkPatch =
 		extend: function(property, func, context, container)
 		{
 			var names = property.split('.');
-			var element = container || _window, propName, parent;
+			var element = container || window, propName, parent;
 			
 			// добираемся до объекта пробегаяся по всей цепочке свойств
 			while(names.length) 
@@ -886,7 +863,7 @@ var vkPatch =
 		 */
 		this.unbind = function(handler, context) 
 		{
-			handlers = _.remove(handlers, function(item)
+			handlers = _.reject(handlers, function(item)
 			{
 				return item.func === handler && item.context === context;
 			});
@@ -1084,7 +1061,7 @@ var vkPatch =
 		 */
 		currentTrackInfo: function() 
 		{
-			return new vkPatch.audio.trackInfo(_window.audioPlayer.lastSong);
+			return new vkPatch.audio.trackInfo(window.audioPlayer.lastSong);
 		},
 		
 		/**
@@ -1094,7 +1071,7 @@ var vkPatch =
 		 */
 		trackInfoById: function(id)
 		{
-			return new vkPatch.audio.trackInfo(_window.audios[id]);
+			return new vkPatch.audio.trackInfo(window.audios[id]);
 		}
 	},
 	
@@ -1254,7 +1231,7 @@ var vkPatch =
 							
 						case vkPatch.settings.TYPE_LIST:
 		
-							if (_.exists(this.list,value))
+							if (_.include(this.list,value))
 							{
 								result_value = value;
 							}
@@ -1571,7 +1548,7 @@ var vkPatch =
 			 * Раскладываем ф-ии плагинов, выполняемые на страницах в pages 
 			 */
 			var pageFunction = [];	// функции страниц, которых совпали с текущей
-			
+				
 			_.each(plugin.pages, function(func, pages) 
 			{
 					var func = jQuery.proxy(func, plugin);	// задаём ф-ии контекст плагина
@@ -1599,7 +1576,7 @@ var vkPatch =
 					});
 			});
 			
-			plugin.resources = _.map(plugin.resources, function(resource) 
+			_.each(plugin.resources, function(resource, key, resources) 
 			{
 				var url = resource;
 				
@@ -1609,7 +1586,7 @@ var vkPatch =
 					url = vkPatch.extensionUrl + 'resources/' + plugin.name + resource;
 				};
 				
-				return url;
+				resources[key] = url;
 			});
 			
 			/*
@@ -1617,9 +1594,9 @@ var vkPatch =
 			 */
 			if (plugin.events) 
 			{
-				plugin.events = _.map(plugin.events, function(options, name) 
+				_.each(plugin.events, function(options, name, events) 
 				{
-					return new vkPatch.event(name, plugin.name, options);
+					events[name] = new vkPatch.event(name, plugin.name, options);
 				});
 			};
 			
@@ -1713,21 +1690,7 @@ var vkPatch =
 		 */
 		callFunction: function(plugin, func) 
 		{
-			var oldHandler = _window.onerror;
-			_window.onerror = vkPatch.plugins.onerrorHandler;
-			
-			vkPatch.plugins.current = plugin;
-			
-			try
-			{
-				func.call(plugin);
-			}
-			catch (err)
-			{
-				vkPatch.plugins.errorHandler(err, plugin);
-			};
-			
-			_window.onerror = oldHandler;
+			func.call(plugin);
 		},
 		
 		/**
@@ -1747,6 +1710,11 @@ var vkPatch =
 		 */
 		errorHandler: function(err)
 		{
+			if (vkPatch.debug)
+			{
+				throw err;
+			};
+			
 			var info = '';
 			for (var prop in err) 
 			{
