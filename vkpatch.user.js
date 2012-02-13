@@ -859,6 +859,9 @@ var vkPatch =
 		this.bind = function(handler, context, raiseLast) 
 		{
 			raiseLast = (raiseLast === undefined) ? options.raiseLast : raiseLast;
+			// отвязываем для предотвращения повторных срабатываний 
+			this.unbind(handler, context);
+			
 			handlers.push(
 			{
 				func: handler,
