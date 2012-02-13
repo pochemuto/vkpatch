@@ -370,7 +370,7 @@ var vkPatch =
 				var params = {}, e,
 				a = /\+/g,  // Regex for replacing addition symbol with a space
 				r = /([^&=]+)=?([^&]*)/g,
-				d = function (s) { return vkPatch.sys.cp1251_to_utf8(unescape(s.replace(a, " "))); },
+				d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
 				q = window.location.search.substring(1);
 
 			while (e = r.exec(q))
@@ -745,38 +745,7 @@ var vkPatch =
 		},
 		
 		utf8_encode: function(){},
-		
-		cp1251_to_utf8: function (str)
-		{
-			var result = original = converted = "", length = str.length;
-			
-			while (length--) 
-			{
-				original = str.charCodeAt(length);
 				
-				if (original === 184) 
-				{
-					converted = 1105;
-				}
-				else 
-					if (original === 168) 
-					{
-						converted = 1025;
-					}
-					else 
-						if (original > 191 && original < 256) 
-						{
-							converted = original + 848;
-						}
-						else 
-						{
-							converted = original;
-						}
-				result = String.fromCharCode(converted) + result;
-			}
-			return result;
-		},
-		
 		/**
 		 * Передача сообщения всем окнам. Внутренняя функция, в плагинах следует использовать глобальные события
 		 * @param {string} type - тип события, например event
