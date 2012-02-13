@@ -1,7 +1,9 @@
 /*
  *
  * Copyright (c) 2008-2010, Felix Bruns <felixbruns@web.de>
- *
+ * + параметр dabug
+ * + параметр md5
+ * + отправка данных с использованием jQuery
  */
 
 function LastFM(options){
@@ -10,7 +12,8 @@ function LastFM(options){
 	var apiSecret = options.apiSecret || '';
 	var apiUrl    = options.apiUrl    || 'http://ws.audioscrobbler.com/2.0/';
 	var cache     = options.cache     || undefined;
-	var debug     = typeof(options.debug) == 'undefined' ? false : options.debug;
+	var log       = options.log     || function(){};
+	var debug     = typeof(options.debug) == 'undefined' ? false : options.debug
 	var md5       = options.md5       || md5;
 	
 	/* Set API key. */
@@ -34,9 +37,51 @@ function LastFM(options){
 	};
 
 	/* Internal call (POST, GET). */
-	var internalCall = function(params, callbacks, requestMethod){
-		/* Cross-domain POST request (doesn't return any data, always successful). */
-		if(requestMethod == 'POST'){
+	var internalCall = function(params, callbacks, requestMethod)
+	{
+		var iframeTransport = requestMethod == "POST" && !jQuery.support.cors;
+		if (!iframeTransport)	// если грузить json в iframe, то будет открываться диалог сохранения
+		{
+			params.format = 'json';	// 
+		};
+		
+		if (debug) 
+		{
+			if (JSON && JSON.stringify)
+			{
+				var paramsRepr = JSON.stringify(params);
+			}
+			else
+			{
+				paramsRepr = [];
+				for (var paramName in params)
+				{
+					paramsRepr.push('"'+paramName+'":"' + params[paramName] + '"');
+				}
+				paramsRepr = '{'+paramsRepr.join(',')+'}';
+			}
+			log("call " + (iframeTransport ? ' (iframe) ' : '') + params.method + paramsRepr);
+		}
+		
+		/* Calculate cache hash. */
+		var hash = auth.getApiSignature(params);
+
+		/* Check cache. */
+		if(typeof(cache) != 'undefined' && cache.contains(hash) && !cache.isExpired(hash)){
+			if(typeof(callbacks.success) != 'undefined'){
+				callbacks.success(cache.load(hash));
+			}
+
+			return;
+		}
+			
+		if (iframeTransport)
+		{
+			/*
+			 * Отправка POST у браузера без поддержки CORS
+			 * методом iframe
+			 */
+			
 			/* Create iframe element to post data. */
 			var html   = document.getElementsByTagName('html')[0];
 			
@@ -52,11 +97,18 @@ function LastFM(options){
 			// состояние формы с данными для отправки
 			var formState = 'init';
 			
+			var form = document.createElement('form');
+			form.target = frameName;
+			form.action = apiUrl;
+			form.method = "POST";
+			form.acceptCharset = "UTF-8";
+			
 			/* Set iframe attributes. */
 			iframe.width        = 1;
 			iframe.height       = 1;
 			iframe.style.border = 'none';
-			iframe.onload       = function(){
+			iframe.onload       = function()
+			{
 				/* Remove iframe element. */
 				if (formState == 'sent')
 				{
@@ -79,11 +131,7 @@ function LastFM(options){
 				}
 			};
 
-			var form = document.createElement('form');
-			form.target = frameName;
-			form.action = apiUrl;
-			form.method = "POST";
-			form.acceptCharset = "UTF-8";
+			
 			
 			/* Append iframe. */
 			html.appendChild(form);
@@ -103,81 +151,67 @@ function LastFM(options){
 			
 			form.submit();
 		}
-		/* Cross-domain GET request (JSONP). */
-		else{
-			/* Get JSONP callback name. */
-			var jsonp = 'jsonp' + new Date().getTime();
-
-			/* Calculate cache hash. */
-			var hash = auth.getApiSignature(params);
-
-			/* Check cache. */
-			if(typeof(cache) != 'undefined' && cache.contains(hash) && !cache.isExpired(hash)){
-				if(typeof(callbacks.success) != 'undefined'){
-					callbacks.success(cache.load(hash));
-				}
-
-				return;
-			}
-
-			/* Set callback name and response format. */
-			params.callback = jsonp;
-			params.format   = 'json';
-
-			/* Create JSONP callback function. */
-			window[jsonp] = function(data){
+		else
+		{
+			// иначе справится и jquery
+			var callback = function(data)
+			{
+			
 				/* Is a cache available?. */
-				if(typeof(cache) != 'undefined'){
+				if (typeof(cache) != 'undefined') 
+				{
 					var expiration = cache.getExpirationTime(params);
-
-					if(expiration > 0){
+					
+					if (expiration > 0) 
+					{
 						cache.store(hash, data, expiration);
 					}
 				}
-
+				
 				/* Call user callback. */
-				if(typeof(data.error) != 'undefined'){
-					if(typeof(callbacks.error) != 'undefined'){
+				if (typeof(data.error) != 'undefined') 
+				{
+					if (typeof(callbacks.error) != 'undefined') 
+					{
 						callbacks.error(data.error, data.message);
 					}
 				}
-				else if(typeof(callbacks.success) != 'undefined'){
-					callbacks.success(data);
-				}
-
-				/* Garbage collect. */
-				window[jsonp] = undefined;
-
-				try{
-					delete window[jsonp];
-				}
-				catch(e){
-					/* Nothing. */
-				}
-
-				/* Remove script element. */
-				if(head){
-					head.removeChild(script);
-				}
+				else 
+					if (typeof(callbacks.success) != 'undefined') 
+					{
+						callbacks.success(data);
+					}
 			};
-
-			/* Create script element to load JSON data. */
-			var head   = document.getElementsByTagName("head")[0];
-			var script = document.createElement("script");
-
-			/* Build parameter string. */
-			var array = [];
-
-			for(var param in params){
-				array.push(encodeURIComponent(param) + "=" + encodeURIComponent(params[param]));
-			}
-
-			/* Set script source. */
-			script.src = apiUrl + '?' + array.join('&').replace(/%20/g, '+');
-
-			/* Append script element. */
-			head.appendChild(script);
-		}
+		
+			jQuery.ajax({
+				url: apiUrl,
+				dataType: 'json',
+				data: params,
+				success: function(data, textStatus, jqXHR)
+				{
+					if (debug) 
+					{
+						log('success ' + data + ' (' + textStatus +')');
+					}
+					callback(data);
+				},
+				error: function(jqXHR, textStatus, errorThrown) 
+				{
+					if (typeof(callbacks.error) != 'undefined') 
+					{
+						if (debug) 
+						{
+							log('error ' + textStatus + ' (' + errorThrown +')');
+						};
+						callbacks.error(textStatus, errorThrown);
+					}
+				},
+				type: requestMethod,
+				scriptCharset: 'UTF-8',
+				crossDomain: true
+			});
+		};
+		
 	};
 
 	/* Normal method call. */

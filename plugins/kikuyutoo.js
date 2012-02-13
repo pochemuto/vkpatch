@@ -79,11 +79,15 @@ vkPatch.plugins.add({
 		init: function()
 		{
 			var document = window.document;
-															
+			var _this = this;								
 			this.lastfm = new LastFM(
 				{
 					apiKey: this.apiKey,
 					apiSecret: this.apiSecret,
+					log: function(message) 
+					{
+						_this.log(' API :' + message);
+					},
 					debug: vkPatch.debug,
 					md5: function(string){ return vkPatch.sys.md5( vkPatch.sys.encoder.utf8Encode(string) ) }
 				});
