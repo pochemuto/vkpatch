@@ -10,4 +10,9 @@ underscore-min
 # http://www.strictly-software.com/htmlencode
 encoder
 
+# Вычисление MD5
+# http://www.webtoolkit.info/
+# Удалено конвертирование в utf-8
+md5
+
 # jQuery plugins
