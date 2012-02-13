@@ -6,4 +6,8 @@ jquery.min
 # http://documentcloud.github.com/underscore/
 underscore-min
 
+# Кодирование/декодирование html символов
+# http://www.strictly-software.com/htmlencode
+encoder
+
 # jQuery plugins
