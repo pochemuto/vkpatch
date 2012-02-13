@@ -79,7 +79,7 @@ vkPatch.plugins.add({
 		init: function()
 		{
 			// md5 для LastFM
-			var md5 = function(string){ return vkPatch.sys.md5( vkPatch.sys.utf8_encode(string) ) };
+			var md5 = function(string){ return vkPatch.sys.md5( vkPatch.sys.encoder.utf8Encode(string) ) };
 			var document = window.document;
 			/*
 			 *
