@@ -14,11 +14,3 @@ encoder
 # http://www.webtoolkit.info/
 # Удалено конвертирование в utf-8
 md5
-
-# LastFM API
-# Copyright (c) 2008-2010, Felix Bruns <felixbruns@web.de>
-# https://github.com/fxb/javascript-last.fm-api/
-# сильно модифицирована
-lastfm.api
-
-# jQuery plugins
