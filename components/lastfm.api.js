@@ -11,6 +11,7 @@ function LastFM(options){
 	var apiUrl    = options.apiUrl    || 'http://ws.audioscrobbler.com/2.0/';
 	var cache     = options.cache     || undefined;
 	var debug     = typeof(options.debug) == 'undefined' ? false : options.debug;
+	var md5       = options.md5       || md5;
 	
 	/* Set API key. */
 	this.setApiKey = function(_apiKey){
