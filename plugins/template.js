@@ -1,4 +1,5 @@
-vkPatch.plugins.add({
+(function(){
+var plugin = {
 		/**
 		 * Описания
 		 */
@@ -37,4 +38,6 @@ vkPatch.plugins.add({
 		 * Инициализация плагина
 		 */
 		init: null
-});
+};
+vkPatch.plugins.add(plugin);
+})();
