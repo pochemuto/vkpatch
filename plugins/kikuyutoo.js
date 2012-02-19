@@ -1,4 +1,5 @@
-vkPatch.plugins.add({
+(function(){
+var plugin = {
 		/**
 		 * Kikuyutoo
 		 */
@@ -690,4 +691,7 @@ vkPatch.plugins.add({
 				elem.appendTo(this.iconsContainer);	// не один элемент "страше" не найдет - добавляем в конец
 			};
 		}
-});
+};
+
+vkPatch.plugins.add(plugin);
+})();

@@ -1,8 +1,9 @@
 /**
  * Модуль редактирования настроек
  */
-
-vkPatch.plugins.add({	
+(function() 
+{
+var plugin = {	
 	/**
 	 * Описания
 	 */
@@ -492,4 +493,7 @@ vkPatch.plugins.add({
 		return $.nano('<div class="settings_section" style="color: #555"><img src="'+this.resources.rabbit+'" style="float: left; margin-bottom: 10px; margin-right: 30px;"><h4 style="color: #555; margin-bottom: 8px; padding-top: 6px;">vkPatch'+debug+'</h4>{version}: '+vkPatch.version+'<br>{homePage}: <a href="http://klinifini.livejournal.com/">http://klinifini.livejournal.com/</a><br>{author}: <a href="http://vkontakte.ru/pochemuto">Сергей Третьяк</a><br>{donate}: <b>41001936638703</b></div>', this.lang);
 	}
 		
-});
+};
+
+vkPatch.plugins.add(plugin);
+})();

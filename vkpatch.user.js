@@ -10,6 +10,8 @@
 /**
  * vkPatch
  */
+if (typeof(vkPatch) == 'undefined')
+{
 var vkPatch = 
 {
 	init: function()
@@ -1902,4 +1904,7 @@ var vkPatch =
 	}
 };
 
-vkPatch.init();
+(function() {  
+    this.init();  
+  }).apply(vkPatch);  
+};
