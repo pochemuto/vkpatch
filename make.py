@@ -7,6 +7,7 @@ import codecs
 import sys
 import subprocess
 import re
+from activestate import version
 
 
 # вывод в нужной кодировке
@@ -142,7 +143,10 @@ def merge_dicts(d1, d2):
       result[key] += value
    
    return result
-   
+
+def get_extension_name(browser):
+   return filenamePattern % {"browser": browser, "version": version}
+
 # определяем платформозависимые фукнции
 if sys.platform=='win32':
    hardlink = winhardlink
@@ -150,41 +154,71 @@ if sys.platform=='win32':
 else:
    hardlink = os.link
    symlink = os.symlink
-   
 
+vkpatch_script = "vkpatch.user.js"
+chrome_path = "C:\Program Files\Google\Chrome\Application\chrome.exe"
+output = "bin/"
+filenamePattern = "vkpatch-%(version)s-%(browser)s"
 version = get_version()
 print(u"Версия файла:", version)
-vkpatch_script = "vkpatch.user.js"
 
+ 
+def make_opera():
+   output_name = output + get_extension_name("opera")
+   extension_name = output_name + ".oex"
+   archive_name = output_name + ".zip"
+   
+   if os.path.exists(extension_name): os.remove(extension_name)
+   if os.path.exists(archive_name): os.remove(archive_name)
+   
+   zipdir("opera extension", extension_name, includeDirInZip=True)
+   # упаковываем само расширение в zip архив
+   archive = zipfile.ZipFile(archive_name, "w", compression=zipfile.ZIP_DEFLATED)
+   archive.write(extension_name, os.path.basename(extension_name))
+   archive.close()
+   
+def make_firefox():
+   zipdir("firefox extension", output + get_extension_name("firefox") + ".xpi", includeDirInZip=True)
+
+def make_chrome():
+   target = os.path.abspath("chrome extension/")
+   args = [chrome_path, "--pack-extension='" + target + "'"]
+   if os.path.exists("chrome extension/key.pem"):
+      key_path = os.path.abspath("chrome extension/key.pem")
+      args.append("--pack-extension-key='" + key_path + "'")
+   
 config = {
           "opera": {
-                  "target": "opera extension/",
-                  "clean": ["icons/", "components/", "plugins/"],
-                  "include": [
+                    "target": "opera extension/",
+                    "clean": ["icons/", "components/", "plugins/"],
+                    "include": [
                             vkpatch_script,
                             ("resources/icon_64.png", "icons/icon_64.png")
-                            ]
-                  },
+                            ],
+                    "make": make_opera
+                    },
           
           "chrome": {
-                   "target": "chrome extension/",
-                   "clean": ["icons/", "components/", "plugins/"],
-                   "include": [
+                     "target": "chrome extension/",
+                     "clean": ["icons/", "components/", "plugins/"],
+                     "include": [
                           vkpatch_script,
                           ("resources/icon_16.png", "icons/icon_16.png"),
                           ("resources/icon_48.png", "icons/icon_48.png"),
                           ("resources/icon_128.png", "icons/icon_128.png")
-                          ]
+                          ],
+                     "make": make_chrome
                    },
           
           "firefox": {
-                    "target": "firefox extension/content/",
-                    "clean": ["icons/", "components/", "plugins/"],
-                    "include": [
+                      "target": "firefox extension/content/",
+                      "clean": ["icons/", "components/", "plugins/"],
+                      "include": [
                            vkpatch_script,
                           ("resources/icon_48.png", "icons/icon_48.png"),
                           ("resources/icon_64.png", "icons/icon_64.png"),
-                           ]
+                           ],
+                      "make": make_firefox
                     }
           }
 
@@ -201,7 +235,9 @@ includes = merge_dicts(includes, include_libs("plugins/", browsers, depth=1))
 #
 # Создаем линки
 #
-print(u"Создание линков:")
+print(u"Создание ссылок")
+if not os.path.isdir(output): os.makedirs(output)
+
 for browser, data in config.items():
    print("   "+browser, end="")
    target_path = data['target']
@@ -217,5 +253,14 @@ for browser, data in config.items():
       print(".", end="")
       
    print("")
+
+#
+# Упаковываем
+#
+print(u"Упаковка расширений")
+for browser, data in config.items():
+   print(browser, end="... ")
+   data["make"]()
+   print("done")
    
 raw_input(u"Нажмите любую клавишу для выхода")
