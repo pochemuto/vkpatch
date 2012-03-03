@@ -64,13 +64,6 @@ def winhardlink(source, link_name):
    # создаем hardlink
    subprocess.check_output(["mklink", "/h", link_name, source], shell=True)
    
-if sys.platform=='win32':
-   hardlink = winhardlink
-   symlink = winsymlink
-else:
-   hardlink = os.link
-   symlink = os.symlink
-
 def create_link(source, link_name):
    """Создание ссылки на файл или папку"""
    if os.path.isfile(link_name):
@@ -83,10 +76,60 @@ def create_link(source, link_name):
    else:
       hardlink(source, link_name)
 
-def get_version(filename):
+def get_version():
    """ извлекает версию из скрипта """
    regexp = r"vkPatch\.version\s*=\s*([\"'])(?P<version>[0-9.]+)\1"
    contents = file("vkpatch.user.js").read()
    return re.search(regexp, contents, flags=re.IGNORECASE+re.MULTILINE)
+
+def parse_list(filename, browsers, include_path = True):
+   """ читаем файл list.txt и извлекаем имена модулей
+   browsers содержим имена браузеров. Возвращает словарь, ключами которого являются имена браузеров,
+   а значениями списки модулей
+   """
+   browsers = [x.lower() for x in browsers]
+   # создаем словарь с пустыми массивами в качестве значений
+   result = dict([ [i, []] for i in browsers ])
+   for line in file(filename):
+      line = re.sub(r"#.*", "", line).strip()
+      if line == "" : continue
+      
+      included_browsers = browsers[:]
+      pieces = line.split(";")
+      module = pieces[0].strip() + ".js"
+      if include_path: module = os.path.dirname(filename) + "/" + module
+      # исключаем браузеры
+      if len(pieces) > 1:
+         excluded_browsers = pieces[1].lower().split()
+         included_browsers = [b for b in included_browsers if b not in excluded_browsers]
+          
+      for browser in included_browsers:
+         result[browser].append(module)
+         
+   return result
+
+# сливаем два словаря, содержащих массивы, в один
+def merge_dicts(d1, d2):
+   result = d1.copy()
+   # делаем копии всех массивов
+   for i in result:
+      result[i] = result[i][:]
+      
+   for key, value in d2.items():
+      if key not in result:
+         result[key] = []
+      
+      result[key] += value
    
+   return result
+   
+# определяем платформозависимые фукнции
+if sys.platform=='win32':
+   hardlink = winhardlink
+   symlink = winsymlink
+else:
+   hardlink = os.link
+   symlink = os.symlink
+   
+      
 version = get_version()
