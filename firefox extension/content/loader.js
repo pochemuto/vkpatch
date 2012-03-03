@@ -265,15 +265,18 @@ if (typeof(vkpatch) == 'undefined')
 				return utf8Converter.convertURISpecToUTF8(string, "UTF-8");
 			};
 			
+			browserName = "firefox";
+
 			/**
 			 * Загрузчик модулей
+			 * @param {string} browserName - имя браузера. используется для определения исключенных модулей 
 			 * @param {function} ready() - ожидает загрузку страницы. Её результат будет передан функции inject вторым аргументом 
 			 * @param {function} read(url) - читает файл. Должна возвращать объект, содержащий поле content с содержимым файла
 			 * @param {function} readList(url) - читает файл списка. По сути дублирует read, вынесено отдельно, т.к. в некоторых браузерах нет необходимости читать содержимое скрипта, а инъекция проиводится указанием адреса. Например в Chrome
 			 * @param {function} inject(script, target) - script - результат выполнения функции read, target - ready. Выполняет инъекцию скрипта в страницу
 			 * @param {function} log(message) - отладочные сообщения
 			 */
-			(function(ready, read, readList, inject, log)
+			(function(browserName, ready, read, readList, inject, log)
 			{
 				// имя файла, содержащий перечисление подключаемых модулей
 				var listFilename = "list.txt";
@@ -283,6 +286,7 @@ if (typeof(vkpatch) == 'undefined')
 				inject = wrapFunction(inject);
 				logBind = wrapFunction(log);
 				
+				browserName = browserName.toLowerCase()
 				/**
 				 * Возвращает функцию, работающую как bind для переданной
 				 * @example
@@ -313,19 +317,30 @@ if (typeof(vkpatch) == 'undefined')
 					{
 						return [];
 					};
-					
 					var lines = data.content.match(/^[^#\r\n]+/gm);
 					var result = [];
+					var excluded = [];
 					for (var i = 0; i < lines.length; i++) 
 					{
-						var line = lines[i].trim();
-						if (line == '') 
+						var pieces = lines[i].split(';');
+						var module = pieces[0].trim();
+						if (module == '') 
 						{
 							continue;
-						}
-						result.push(line);
+						};
+						if (pieces.length > 1) 
+						{
+							browsers = pieces[1].toLowerCase().split(/\s+/);
+							if (browsers.indexOf(browserName) > -1) 
+							{
+								excluded.push(module);
+								continue;	// исключен
+							};
+						};
+						
+						result.push(module);
 					};
-					log('parse ' + data.url + " :: " + result);
+					log('parse ' + data.url + " :: " + result + (excluded.length ? " (excluded: "+excluded+")" : ""));
 					return result;
 				};
 				
@@ -389,7 +404,6 @@ if (typeof(vkpatch) == 'undefined')
 							}
 							else
 							{
-								log('read by list: ' + list);
 								return Deferred.parallel(parallelJobs);
 							}
 						});
@@ -402,8 +416,7 @@ if (typeof(vkpatch) == 'undefined')
 				 */
 				function flatten(arr) 
 				{
-				    log('flatten ' + arr);
-					 var r = [];
+				    var r = [];
 				    for (var i = 0; i < arr.length; i++) {
 				        var v = arr[i];
 				        if (v instanceof Array) {
@@ -463,7 +476,8 @@ if (typeof(vkpatch) == 'undefined')
 				 *  заданный в цепочке параллельных функций и в файлах list.txt 
 				 */
 				.next(flatten).next(clean).next(injectAll);		
-			})(ready, read, readList, inject, log);
+				
+			})(browserName, ready, read, readList, inject, log);
 		}
 	};
 	
