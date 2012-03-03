@@ -63,13 +63,13 @@ def winsymlink(source, link_name):
    source = source.replace("/", "\\")
    link_name = link_name.replace("/", "\\")
    # создаем junction, потому что symlink (/d) требует повышения привелегий
-   subprocess.check_output(["mklink", "/j", link_name, source], shell=True)
+   subprocess.check_call(["mklink", "/j", link_name, source], shell=True)
 
 def winhardlink(source, link_name):
    # создаем hardlink
    source = source.replace("/", "\\")
    link_name = link_name.replace("/", "\\")
-   subprocess.check_output(["mklink", "/h", link_name, source], shell=True)
+   subprocess.check_call(["mklink", "/h", link_name, source], shell=True)
    
 def create_link(source, link_name):
    """Создание ссылки на файл или папку"""
@@ -156,6 +156,7 @@ else:
    symlink = os.symlink
 
 vkpatch_script = "vkpatch.user.js"
+debug=False
 chrome_path = "C:\Program Files\Google\Chrome\Application\chrome.exe"
 output = "bin/"
 filenamePattern = "vkpatch-%(version)s-%(browser)s"
@@ -181,11 +182,20 @@ def make_firefox():
    zipdir("firefox extension", output + get_extension_name("firefox") + ".xpi", includeDirInZip=True)
 
 def make_chrome():
+   chrome_key = "vkpatch-chrome-key.pem"
+   fse = sys.getfilesystemencoding()
    target = os.path.abspath("chrome extension/")
-   args = [chrome_path, "--pack-extension='" + target + "'"]
-   if os.path.exists("chrome extension/key.pem"):
-      key_path = os.path.abspath("chrome extension/key.pem")
-      args.append("--pack-extension-key='" + key_path + "'")
+   args = [chrome_path, '--pack-extension=' + target] # оборачивать в кавычки путь не нужно - при вызове весь аргумент оборачивается
+   
+   if os.path.exists(chrome_key):
+      key_path = os.path.abspath(chrome_key)
+      args.append("--pack-extension-key=" + key_path)
+   
+   subprocess.check_call(args, shell=True)
+   extension_name = get_extension_name("chrome") + ".crx"
+   extension_path = output+extension_name
+   if os.path.isfile(extension_path): os.remove(extension_path)
+   os.rename("chrome extension.crx", extension_path)
    
 config = {
           "opera": {
@@ -235,32 +245,52 @@ includes = merge_dicts(includes, include_libs("plugins/", browsers, depth=1))
 #
 # Создаем линки
 #
-print(u"Создание ссылок")
-if not os.path.isdir(output): os.makedirs(output)
-
-for browser, data in config.items():
-   print("   "+browser, end="")
-   target_path = data['target']
-   for source in includes[browser]:
-      if isinstance(source, tuple):
-         target = target_path + source[1]
-         source = source[0]
-      else:
-         target = target_path + source
-      
-      #print source,"=>", target
-      create_link(source, target)
-      print(".", end="")
-      
-   print("")
+def make_links():
+   print(u"Создание ссылок")
+   
+   for browser, data in config.items():
+      print("   "+browser, end="")
+      target_path = data['target']
+      for source in includes[browser]:
+         if isinstance(source, tuple):
+            target = target_path + source[1]
+            source = source[0]
+         else:
+            target = target_path + source
+         
+         if debug: print(source,"=>", target)
+         create_link(source, target)
+         print(".", end="")
+         
+      print("")
 
 #
 # Упаковываем
 #
-print(u"Упаковка расширений")
-for browser, data in config.items():
-   print(browser, end="... ")
-   data["make"]()
-   print("done")
+def pack():
+   print(u"Упаковка расширений")
+   if not os.path.isdir(output): os.makedirs(output)
    
-raw_input(u"Нажмите любую клавишу для выхода")
+   for browser, data in config.items():
+      print("   " + browser, end="... ")
+      data["make"]()
+      print("done")
+
+if __name__ == "__main__":
+   args = sys.argv[1:]
+   all = True
+   if len(args)>0:
+      all = False
+      global debug
+      debug = "debug" in args
+   
+   if "link" in args or all:
+      print()
+      make_links()
+      
+   if "pack" in args or all:
+      print()
+      pack()
+   
+   print()
+   raw_input(u"Нажмите любую клавишу для выхода...")
