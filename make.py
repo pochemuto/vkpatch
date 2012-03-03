@@ -172,7 +172,7 @@ def make_opera():
    if os.path.exists(extension_path): os.remove(extension_path)
    if os.path.exists(archive_name): os.remove(archive_name)
    
-   zipdir("opera extension", extension_path, includeDirInZip=True)
+   zipdir("opera extension", extension_path, includeDirInZip=False)
    # упаковываем само расширение в zip архив
    archive = zipfile.ZipFile(archive_name, "w", compression=zipfile.ZIP_DEFLATED)
    archive.write(extension_path, os.path.basename(extension_path))
@@ -181,7 +181,7 @@ def make_opera():
    
 def make_firefox():
    extension_path = output + get_extension_name("firefox") + ".xpi"
-   zipdir("firefox extension", extension_path, includeDirInZip=True)
+   zipdir("firefox extension", extension_path, includeDirInZip=False)
    return extension_path
 
 def make_chrome():
