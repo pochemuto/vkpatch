@@ -63,13 +63,13 @@ def winsymlink(source, link_name):
    source = source.replace("/", "\\")
    link_name = link_name.replace("/", "\\")
    # создаем junction, потому что symlink (/d) требует повышения привелегий
-   subprocess.check_call(["mklink", "/j", link_name, source], shell=True)
+   subprocess.check_output(["mklink", "/j", link_name, source], shell=True)
 
 def winhardlink(source, link_name):
    # создаем hardlink
    source = source.replace("/", "\\")
    link_name = link_name.replace("/", "\\")
-   subprocess.check_call(["mklink", "/h", link_name, source], shell=True)
+   subprocess.check_output(["mklink", "/h", link_name, source], shell=True)
    
 def create_link(source, link_name):
    """Создание ссылки на файл или папку"""
@@ -166,20 +166,23 @@ print(u"Версия файла:", version)
  
 def make_opera():
    output_name = output + get_extension_name("opera")
-   extension_name = output_name + ".oex"
+   extension_path = output_name + ".oex"
    archive_name = output_name + ".zip"
    
-   if os.path.exists(extension_name): os.remove(extension_name)
+   if os.path.exists(extension_path): os.remove(extension_path)
    if os.path.exists(archive_name): os.remove(archive_name)
    
-   zipdir("opera extension", extension_name, includeDirInZip=True)
+   zipdir("opera extension", extension_path, includeDirInZip=True)
    # упаковываем само расширение в zip архив
    archive = zipfile.ZipFile(archive_name, "w", compression=zipfile.ZIP_DEFLATED)
-   archive.write(extension_name, os.path.basename(extension_name))
+   archive.write(extension_path, os.path.basename(extension_path))
    archive.close()
+   return extension_path
    
 def make_firefox():
-   zipdir("firefox extension", output + get_extension_name("firefox") + ".xpi", includeDirInZip=True)
+   extension_path = output + get_extension_name("firefox") + ".xpi"
+   zipdir("firefox extension", extension_path, includeDirInZip=True)
+   return extension_path
 
 def make_chrome():
    chrome_key = "vkpatch-chrome-key.pem"
@@ -187,15 +190,20 @@ def make_chrome():
    target = os.path.abspath("chrome extension/")
    args = [chrome_path, '--pack-extension=' + target] # оборачивать в кавычки путь не нужно - при вызове весь аргумент оборачивается
    
+   # использование существующего ключа
    if os.path.exists(chrome_key):
       key_path = os.path.abspath(chrome_key)
       args.append("--pack-extension-key=" + key_path)
    
+   if not debug:
+      args.append("--no-message-box")
+
    subprocess.check_call(args, shell=True)
    extension_name = get_extension_name("chrome") + ".crx"
    extension_path = output+extension_name
    if os.path.isfile(extension_path): os.remove(extension_path)
    os.rename("chrome extension.crx", extension_path)
+   return extension_path
    
 config = {
           "opera": {
@@ -249,7 +257,7 @@ def make_links():
    print(u"Создание ссылок")
    
    for browser, data in config.items():
-      print("   "+browser, end="")
+      print("   %-12s" % browser, end="")
       target_path = data['target']
       for source in includes[browser]:
          if isinstance(source, tuple):
@@ -258,9 +266,9 @@ def make_links():
          else:
             target = target_path + source
          
-         if debug: print(source,"=>", target)
+         if debug: print("%-50s => %s" % source, target)
          create_link(source, target)
-         print(".", end="")
+         print("#", end="")
          
       print("")
 
@@ -272,16 +280,15 @@ def pack():
    if not os.path.isdir(output): os.makedirs(output)
    
    for browser, data in config.items():
-      print("   " + browser, end="... ")
-      data["make"]()
-      print("done")
+      print("   %-12s" % browser, end="")
+      extension_path = data["make"]()
+      print("done =>", extension_path)
 
 if __name__ == "__main__":
    args = sys.argv[1:]
    all = True
    if len(args)>0:
       all = False
-      global debug
       debug = "debug" in args
    
    if "link" in args or all:
