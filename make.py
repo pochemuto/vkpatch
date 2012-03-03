@@ -82,22 +82,26 @@ def get_version():
    contents = file("vkpatch.user.js").read()
    return re.search(regexp, contents, flags=re.IGNORECASE+re.MULTILINE)
 
-def parse_list(filename, browsers, include_path = True):
+def parse_list(path, browsers, include_path = True, depth = 0):
    """ читаем файл list.txt и извлекаем имена модулей
    browsers содержим имена браузеров. Возвращает словарь, ключами которого являются имена браузеров,
    а значениями списки модулей
+   depth задает глубину поиска подмодулей. Если модули исключен из браузера, подмодули тоже исключаются
    """
+   list_name = "list.txt"
    browsers = [x.lower() for x in browsers]
+   list_path = path + "/" + list_name
    # создаем словарь с пустыми массивами в качестве значений
-   result = dict([ [i, []] for i in browsers ])
-   for line in file(filename):
+   result = dict([ [i, [list_path]] for i in browsers ])
+   for line in file(list_path):
       line = re.sub(r"#.*", "", line).strip()
       if line == "" : continue
       
       included_browsers = browsers[:]
       pieces = line.split(";")
-      module = pieces[0].strip() + ".js"
-      if include_path: module = os.path.dirname(filename) + "/" + module
+      module_name = pieces[0].strip() 
+      module = module_name + ".js"
+      if include_path: module = path + "/" + module
       # исключаем браузеры
       if len(pieces) > 1:
          excluded_browsers = pieces[1].lower().split()
@@ -105,7 +109,10 @@ def parse_list(filename, browsers, include_path = True):
           
       for browser in included_browsers:
          result[browser].append(module)
-         
+      
+      if depth > 0 and os.path.isfile(path + "/" + module_name + "/" + list_name):
+         sublibs = parse_list(path + "/" + module_name, included_browsers, include_path, depth-1)
+         result = merge_dicts(result, sublibs)
    return result
 
 # сливаем два словаря, содержащих массивы, в один
@@ -133,3 +140,5 @@ else:
    
       
 version = get_version()
+browsers = ["chrome", "firefox", "opera"]
+
