@@ -8,6 +8,7 @@ import sys
 import subprocess
 import re
 from activestate import version
+import win32api
 
 
 # вывод в нужной кодировке
@@ -188,6 +189,13 @@ def make_chrome():
    chrome_key = "vkpatch-chrome-key.pem"
    fse = sys.getfilesystemencoding()
    target = os.path.abspath("chrome extension/")
+   try:
+      import win32api
+      # сокращяем пути, иначе может обрезаться
+      target = win32api.GetShortPathName(target)
+   except ImportError:
+      pass
+   
    args = [chrome_path, '--pack-extension=' + target] # оборачивать в кавычки путь не нужно - при вызове весь аргумент оборачивается
    
    # использование существующего ключа
@@ -201,8 +209,15 @@ def make_chrome():
    subprocess.check_call(args, shell=True)
    extension_name = get_extension_name("chrome") + ".crx"
    extension_path = output+extension_name
+   
    if os.path.isfile(extension_path): os.remove(extension_path)
-   os.rename("chrome extension.crx", extension_path)
+   
+   # получаем имя созданного расширения из пути потому что chrome создает
+   # расширение в текущей папке с именем папки, содаржащей код расширения
+   # в нашем случае мы передаем ему сокращенный путь вида CHROME~1
+   # поэтому он создает расширение с именем CHROME~1.crx
+   created_extension_name = os.path.basename(target)+".crx"
+   os.rename(os.path.basename(target)+".crx", extension_path)
    return extension_path
    
 config = {
