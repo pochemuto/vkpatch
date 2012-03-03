@@ -5,8 +5,7 @@ import ctypes
 import codecs
 import sys
 import subprocess
-from cgitb import link
-kdll = ctypes.windll.LoadLibrary("kernel32.dll")
+import re
 
 # вывод в нужной кодировке
 outf = codecs.getwriter(sys.stdout.encoding)(sys.stdout, errors='replace')
@@ -72,7 +71,7 @@ else:
    hardlink = os.link
    symlink = os.symlink
 
-def createLink(source, link_name):
+def create_link(source, link_name):
    """Создание ссылки на файл или папку"""
    if os.path.isfile(link_name):
       os.remove(link_name)
@@ -83,3 +82,11 @@ def createLink(source, link_name):
       symlink(source, link_name)
    else:
       hardlink(source, link_name)
+
+def get_version(filename):
+   """ извлекает версию из скрипта """
+   regexp = r"vkPatch\.version\s*=\s*([\"'])(?P<version>[0-9.]+)\1"
+   contents = file("vkpatch.user.js").read()
+   return re.search(regexp, contents, flags=re.IGNORECASE+re.MULTILINE)
+   
+version = get_version()
