@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import os
 import zipfile
 import ctypes
@@ -6,6 +7,7 @@ import codecs
 import sys
 import subprocess
 import re
+
 
 # вывод в нужной кодировке
 outf = codecs.getwriter(sys.stdout.encoding)(sys.stdout, errors='replace')
@@ -57,11 +59,15 @@ def zipdir(dirPath=None, zipFilePath=None, includeDirInZip=True):
 #
 
 def winsymlink(source, link_name):
+   source = source.replace("/", "\\")
+   link_name = link_name.replace("/", "\\")
    # создаем junction, потому что symlink (/d) требует повышения привелегий
    subprocess.check_output(["mklink", "/j", link_name, source], shell=True)
 
 def winhardlink(source, link_name):
    # создаем hardlink
+   source = source.replace("/", "\\")
+   link_name = link_name.replace("/", "\\")
    subprocess.check_output(["mklink", "/h", link_name, source], shell=True)
    
 def create_link(source, link_name):
@@ -70,6 +76,10 @@ def create_link(source, link_name):
       os.remove(link_name)
    elif os.path.isdir(link_name):
       os.removedirs(link_name)
+   
+   target_dir = os.path.dirname(link_name)
+   if not os.path.exists(target_dir):
+      os.makedirs(target_dir)
    
    if source is not None and os.path.isdir(source):
       symlink(source, link_name)
@@ -80,9 +90,9 @@ def get_version():
    """ извлекает версию из скрипта """
    regexp = r"vkPatch\.version\s*=\s*([\"'])(?P<version>[0-9.]+)\1"
    contents = file("vkpatch.user.js").read()
-   return re.search(regexp, contents, flags=re.IGNORECASE+re.MULTILINE)
+   return re.search(regexp, contents, flags=re.IGNORECASE+re.MULTILINE).group("version")
 
-def parse_list(path, browsers, include_path = True, depth = 0):
+def include_libs(path, browsers, include_path = True, depth = 0):
    """ читаем файл list.txt и извлекаем имена модулей
    browsers содержим имена браузеров. Возвращает словарь, ключами которого являются имена браузеров,
    а значениями списки модулей
@@ -90,7 +100,7 @@ def parse_list(path, browsers, include_path = True, depth = 0):
    """
    list_name = "list.txt"
    browsers = [x.lower() for x in browsers]
-   list_path = path + "/" + list_name
+   list_path = path + list_name
    # создаем словарь с пустыми массивами в качестве значений
    result = dict([ [i, [list_path]] for i in browsers ])
    for line in file(list_path):
@@ -101,7 +111,7 @@ def parse_list(path, browsers, include_path = True, depth = 0):
       pieces = line.split(";")
       module_name = pieces[0].strip() 
       module = module_name + ".js"
-      if include_path: module = path + "/" + module
+      if include_path: module = path + module
       # исключаем браузеры
       if len(pieces) > 1:
          excluded_browsers = pieces[1].lower().split()
@@ -110,9 +120,12 @@ def parse_list(path, browsers, include_path = True, depth = 0):
       for browser in included_browsers:
          result[browser].append(module)
       
-      if depth > 0 and os.path.isfile(path + "/" + module_name + "/" + list_name):
-         sublibs = parse_list(path + "/" + module_name, included_browsers, include_path, depth-1)
-         result = merge_dicts(result, sublibs)
+      # ищем зависимые библиотеки
+      if depth > 0:
+         submodules_path = path + module_name + "/"
+         if os.path.isfile(submodules_path + list_name):
+            sublibs = include_libs(path + module_name + "/", included_browsers, include_path, depth-1)
+            result = merge_dicts(result, sublibs)
    return result
 
 # сливаем два словаря, содержащих массивы, в один
@@ -138,7 +151,71 @@ else:
    hardlink = os.link
    symlink = os.symlink
    
-      
-version = get_version()
-browsers = ["chrome", "firefox", "opera"]
 
+version = get_version()
+print(u"Версия файла:", version)
+vkpatch_script = "vkpatch.user.js"
+
+config = {
+          "opera": {
+                  "target": "opera extension/",
+                  "clean": ["icons/", "components/", "plugins/"],
+                  "include": [
+                            vkpatch_script,
+                            ("resources/icon_64.png", "icons/icon_64.png")
+                            ]
+                  },
+          
+          "chrome": {
+                   "target": "chrome extension/",
+                   "clean": ["icons/", "components/", "plugins/"],
+                   "include": [
+                          vkpatch_script,
+                          ("resources/icon_16.png", "icons/icon_16.png"),
+                          ("resources/icon_48.png", "icons/icon_48.png"),
+                          ("resources/icon_128.png", "icons/icon_128.png")
+                          ]
+                   },
+          
+          "firefox": {
+                    "target": "firefox extension/content/",
+                    "clean": ["icons/", "components/", "plugins/"],
+                    "include": [
+                           vkpatch_script,
+                          ("resources/icon_48.png", "icons/icon_48.png"),
+                          ("resources/icon_64.png", "icons/icon_64.png"),
+                           ]
+                    }
+          }
+
+#
+# Читаем файлы и собираем ссылки на модули и файлы для создания линков
+#
+browsers = config.keys()
+# извлекаем из конфигов списки подключаемых файлов
+includes = dict(zip(browsers, [data["include"] for data in config.values()]))
+# пополняем их, читая файлы list.txt в папках
+includes = merge_dicts(includes, include_libs("components/", browsers))       
+includes = merge_dicts(includes, include_libs("plugins/", browsers, depth=1))
+
+#
+# Создаем линки
+#
+print(u"Создание линков:")
+for browser, data in config.items():
+   print("   "+browser, end="")
+   target_path = data['target']
+   for source in includes[browser]:
+      if isinstance(source, tuple):
+         target = target_path + source[1]
+         source = source[0]
+      else:
+         target = target_path + source
+      
+      #print source,"=>", target
+      create_link(source, target)
+      print(".", end="")
+      
+   print("")
+   
+raw_input(u"Нажмите любую клавишу для выхода")
