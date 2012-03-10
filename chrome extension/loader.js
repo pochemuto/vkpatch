@@ -81,33 +81,12 @@ function readList(url)
 	return deferred;
 };
 
-var scriptsStack = [];
-
 /**
  * Подключение кода
  * @param {scting} src - url к внешнему скрипту
  * @param {string} code - код
  */
 function loadScript(src, code, scriptUrl)
-{
-	scriptsStack.push(arguments);
-	
-	if (scriptsStack.length == 1) 
-	{
-		injectScript.apply(this, arguments);
-	}
-};
-
-function shiftStack() 
-{
-	scriptsStack.shift();
-	if (scriptsStack.length > 0) 
-	{
-		injectScript.apply(this, scriptsStack[0]);
-	}
-};
-
-function injectScript(src, code, scriptUrl) 
 {
 	log("inject " + scriptUrl);
 	var script = document.createElement('script');
@@ -121,7 +100,7 @@ function injectScript(src, code, scriptUrl)
 	}
 	script.type = 'text/javascript';
 	script.charset = 'utf-8';
-	script.onload = shiftStack;
+	script.async = false;
 	if (scriptUrl) 
 	{
 		script.setAttribute("data-source", scriptUrl); 
