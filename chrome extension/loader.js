@@ -81,6 +81,8 @@ function readList(url)
 	return deferred;
 };
 
+var scriptsStack = [];
+
 /**
  * Подключение кода
  * @param {scting} src - url к внешнему скрипту
@@ -88,6 +90,26 @@ function readList(url)
  */
 function loadScript(src, code, scriptUrl)
 {
+	scriptsStack.push(arguments);
+	
+	if (scriptsStack.length == 1) 
+	{
+		injectScript.apply(this, arguments);
+	}
+};
+
+function shiftStack() 
+{
+	scriptsStack.shift();
+	if (scriptsStack.length > 0) 
+	{
+		injectScript.apply(this, scriptsStack[0]);
+	}
+};
+
+function injectScript(src, code, scriptUrl) 
+{
+	log("inject " + scriptUrl);
 	var script = document.createElement('script');
 	if (code)
 	{
@@ -99,14 +121,14 @@ function loadScript(src, code, scriptUrl)
 	}
 	script.type = 'text/javascript';
 	script.charset = 'utf-8';
+	script.onload = shiftStack;
 	if (scriptUrl) 
 	{
 		script.setAttribute("data-source", scriptUrl); 
 	};
-	window.document.getElementsByTagName('head')[0].appendChild(script);
-};
-
-var log = debug ? function (message){console.log(message);} : function(){};
+	window.document.head.appendChild(script);
+}
+var log = debug ? function (message){console.log("vkpatch loader.js :: " + message);} : function(){};
 
 browserName = "chrome";
 
@@ -196,7 +218,7 @@ browserName = "chrome";
 		var jobs = [];
 		var result = Deferred;
 		var pageInfo = list.shift();		// первый элемент это результат выволнения ready функции
-		log('inject all ', list);
+		log('inject all');
 		for (var i=0;i<list.length;i++)
 		{
 			result = result.next( inject(list[i], pageInfo) );
