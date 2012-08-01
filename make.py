@@ -7,9 +7,6 @@ import codecs
 import sys
 import subprocess
 import re
-from activestate import version
-import win32api
-
 
 # вывод в нужной кодировке
 outf = codecs.getwriter(sys.stdout.encoding)(sys.stdout, errors='replace')
