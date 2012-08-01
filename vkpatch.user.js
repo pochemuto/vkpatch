@@ -1005,7 +1005,7 @@ var vkPatch =
 			/*
 			 * Привязываем события vkpatch к функциям vkontakte
 			 */
-			vkPatch.sys.handleLazy('new_player.js/audioPlayer.playback', function(pause)
+			vkPatch.sys.handleLazy('audioplayer.js/audioPlayer.playback', function(pause)
 			{
 				var trackInfo = vkPatch.audio.currentTrackInfo();
 				if (pause) 
@@ -1025,13 +1025,13 @@ var vkPatch =
 				}
 			});
 
-			vkPatch.sys.handleLazy('new_player.js/audioPlayer.stop', function()
+			vkPatch.sys.handleLazy('audioplayer.js/audioPlayer.stop', function()
 			{
 				vkPatch.audio.lastPlayedId = null;
 				vkPatch.events.audioStop.raise( vkPatch.audio.currentTrackInfo() );
 			});
 			
-			vkPatch.sys.handleLazy('new_player.js/audioPlayer.setGraphics', null, function(state) 	// смена страницы
+			vkPatch.sys.handleLazy('audioplayer.js/audioPlayer.setGraphics', null, function(state) 	// смена страницы
 			{
 				var trackInfo = vkPatch.audio.currentTrackInfo();
 
