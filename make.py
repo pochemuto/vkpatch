@@ -127,6 +127,36 @@ def include_libs(path, browsers, include_path = True, depth = 0):
             result = merge_dicts(result, sublibs)
    return result
 
+import sys
+from array import *
+from subprocess import *
+def sign_crx(input, key, output):
+  """ Подписывает zip-архив, используется для подписи расширений Google Chrome """
+  # Cribbed from http://github.com/Constellation/crxmake/blob/master/lib/crxmake.rb
+  # and http://src.chromium.org/viewvc/chrome/trunk/src/chrome/tools/extensions/chromium_extension.py?revision=14872&content-type=text/plain&pathrev=14872
+  
+  # Sign the zip file with the private key in PEM format
+  signature = Popen(["openssl", "sha1", "-sign", key, input], stdout=PIPE).stdout.read();
+  
+  # Convert the PEM key to DER (and extract the public form) for inclusion in the CRX header
+  derkey = Popen(["openssl", "rsa", "-pubout", "-inform", "PEM", "-outform", "DER", "-in", key], stdout=PIPE).stdout.read();
+  
+  out=open(output, "wb");
+  out.write("Cr24")  # Extension file magic number
+  header = array("l");
+  # исправление заголовка на 64х битной системе
+  # http://code.google.com/p/crx-packaging/issues/detail?id=3
+  if header.itemsize == 8:
+    header = array("i")
+  header.append(2); # Version 2
+  header.append(len(derkey));
+  header.append(len(signature));
+  header.tofile(out);
+  out.write(derkey)
+  out.write(signature)
+  out.write(open(input).read())
+  out.close()
+
 # сливаем два словаря, содержащих массивы, в один
 def merge_dicts(d1, d2):
    result = d1.copy()
@@ -185,36 +215,19 @@ def make_firefox():
 def make_chrome():
    chrome_key = "vkpatch-chrome-key.pem"
    fse = sys.getfilesystemencoding()
-   target = os.path.abspath("chrome extension/")
-   try:
-      import win32api
-      # сокращяем пути, иначе может обрезаться
-      target = win32api.GetShortPathName(target)
-   except ImportError:
-      pass
    
-   args = [chrome_path, '--pack-extension=' + target] # оборачивать в кавычки путь не нужно - при вызове весь аргумент оборачивается
+   target = os.path.abspath("chrome extension")
    
-   # использование существующего ключа
-   if os.path.exists(chrome_key):
-      key_path = os.path.abspath(chrome_key)
-      args.append("--pack-extension-key=" + key_path)
-   
-   if not debug:
-      args.append("--no-message-box")
-
-   subprocess.check_call(args, shell=True)
    extension_name = get_extension_name("chrome") + ".crx"
+   extension_archive = extension_name + ".zip"
    extension_path = output+extension_name
-   
-   if os.path.isfile(extension_path): os.remove(extension_path)
-   
-   # получаем имя созданного расширения из пути потому что chrome создает
-   # расширение в текущей папке с именем папки, содаржащей код расширения
-   # в нашем случае мы передаем ему сокращенный путь вида CHROME~1
-   # поэтому он создает расширение с именем CHROME~1.crx
-   created_extension_name = os.path.basename(target)+".crx"
-   os.rename(os.path.basename(target)+".crx", extension_path)
+
+   if os.path.isfile(extension_archive): os.remove(extension_archive)
+   # упаковываем
+   zipdir("chrome extension", extension_archive, includeDirInZip=False)
+   # подписываем
+   sign_crx(extension_archive, chrome_key, extension_path) 
+   os.remove(extension_archive)
    return extension_path
    
 config = {
