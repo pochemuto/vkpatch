@@ -191,8 +191,6 @@ chrome_path = "C:\Program Files\Google\Chrome\Application\chrome.exe"
 output = "bin/"
 filenamePattern = "vkpatch-%(version)s-%(browser)s"
 version = get_version()
-print(u"Версия файла:", version)
-
  
 def make_opera():
    output_name = output + get_extension_name("opera")
@@ -314,6 +312,7 @@ def pack():
       print("done =>", extension_path)
 
 if __name__ == "__main__":
+   print(u"Версия файла:", version)
    args = sys.argv[1:]
    all = True
    if len(args)>0:
