@@ -16,7 +16,7 @@ sys.stdout = outf
 #
 # http://stackoverflow.com/a/792199
 #
-def zipdir(dirPath=None, zipFilePath=None, includeDirInZip=True):
+def zipdir(dirPath=None, zipFilePath=None, includeDirInZip=True, ignore=[]):
 
     if not zipFilePath:
         zipFilePath = dirPath + ".zip"
@@ -38,7 +38,9 @@ def zipdir(dirPath=None, zipFilePath=None, includeDirInZip=True):
     for (archiveDirPath, dirNames, fileNames) in os.walk(dirPath):
         for fileName in fileNames:
             filePath = os.path.join(archiveDirPath, fileName)
-            outFile.write(filePath, trimPath(filePath))
+            relative_path =  trimPath(filePath)
+            if not relative_path in ignore: 
+                outFile.write(filePath, relative_path)
         #Make sure we get empty directories as well
         if not fileNames and not dirNames:
             zipInfo = zipfile.ZipInfo(trimPath(archiveDirPath) + "/")
@@ -223,8 +225,10 @@ def make_chrome():
    extension_path = output+extension_name
 
    if os.path.isfile(extension_archive): os.remove(extension_archive)
+   # исключяемый файлы из упаковки
+   ignore = ['manifest_template.json']
    # упаковываем
-   zipdir("chrome extension", extension_archive, includeDirInZip=False)
+   zipdir("chrome extension", extension_archive, includeDirInZip=False, ignore=ignore)
    # подписываем
    sign_crx(extension_archive, chrome_key, extension_path) 
    os.remove(extension_archive)
