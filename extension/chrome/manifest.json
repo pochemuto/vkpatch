@@ -1,6 +1,7 @@
 {
   "name": "vkPatch 6 + Kikuyutoo",
   "version": "6.1.6",
+  "manifest_version": 2,
   "description": "Скрипты для Вконтакте vkPatch",
   "icons": {
   				 "16": "icons/icon_16.png",
@@ -13,5 +14,7 @@
       "matches": ["http://vkontakte.ru/*","http://*.vkontakte.ru/*","http://vk.com/*","http://*.vk.com/*"],
       "js": ["loader.js"]
     }
+  ],
+  "web_accessible_resources": [
   ]
 }

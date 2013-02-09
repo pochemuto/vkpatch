@@ -1,3 +1,4 @@
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import os
@@ -103,7 +104,7 @@ def include_libs(path, browsers, include_path = True, depth = 0):
    browsers = [x.lower() for x in browsers]
    list_path = path + list_name
    # создаем словарь с пустыми массивами в качестве значений
-   result = dict([ [i, [list_path]] for i in browsers ])
+   result = dict([ [i, []] for i in browsers ])
    for line in file(list_path):
       line = re.sub(r"#.*", "", line).strip()
       if line == "" : continue
@@ -187,12 +188,11 @@ else:
 
 vkpatch_script = "vkpatch.user.js"
 debug=False
-chrome_path = "C:\Program Files\Google\Chrome\Application\chrome.exe"
 output = "bin/"
 filenamePattern = "vkpatch-%(version)s-%(browser)s"
 version = get_version()
  
-def make_opera():
+def make_opera(include):
    output_name = output + get_extension_name("opera")
    extension_path = output_name + ".oex"
    archive_name = output_name + ".zip"
@@ -207,29 +207,9 @@ def make_opera():
    archive.close()
    return extension_path
    
-def make_firefox():
+def make_firefox(include):
    extension_path = output + get_extension_name("firefox") + ".xpi"
    zipdir("firefox extension", extension_path, includeDirInZip=False)
-   return extension_path
-
-def make_chrome():
-   chrome_key = "vkpatch-chrome-key.pem"
-   fse = sys.getfilesystemencoding()
-   
-   target = os.path.abspath("chrome extension")
-   
-   extension_name = get_extension_name("chrome") + ".crx"
-   extension_archive = extension_name + ".zip"
-   extension_path = output+extension_name
-
-   if os.path.isfile(extension_archive): os.remove(extension_archive)
-   # исключяемый файлы из упаковки
-   ignore = ['manifest_template.json']
-   # упаковываем
-   zipdir("chrome extension", extension_archive, includeDirInZip=False, ignore=ignore)
-   # подписываем
-   sign_crx(extension_archive, chrome_key, extension_path) 
-   os.remove(extension_archive)
    return extension_path
    
 config = {
@@ -243,18 +223,6 @@ config = {
                     "make": make_opera
                     },
           
-          "chrome": {
-                     "target": "chrome extension/",
-                     "clean": ["icons/", "components/", "plugins/"],
-                     "include": [
-                          vkpatch_script,
-                          ("resources/icon_16.png", "icons/icon_16.png"),
-                          ("resources/icon_48.png", "icons/icon_48.png"),
-                          ("resources/icon_128.png", "icons/icon_128.png")
-                          ],
-                     "make": make_chrome
-                   },
-          
           "firefox": {
                       "target": "firefox extension/content/",
                       "clean": ["icons/", "components/", "plugins/"],
@@ -266,6 +234,33 @@ config = {
                       "make": make_firefox
                     }
           }
+
+#
+# Сканируем подпапки extensions
+#
+import imp
+extensions_dir = "extension"
+make_file = "make.py"
+
+def extend_scope(makescript):
+  makescript.zipdir = zipdir
+  makescript.sign_crx = sign_crx
+  
+def scan_extensions():
+  os.chdir(extensions_dir)
+  for browser in os.listdir("."):
+    if os.path.isdir(browser):
+      os.chdir(browser)
+      if os.path.isfile(make_file):
+        print("Found: " + os.path.abspath(make_file))
+        #TODO: проверка make файла
+        makescript = imp.load_source(browser, make_file)
+        extend_scope(makescript)
+        makescript.config['make'] = makescript.pack
+        config[browser] = makescript.config 
+        
+      os.chdir("..")
+  os.chdir("..")
 
 #
 # Читаем файлы и собираем ссылки на модули и файлы для создания линков
@@ -293,7 +288,7 @@ def make_links():
          else:
             target = target_path + source
          
-         if debug: print("%-50s => %s" % source, target)
+         if debug: print("%-50s => %s" % (source, target))
          create_link(source, target)
          print("#", end="")
          
@@ -308,13 +303,17 @@ def pack():
    
    for browser, data in config.items():
       print("   %-12s" % browser, end="")
-      extension_path = data["make"]()
+      # include может содержать как просто имя файла, тогда ссылка делается без изменений
+      # или tuple где второй элемент это конечное имя файла
+      include = [inc[1] if isinstance(inc, tuple) else inc for inc in includes[browser]]
+      extension_path = data["make"](include)
       print("done =>", extension_path)
 
 if __name__ == "__main__":
    print(u"Версия файла:", version)
    args = sys.argv[1:]
    all = True
+   scan_extensions()
    if len(args)>0:
       all = False
       debug = "debug" in args
