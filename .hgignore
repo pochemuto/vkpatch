@@ -1,9 +1,4 @@
 syntax: regexp
-^chrome extension/vkpatch\.user\.js$
-^opera extension/vkpatch\.user\.js$
-^chrome extension/resources$
-^opera extension/icons/icon_[0-9]+\.png$
-^chrome extension/icons/icon_[0-9]+\.png$
 \.exe$
 \.oex$
 \.pem$
@@ -11,15 +6,24 @@ syntax: regexp
 \.xpi$
 \.zip$
 ^bin$
+^.settings$
+
 ^firefox extension/content/vkpatch\.user\.js$
+^firefox extension/content/components$
+^firefox extension/content/plugins$
 ^firefox extension/content/icons/icon_[0-9]+\.png$
+
+^opera extension/vkpatch\.user\.js$
+^opera extension/components$
+^opera extension/plugins$
+^opera extension/icons/icon_[0-9]+\.png$
+
+^chrome extension/vkpatch\.user\.js$
+^chrome extension/components$
+^chrome extension/plugins$
+^chrome extension/resources$
+^chrome extension/icons/icon_[0-9]+\.png$
+
+^ie extension/vkpatch\.user\.js$
 ^ie extension/bin$
 ^ie extension/obj$
-^ie extension/vkpatch\.user\.js$
-^.settings$
-^chrome extension/plugins$
-^firefox extension/content/plugins$
-^opera extension/plugins$
-^chrome extension/components$
-^firefox extension/content/components$
-^opera extension/components$
