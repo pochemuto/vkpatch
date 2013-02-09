@@ -29,7 +29,11 @@ namespace vkpatch
                                 "^http://vkontakte\\.ru",
                                 "^http://[^?#]*\\.vkontakte\\.ru",
                                 "^http://vk\\.com",
-                                "^http://[^#?]*\\.vk\\.com"
+                                "^http://[^#?]*\\.vk\\.com",
+                                "^https://vkontakte\\.ru",
+                                "^https://[^?#]*\\.vkontakte\\.ru",
+                                "^https://vk\\.com",
+                                "^https://[^#?]*\\.vk\\.com"
                             };
         Regex[] regulars;
 
