@@ -3,6 +3,10 @@
 // @include http://*.vkontakte.ru/*
 // @include http://vk.com/*
 // @include http://*.vk.com/*
+// @include https://vkontakte.ru/*
+// @include https://*.vkontakte.ru/*
+// @include https://vk.com/*
+// @include https://*.vk.com/*
 // ==/UserScript==
 var log = widget.preferences.debugMode ? debug : function(){};
 

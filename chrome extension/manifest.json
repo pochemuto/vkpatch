@@ -10,7 +10,7 @@
   "permissions": [],
   "content_scripts": [
     {
-      "matches": ["http://vkontakte.ru/*","http://*.vkontakte.ru/*","http://vk.com/*","http://*.vk.com/*"],
+      "matches": ["http://vkontakte.ru/*","http://*.vkontakte.ru/*","http://vk.com/*","http://*.vk.com/*","https://vkontakte.ru/*","https://*.vkontakte.ru/*","https://vk.com/*","https://*.vk.com/*"],
       "js": ["loader.js"]
     }
   ]
