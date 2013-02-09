@@ -18,11 +18,11 @@ syntax: regexp
 ^opera extension/plugins$
 ^opera extension/icons/icon_[0-9]+\.png$
 
-^chrome extension/vkpatch\.user\.js$
-^chrome extension/components$
-^chrome extension/plugins$
-^chrome extension/resources$
-^chrome extension/icons/icon_[0-9]+\.png$
+^extension/chrome/data/vkpatch\.user\.js$
+^extension/chrome/data/components$
+^extension/chrome/data/plugins$
+^extension/chrome/data/resources$
+^extension/chrome/data/icons/icon_[0-9]+\.png$
 
 ^ie extension/vkpatch\.user\.js$
 ^ie extension/bin$
