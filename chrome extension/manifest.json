@@ -1,4 +1,5 @@
 {
+  "manifest_version": 2,
   "name": "vkPatch 6 + Kikuyutoo",
   "version": "6.1.7",
   "description": "Скрипты для Вконтакте vkPatch",
@@ -13,5 +14,24 @@
       "matches": ["http://vkontakte.ru/*","http://*.vkontakte.ru/*","http://vk.com/*","http://*.vk.com/*","https://vkontakte.ru/*","https://*.vkontakte.ru/*","https://vk.com/*","https://*.vk.com/*"],
       "js": ["loader.js"]
     }
+  ],
+  "web_accessible_resources": [
+    "components/encoder.js",
+    "components/jquery.min.js",
+    "components/md5.js",
+    "components/underscore-min.js",
+    "loader.js",
+    "plugins/kikuyutoo.js",
+    "plugins/kikuyutoo/lastfm.api.js",
+    "plugins/settings.js",
+    "plugins/template.js",
+    "vkpatch.user.js",
+    "icons/icon_128.png",
+    "icons/icon_16.png",
+    "icons/icon_48.png",
+    "components/list.txt",
+    "plugins/kikuyutoo/list.txt",
+    "plugins/list.txt",
+    "plugins/settings/list.txt"
   ]
 }
