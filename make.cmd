@@ -1,4 +1,5 @@
 @echo off
+chcp 866
 if /I "%~1"=="debug" (
 	rem Передан в качестве параметр debug
 	set DEBUG=
@@ -48,9 +49,15 @@ rem ==================
 rem       Chrome
 rem ==================
 
+	rem Chromium packager won't work with Windows's junctions for some reason, using xcopy instead...
+mkdir "chrome extension\icons\"
 call :link "chrome extension\vkpatch.user.js" 			vkpatch.user.js
-call :link "chrome extension\components" 				components
-call :link "chrome extension\plugins" 					plugins
+	rem call :link "chrome extension\components" 				components
+	rem call :link "chrome extension\plugins" 					plugins
+mkdir "chrome extension\components"
+xcopy components "chrome extension\components" /e /y
+mkdir "chrome extension\plugins"
+xcopy plugins "chrome extension\plugins" /e /y
 call :link "chrome extension\icons\icon_16.png" 		"resources\icon_16.png"
 call :link "chrome extension\icons\icon_48.png" 		"resources\icon_48.png"
 call :link "chrome extension\icons\icon_128.png" 		"resources\icon_128.png"
@@ -107,6 +114,13 @@ rem       Chrome
 rem ==================
 rem %chrome% - путь к chrome.exe
 echo ===  Chrome  === %DEBUG%
+IF %chrome% EQU "" (
+	echo Chrome extension	failed !
+	echo        Please set up environment variable CHROME to point to chrome.exe
+	goto :firefox
+)
+rem adding quotes if there isn't any
+set chrome="%chrome:"=%"
 call :delete "%OUTPUT%\vkpatch-%version%-chrome.crx"
 if exist "%cd%\vkpatch-chrome-key.pem" (
 	rem Есть ключ расширения хром
@@ -115,7 +129,7 @@ if exist "%cd%\vkpatch-chrome-key.pem" (
 ) else (
 	echo Ключ vkpatch-chrome-key.pem не найден !!! %DEBUG%
 )
-"%chrome%" --pack-extension="%cd%\chrome extension" %chrome_key% --no-message-box
+%chrome% --pack-extension="%cd%\chrome extension" %chrome_key% --no-message-box
 if EXIST "chrome extension.crx" (
 	move "chrome extension.crx" "%OUTPUT%\vkpatch-%version%-chrome.crx" %DEBUG%
 	echo Chrome extension	done
