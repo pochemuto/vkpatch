@@ -43,6 +43,7 @@ rem ==================
 call :link "opera extension\vkpatch.user.js"		vkpatch.user.js
 call :link "opera extension\components" 			components
 call :link "opera extension\plugins" 				plugins
+mkdir "opera extension\icons\"
 call :link "opera extension\icons\icon_64.png" 		"resources\icon_64.png"
 
 rem ==================
@@ -68,6 +69,7 @@ rem ==================
 call :link "firefox extension\content\vkpatch.user.js"			vkpatch.user.js
 call :link "firefox extension\content\components" 				components
 call :link "firefox extension\content\plugins" 					plugins
+mkdir "firefox extension\content\icons\"
 call :link "firefox extension\content\icons\icon_48.png"		"resources\icon_48.png"
 call :link "firefox extension\content\icons\icon_64.png"		"resources\icon_64.png"
 
