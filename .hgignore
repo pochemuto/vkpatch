@@ -4,6 +4,7 @@ syntax: regexp
 \.pem$
 \.crx$
 \.xpi$
+\.pyc$
 \.zip$
 ^bin$
 ^.settings$
@@ -27,3 +28,4 @@ syntax: regexp
 ^ie extension/vkpatch\.user\.js$
 ^ie extension/bin$
 ^ie extension/obj$
+\.DS_Store$
