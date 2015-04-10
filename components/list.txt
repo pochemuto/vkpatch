@@ -1,16 +1,4 @@
-# jQuery
-# http://jquery.com/
-jquery.min
-
-# Underscore.js
-# http://documentcloud.github.com/underscore/
 underscore-min
-
-# Кодирование/декодирование html символов
-# http://www.strictly-software.com/htmlencode
-encoder
-
-# Вычисление MD5
-# http://www.webtoolkit.info/
-# Удалено конвертирование в utf-8
 md5
+jquery.min
+encoder
