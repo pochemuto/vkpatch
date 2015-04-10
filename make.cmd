@@ -116,7 +116,7 @@ rem       Chrome
 rem ==================
 rem %chrome% - путь к chrome.exe
 echo ===  Chrome  === %DEBUG%
-IF %chrome% EQU "" (
+IF [%chrome%] EQU [] (
 	echo Chrome extension	failed !
 	echo        Please set up environment variable CHROME to point to chrome.exe
 	goto :firefox
