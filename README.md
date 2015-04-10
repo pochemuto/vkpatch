@@ -1,4 +1,4 @@
-[![](http://i303.photobucket.com/albums/nn155/klinifini/kikuyutoo/vkpatch_download_button_chrome.png)](http://vkpatch.googlecode.com/files/vkpatch-6.1.8-chrome.crx)[![](http://i303.photobucket.com/albums/nn155/klinifini/kikuyutoo/vkpatch_download_button_opera.png)](http://vkpatch.googlecode.com/files/vkpatch-6.1.8-opera.oex)[![](http://i303.photobucket.com/albums/nn155/klinifini/kikuyutoo/vkpatch_download_button_firefox.png)](http://vkpatch.googlecode.com/files/vkpatch-6.1.8-firefox.xpi)
+[![](http://i303.photobucket.com/albums/nn155/klinifini/kikuyutoo/vkpatch_download_button_chrome.png)](https://chrome.google.com/webstore/detail/vkpatch-6-%20-kikuyutoo/kbeaknbahejkcoimefjacobocnpbpgbp)[![](http://i303.photobucket.com/albums/nn155/klinifini/kikuyutoo/vkpatch_download_button_opera.png)](http://vkpatch.googlecode.com/files/vkpatch-6.1.8-opera.oex)[![](http://i303.photobucket.com/albums/nn155/klinifini/kikuyutoo/vkpatch_download_button_firefox.png)](http://vkpatch.googlecode.com/files/vkpatch-6.1.8-firefox.xpi)
 
 # Расширение функциональности сайта ВКонтакте.ру #
 _Текущая версия:_ **6.1.8**
